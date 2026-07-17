@@ -348,3 +348,15 @@ worktree's gitignored `.env.local` (region `us-east-1` default; inference profil
 **Cleanup.** Temp runner deleted; worktree `.env.local` reverted to baseline; the main
 checkout's `.env.local` was never modified (read-only copy of the token line only). Canonical
 stays `PLANNER_MODE=off`; the explainer goes live on `main` only at the W3 D-merge.
+
+**D4 retry update (2026-07-17, PM-authorized re-run).** A new token was delivered (2184 chars,
+still `bedrock-` prefix — so that prefix **is** a valid Bedrock key format; the first token was
+simply a bad value) and it now **authenticates**: the earlier 403 "Missing required parameters
+in the API Key" is gone. Re-ran through `claude.ts` against
+`global.anthropic.claude-sonnet-4-5-20250929-v1:0` in `ap-south-1`; the call reached Bedrock
+(~1618 ms) and returned `ResourceNotFoundException: "Model use case details have not been
+submitted for this account…"`. **Net: `claude.ts` is proven correct through auth → request →
+model-access; the only remaining blocker is AWS-account model-access provisioning (submit the
+Anthropic use-case form in the Bedrock console) — a human step, not code.** Flagged for W3:
+`claude.ts` reads `AWS_REGION` while the canonical `.env` uses `BEDROCK_REGION` (their
+`bedrock.ts` var) — env-name convergence needed at reconcile.
