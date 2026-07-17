@@ -51,5 +51,23 @@ services:
       control-plane:
         condition: service_healthy
 
+  # --- Prize-mode ingress (documentation; NOT started by the default dev `up`) ---
+  # In prize mode the agent reaches procurement ONLY through a Pomerium proxy. Pomerium
+  # Zero is a hosted control plane + self-hosted data plane: run the proxy here, in the
+  # same network as procurement, bootstrapped with the cluster token. It reaches
+  # http://procurement:4001 directly — no separate tunnel/connector is needed, and
+  # procurement keeps `expose:` only (no published port). See docs/integrations/POMERIUM.md.
+  # For B5: uncomment, set POMERIUM_ZERO_TOKEN, and set AUTH_MODE=pomerium on procurement.
+  #
+  # pomerium:
+  #   image: pomerium/pomerium:latest
+  #   environment:
+  #     POMERIUM_ZERO_TOKEN: ${POMERIUM_ZERO_TOKEN:?set the Pomerium Zero cluster token}
+  #   ports:
+  #     - "443:443"
+  #   depends_on:
+  #     procurement:
+  #       condition: service_healthy
+
 volumes:
   continuim-data:

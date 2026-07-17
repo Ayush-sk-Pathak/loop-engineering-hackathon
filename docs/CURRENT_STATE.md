@@ -298,3 +298,20 @@ build (B4), GHCR publish with an immutable tag, prefer the pushed `@sha256` dige
 a `sed` marker-replace for both `REPLACE_OWNER`/`REPLACE_SHA` across the three
 `deploy/akash/deploy.example.yaml` image lines. Akash publish/lease stays B8 (gated on
 `doctor:prize` ∧ `build` ∧ `docker compose up --build`).
+
+### 2026-07-17 — Lane B / B2: prize-mode compose topology (config valid; up-health deferred)
+
+**Verified.** `docker compose config` VALID (exit 0). procurement stays `expose`-only
+(no published host port); control-plane `4000`, dashboard `3000` published as before.
+
+**Documented.** Added a commented prize-mode `pomerium` proxy block to `compose.yaml`:
+the Pomerium Zero self-hosted data plane runs in the same network and reaches
+`procurement:4001` directly — **no separate tunnel/connector needed**. The default dev
+`up` is unchanged (block commented; `AUTH_MODE` stays `development`).
+
+**Deferred (not yet done).** `docker compose up --build` health binds `3000:3000` +
+`4000:4000`; port `4000` is held by an unrelated LiteLLM proxy (a worker cannot free it).
+token-request posted — PM to coordinate freeing `4000`, or approve an alternate-host-port
+run that verifies the same internal topology (container healthchecks curl `127.0.0.1`
+inside each container, so they do not depend on the host-port bind). B2 completes when
+up-health is green.
