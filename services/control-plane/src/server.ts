@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import type { StockoutRiskEvent } from "@continuim/contracts";
 import { SCHEMA_VERSION } from "@continuim/contracts";
@@ -158,6 +159,22 @@ createServer(async (request, response) => {
         faultType: body.faultType,
         inventory: next?.inventory,
       }));
+      if (next) {
+        const event: StockoutRiskEvent = {
+          schemaVersion: SCHEMA_VERSION,
+          type: "stockout_risk",
+          eventId: randomUUID(),
+          sku: next.inventory.sku,
+          currentQty: next.inventory.currentQty,
+          threshold: next.inventory.threshold,
+          requestedQty: Number(process.env.MONITOR_REQUESTED_QTY ?? 20),
+          occurredAt: new Date().toISOString(),
+          source: "monitor",
+        };
+        void runStockout(store, event).catch((error) => {
+          console.error(`control-plane: ${clientId} client-incident recovery failed`, error);
+        });
+      }
     } catch (error) {
       response.writeHead(400).end(JSON.stringify({
         error: error instanceof Error ? error.message : "Invalid request",
