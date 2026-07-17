@@ -285,3 +285,14 @@ Wave-new files swept `@stockshield` → `@continuim` (`services/zero-adapter/*`,
 `npm run check` green 29/29 under the new scope. Lanes A–D continue on pre-rename
 worktrees; the rename is absorbed at each lane's next merge (lazy rebase per the human's
 call). `Continuum/` frontend role: under tab-E investigation before any dashboard decision.
+**C2 — event-ID chip + mode badges.** Surgical dashboard edits (chips/badges/labels only,
+per the pending UI handoff): added a legible monospace event-ID/correlation chip in the
+decision-trace header (renders the run's `correlationId`, e.g. `nexla-event-001`) and a new
+authorization-mode badge (`Pomerium` / `Development`) beside the existing verification badge
+(`Live Zero` / `Fixture evidence`) in `apps/dashboard/components/operations-dashboard.tsx`
+(+ `.mode.pomerium` and `.eventChip` rules in `apps/dashboard/app/styles.css`). Verified:
+`npm run build:web` green; a headless render of the lane-C stack confirmed both badges and
+the chip legible for **fixture+development** (chip `nexla-event-001`) and **fixture+pomerium**
+(blue `Pomerium`, computed `#1c5b88` on `#e1f0fa`), no console errors. The `Live Zero` label
+is the pre-existing verification conditional (unchanged), reachable only with the live Zero
+adapter (deferred to W2/C6).
