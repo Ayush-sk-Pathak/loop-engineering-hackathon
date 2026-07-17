@@ -13,6 +13,7 @@ const config: AuthorizationConfig = {
   pomeriumIssuer: process.env.POMERIUM_ISSUER,
   pomeriumAudience: process.env.POMERIUM_AUDIENCE,
   pomeriumSubjectPrefix: process.env.POMERIUM_SUBJECT_PREFIX ?? "vendor:",
+  pomeriumVendorSubjectAliases: process.env.POMERIUM_VENDOR_SUBJECT_ALIASES,
 };
 
 // StableEmail receipt transport (item B3). Null when EMAIL_MODE is off (default).

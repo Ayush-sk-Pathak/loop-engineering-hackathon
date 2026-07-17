@@ -13,7 +13,7 @@ const add = (label: string, ok: boolean, detail: string, required = true) => {
 
 add("Node", Number(process.versions.node.split(".")[0]) >= 22, process.versions.node);
 add("Dependencies", existsSync("node_modules"), "node_modules");
-add("Local environment", existsSync(".env.local"), ".env.local");
+add("Local environment", existsSync(".env"), ".env");
 add("Package lock", existsSync("package-lock.json"), "package-lock.json");
 add(
   "Verification mode",
@@ -46,6 +46,9 @@ add(
 );
 
 const prizeVariables = [
+  "AWS_BEARER_TOKEN_BEDROCK",
+  "BEDROCK_MODEL_ID",
+  "BEDROCK_REGION",
   "ZERO_EVIDENCE_ADAPTER_URL",
   "POMERIUM_ROUTE_URL",
   "POMERIUM_JWKS_URL",
@@ -57,6 +60,13 @@ const prizeVariables = [
 for (const variable of prizeVariables) {
   add(variable, !prizeRequired || Boolean(process.env[variable]), process.env[variable] ? "set" : "missing", prizeRequired);
 }
+
+add(
+  "Bedrock explainer",
+  !prizeRequired || process.env.BEDROCK_EXPLAINER_ENABLED === "1",
+  process.env.BEDROCK_EXPLAINER_ENABLED === "1" ? "enabled" : "disabled",
+  prizeRequired,
+);
 
 for (const check of checks) {
   const mark = check.required ? (check.ok ? "PASS" : "FAIL") : "INFO";

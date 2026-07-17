@@ -437,3 +437,19 @@ $2,400, order `PO-01787B60`, lookalike `vendor-lookalike` blacklisted); Continuu
 `:3200` returned that state end-to-end, `adaptWorkspace()` mapped it correctly, and Continuum
 `next build` is green (proxy now a dynamic `ƒ /api/control/[...path]` route). Read-only — no
 write buttons wired (gated pending PM directive).
+
+### 2026-07-17 — PM: merged origin/main 465d2f3 (teammate live-integration wiring) into the wave
+
+**Merged.** External commit `465d2f3` (Aayush Baniya): env convention flipped
+`.env.local`→`.env` (all npm scripts + doctor), standalone `scripts/evidence-adapter.ts`
+(direct Firecrawl/Apify/Linkup providers), `services/control-plane/src/bedrock.ts`
+explainer + runtime wiring + contracts `DecisionPhase "explained"`, Pomerium subject
+aliases in authorize, Akash console SDL, zero-hello page. Conflicts resolved:
+package.json (their `.env` flags + `dev:evidence`, our fuller test list),
+config/example.env (union of ZERO_PRIVATE_KEY block + their provider/Bedrock blocks).
+Verified `npm run check` 37/37 post-resolution. **Open reconciliations:** two evidence
+adapters exist (`services/zero-adapter` zero-CLI-settled vs `scripts/evidence-adapter.ts`
+direct-provider — Zero-usage honesty per decision 0010/ZERO.md must be settled before
+any live claim); two Bedrock explainers (this `bedrock.ts` on main vs lane D's held
+`claude.ts`) — reconcile at W3 D-merge; contracts change landed without all-owner ack
+(retroactive ack requested on the board).

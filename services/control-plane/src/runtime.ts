@@ -10,6 +10,7 @@ import { SCHEMA_VERSION } from "@continuim/contracts";
 import { runProcurementLoop } from "@continuim/agent";
 import { encodeVendorAttestation } from "@continuim/security";
 import { createEvidenceCollector, evaluateEvidence } from "@continuim/verification";
+import { explainVerdictWithBedrock } from "./bedrock.ts";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
@@ -41,11 +42,49 @@ export async function runStockout(
       verification: {
         async verify(vendor) {
           const signals = await evidenceCollector.collect(vendor);
-          return evaluateEvidence(
+          const result = evaluateEvidence(
             vendor,
             signals,
             process.env.ATTESTATION_SIGNING_SECRET ?? "local-attestation-only-change-me",
           );
+          try {
+            const explanation = await explainVerdictWithBedrock(vendor, result.verdict);
+            if (explanation) {
+              store.appendEvent({
+                schemaVersion: SCHEMA_VERSION,
+                id: randomUUID(),
+                correlationId: stockout.eventId,
+                phase: "explained",
+                vendorId: vendor.id,
+                vendorName: vendor.tradingName,
+                detail: explanation.text,
+                occurredAt: new Date().toISOString(),
+                metadata: {
+                  provider: explanation.provider,
+                  modelId: explanation.modelId,
+                  region: explanation.region,
+                  authoritative: false,
+                },
+              });
+            }
+          } catch (error) {
+            store.appendEvent({
+              schemaVersion: SCHEMA_VERSION,
+              id: randomUUID(),
+              correlationId: stockout.eventId,
+              phase: "explained",
+              vendorId: vendor.id,
+              vendorName: vendor.tradingName,
+              detail: `Bedrock explainer unavailable; deterministic policy verdict remains authoritative.`,
+              occurredAt: new Date().toISOString(),
+              metadata: {
+                provider: "amazon-bedrock",
+                authoritative: false,
+                error: error instanceof Error ? error.message : "unknown",
+              },
+            });
+          }
+          return result;
         },
       },
       credentials: {

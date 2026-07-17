@@ -69,7 +69,7 @@ off as real organizations.
 
 ## Secrets
 
-`.env.local` is ignored and created from `config/example.env`. Required prize secrets include
+`.env` is ignored and created from `config/example.env`. Required prize secrets include
 the Zero adapter token, attestation signing secret, Pomerium route/JWKS configuration, the
 general agent token, and the eligible vendor service-account token.
 

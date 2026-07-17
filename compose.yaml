@@ -4,9 +4,9 @@ services:
   procurement:
     build: .
     command: npm run start:procurement
-    env_file: .env.local
+    env_file: .env
     environment:
-      AUTH_MODE: development
+      AUTH_MODE: ${AUTH_MODE:-development}
       PROCUREMENT_HOST: 0.0.0.0
       SQLITE_PATH: /app/data/continuim.db
     expose:
@@ -16,21 +16,26 @@ services:
       interval: 3s
       timeout: 2s
       retries: 10
+    networks:
+      main: {}
 
   control-plane:
     build: .
     command: npm run start:control
-    env_file: .env.local
+    env_file: .env
     environment:
-      AUTH_MODE: development
+      AUTH_MODE: ${AUTH_MODE:-development}
       CONTROL_PLANE_HOST: 0.0.0.0
       PROCUREMENT_URL: http://procurement:4001
+      ZERO_EVIDENCE_ADAPTER_URL: http://evidence-adapter:4100/v1/evidence
       SQLITE_PATH: /app/data/continuim.db
     ports:
       - "4000:4000"
     volumes:
       - continuim-data:/app/data
     depends_on:
+      evidence-adapter:
+        condition: service_healthy
       procurement:
         condition: service_healthy
     healthcheck:
@@ -38,11 +43,30 @@ services:
       interval: 3s
       timeout: 2s
       retries: 10
+    networks:
+      main: {}
+
+  evidence-adapter:
+    build: .
+    command: npm run start:evidence
+    env_file: .env
+    environment:
+      ZERO_EVIDENCE_ADAPTER_HOST: 0.0.0.0
+      ZERO_EVIDENCE_ADAPTER_PORT: 4100
+    expose:
+      - "4100"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+    networks:
+      main: {}
 
   dashboard:
     build: .
     command: npm run start:web
-    env_file: .env.local
+    env_file: .env
     environment:
       CONTROL_PLANE_INTERNAL_URL: http://control-plane:4000
     ports:
@@ -50,6 +74,33 @@ services:
     depends_on:
       control-plane:
         condition: service_healthy
+    networks:
+      main: {}
+
+  pomerium:
+    image: pomerium/pomerium:v0.32.8
+    env_file: .env
+    ports:
+      - "443:443"
+    restart: always
+    environment:
+      XDG_CACHE_HOME: /var/cache
+    volumes:
+      - pomerium-cache:/var/cache
+    networks:
+      main:
+        aliases:
+          - verify.dynamic-monitor-6165.pomerium.app
+
+  verify:
+    image: pomerium/verify:latest
+    networks:
+      main:
+        aliases:
+          - verify
+
+networks:
+  main: {}
 
   # --- Prize-mode ingress (documentation; NOT started by the default dev `up`) ---
   # In prize mode the agent reaches procurement ONLY through a Pomerium proxy. Pomerium
@@ -71,3 +122,4 @@ services:
 
 volumes:
   continuim-data:
+  pomerium-cache:

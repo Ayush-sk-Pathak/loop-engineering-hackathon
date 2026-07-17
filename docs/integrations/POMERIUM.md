@@ -76,8 +76,11 @@ console while applying this live (B5).
    | `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR` | `vendor:vendor-northstar` service-account token | step 2 |
 
 The procurement origin verifies assertion signature, issuer, audience, expiry, and
-`sub == vendor:<vendorId>`. It then verifies the signed Continuim attestation and every PO
-binding. Never authorize on an unsigned `vendorId` header.
+`sub == vendor:<vendorId>`. If a hosted service account uses a non-canonical subject, set
+`POMERIUM_VENDOR_SUBJECT_ALIASES` as a comma-separated map such as
+`vendor-northstar=sfhack`; this still binds the route to the request vendor and does not replace
+the signed Continuim attestation. It then verifies the attestation and every PO binding. Never
+authorize on an unsigned `vendorId` header.
 
 ## Required Network Boundary
 

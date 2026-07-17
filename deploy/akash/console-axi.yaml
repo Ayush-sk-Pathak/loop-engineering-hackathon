@@ -1,0 +1,84 @@
+---
+version: "2.0"
+
+services:
+  dashboard:
+    image: node:22.22.0-bookworm
+    command:
+      - sh
+      - -lc
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        npm run build
+        CONTROL_PLANE_INTERNAL_URL=http://control:4000 npm run start:web
+    expose:
+      - port: 3000
+        as: 80
+        to:
+          - global: true
+
+  control:
+    image: node:22.22.0-bookworm
+    command:
+      - sh
+      - -lc
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        npm run build
+        CONTROL_PLANE_HOST=0.0.0.0 PROCUREMENT_URL=http://procurement:4001 AUTH_MODE=development VERIFICATION_MODE=fixture npm run start:control
+    expose:
+      - port: 4000
+        to:
+          - service: dashboard
+
+  procurement:
+    image: node:22.22.0-bookworm
+    command:
+      - sh
+      - -lc
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        npm run build
+        PROCUREMENT_HOST=0.0.0.0 AUTH_MODE=development npm run start:procurement
+    expose:
+      - port: 4001
+        to:
+          - service: control
+
+profiles:
+  compute:
+    dashboard:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    control:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    procurement:
+      resources:
+        cpu: { units: 0.25 }
+        memory: { size: 512Mi }
+        storage: { size: 1Gi }
+  placement:
+    akash:
+      pricing:
+        dashboard: { denom: uact, amount: 1000 }
+        control: { denom: uact, amount: 1000 }
+        procurement: { denom: uact, amount: 1000 }
+
+deployment:
+  dashboard:
+    akash: { profile: dashboard, count: 1 }
+  control:
+    akash: { profile: control, count: 1 }
+  procurement:
+    akash: { profile: procurement, count: 1 }

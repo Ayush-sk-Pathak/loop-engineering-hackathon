@@ -53,7 +53,7 @@ Every top-level directory, what lives there, and why it exists.
 | `services/procurement/` | The protected purchase-order origin (port 4001): authorization (dev-guard or Pomerium assertion + attestation), PO creation, idempotency, nonce replay defense. | The thing being protected. It trusts nothing from the caller except cryptographic proof. |
 | `apps/dashboard/` | Next.js 15 / React 19 operations dashboard (port 3000) with a single catch-all API proxy route to the control plane. | The judge-facing UI: inventory, decision trace, vendor evidence status, metrics. |
 | `scripts/` | `demo.ts` (scripted node-failure driver), `doctor.ts` (readiness checks, local + prize), `bootstrap.sh` (setup), `githooks/pre-commit`. | Operational entry points and enforcement. |
-| `config/` | `example.env` (the canonical env template), `zero-services.json` (live Zero service lock — currently unverified), `nexla-stockout.example.json` (canonical Nexla payload). | Configuration is versioned, secrets are not (`.env.local` is git-ignored and hook-blocked). |
+| `config/` | `example.env` (the canonical env template), `zero-services.json` (live Zero service lock — currently unverified), `nexla-stockout.example.json` (canonical Nexla payload). | Configuration is versioned, secrets are not (`.env` is git-ignored and hook-blocked). |
 | `infra/pomerium/` | `vendor-policy.example.yaml` — the route policy body for the Pomerium Zero editor. | The vendor-scoped allow policy is code-reviewable even before the live route exists. |
 | `deploy/akash/` | `deploy.example.yaml` — Akash SDL v2.0 template for the three services. | Coverage-only hosting path (STRATEGY-LEDGER decision 5). |
 | `docs/` | The governed doc system (see `CLAUDE.md` table): PRD, architecture, ledger, status, current-state, roadmap, lessons, integration runbooks (`docs/integrations/*.md`), business/demo/scope docs, and this file. | Docs are split by what drifts; append-only vs replace-in-place rules per file. |
@@ -105,9 +105,9 @@ devDependencies: `typescript`, `tsx`, `concurrently`, `postcss`, `@types/*`.
 
 | Script | What it runs |
 |---|---|
-| `setup` / `bootstrap` | `sh scripts/bootstrap.sh && npm install` — Node version gate, copy `config/example.env → .env.local` (kept if present), `mkdir -p data`, `git config core.hooksPath scripts/githooks`. |
+| `setup` / `bootstrap` | `sh scripts/bootstrap.sh && npm install` — Node version gate, copy `config/example.env → .env` (kept if present), `mkdir -p data`, `git config core.hooksPath scripts/githooks`. |
 | `dev` | `concurrently` runs `dev:control`, `dev:procurement`, `dev:web` (labels control/procurement/web, colors cyan/yellow/green). |
-| `dev:control` | `node --env-file-if-exists=.env.local --watch --import tsx services/control-plane/src/server.ts` |
+| `dev:control` | `node --env-file-if-exists=.env --watch --import tsx services/control-plane/src/server.ts` |
 | `dev:procurement` | Same pattern for `services/procurement/src/server.ts`. |
 | `dev:web` | `next dev apps/dashboard --hostname 127.0.0.1 --port 3000` (invoked via `node node_modules/next/dist/bin/next` so `--env-file-if-exists` applies). |
 | `test` | `node --import tsx --test` with an **explicit file list** (seven test files — see §13). New test files must be added to this list to run in CI/pre-commit. |
@@ -121,7 +121,7 @@ devDependencies: `typescript`, `tsx`, `concurrently`, `postcss`, `@types/*`.
 | `doctor` | `tsx scripts/doctor.ts` — local readiness checks. |
 | `doctor:prize` | Same with `CONTINUIM_REQUIRE_PRIZE=1` — fails closed unless live-sponsor config exists (§14.4). |
 
-All dev/start/demo/doctor scripts use `--env-file-if-exists=.env.local`, so `.env.local`
+All dev/start/demo/doctor scripts use `--env-file-if-exists=.env`, so `.env`
 is the single local configuration surface.
 
 ---
@@ -889,7 +889,7 @@ claim (decision 0010; process in `docs/integrations/ZERO.md`).
 
 ## 11. Environment variables (complete reference)
 
-Canonical template: `config/example.env` (copied to `.env.local` by bootstrap; loaded by
+Canonical template: `config/example.env` (copied to `.env` by bootstrap; loaded by
 every npm script via `--env-file-if-exists`).
 
 | Variable | Default (in code) | Read by | Meaning |
@@ -1024,7 +1024,7 @@ tests + Next build — **the image cannot build if checks fail**), default CMD
 - `dashboard` — `start:web`, published `3000:3000`,
   `CONTROL_PLANE_INTERNAL_URL=http://control-plane:4000`, depends on control-plane
   healthy.
-All read `.env.local` via `env_file` with `AUTH_MODE=development` pinned.
+All read `.env` via `env_file` with `AUTH_MODE=development` pinned.
 
 ### 14.3 Akash template
 
@@ -1040,7 +1040,7 @@ storage is declared — state resets with the lease.
 
 `scripts/doctor.ts` prints PASS/FAIL/INFO per check and exits 1 if any *required* check
 fails. **Local mode (`npm run doctor`)** requires: Node ≥ 22, `node_modules`,
-`.env.local`, `package-lock.json`, monitor enabled; the mode checks are informational.
+`.env`, `package-lock.json`, monitor enabled; the mode checks are informational.
 **Prize mode (`npm run doctor:prize`, i.e. `CONTINUIM_REQUIRE_PRIZE=1`)** additionally
 requires: `VERIFICATION_MODE=live_zero`; `AUTH_MODE=pomerium`; the Zero service lock
 live-verified (`config/zero-services.json` `verifiedAt` set and ≥ 3 services); and all
@@ -1069,7 +1069,7 @@ read-only bit is the active enforcement; override procedure is documented in
 `config/nexla-stockout.example.json` (the canonical webhook payload; used by the curl
 check in `docs/integrations/NEXLA.md`), `infra/pomerium/vendor-policy.example.yaml`
 (allow iff user is `vendor:vendor-northstar` AND method POST AND path
-`/po/vendor-northstar`), `.env.local` (git-ignored, hook-blocked, bootstrap-created).
+`/po/vendor-northstar`), `.env` (git-ignored, hook-blocked, bootstrap-created).
 
 ---
 
