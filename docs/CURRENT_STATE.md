@@ -473,3 +473,23 @@ pending explicit human/PM decision + token (they trigger real runs on the canoni
 **Next (assigned):** E3 — wire Continuum incidents + learning pages to the real `/api/state`
 learning ledger (incident records, proven-vendor history, `recalled_history`); read-path only,
 same honesty contract as E2 (board directive `8023537d`).
+
+### 2026-07-17 — Lane B / B5 prep: PPL + runbook reconciled to the live dynamic-monitor-6165 cluster
+
+**Reconciled (docs/config, no cloud contact).** Pomerium keys landed (board directive
+`986ddc05`); B5 GO. Delivered facts broke the pre-key runbook assumptions, now fixed:
+- Vendor service-account **User ID is `sfhack`**, not `vendor:vendor-northstar`. PPL
+  `infra/pomerium/vendor-policy.example.yaml` `user.is` → `"sfhack"`; the origin reconciles it
+  via `POMERIUM_VENDOR_SUBJECT_ALIASES=vendor-northstar=sfhack` (`authorize.ts`
+  `pomeriumSubjectsForVendor`, already unit-tested at `authorize.test.ts:74`).
+- `POMERIUM_ROUTE_URL` currently points at the generic **verify** route
+  (`verify.dynamic-monitor-6165.pomerium.app`), which does not reach procurement — B5's real
+  job is a NEW private route to `http://procurement:4001` (POMERIUM.md step 3).
+- Issuer is hosted layout `authenticate.<cluster>` — flagged "validate against a real JWT".
+- Env table updated to `.env`, the real cluster host, and a `POMERIUM_VENDOR_SUBJECT_ALIASES` row.
+
+**Not done (needs the human's cloud session + secrets — flagged to PM).** Creating the live
+route, running the self-hosted proxy (`POMERIUM_ZERO_TOKEN`), and `doctor:prize` with keys
+cannot run from this secretless worktree: `doctor:prize` here shows all `POMERIUM_*` rows
+missing (`.env` absent; keys live in the main checkout). B6 (403/201 capture) stays token-gated
+after A releases.

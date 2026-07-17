@@ -9,8 +9,9 @@ The general agent and the verified vendor capability are separate machine identi
 
 - `procurement-agent`: authenticated but not allowed to call a vendor PO route. Its initial
   request produces the stage `403`.
-- `vendor:vendor-northstar`: released only after evidence passes. It can call only the
-  matching vendor path.
+- the vendor capability (live cluster User ID `sfhack`, reconciled to
+  `vendor:vendor-northstar` — see step 2): released only after evidence passes. It can call
+  only the matching vendor path.
 
 Pomerium authenticates the machine identity. Continuim's signed attestation independently
 binds the PO object. Neither layer substitutes for the other.
@@ -44,23 +45,31 @@ console while applying this live (B5).
    and the origin requires the assertion `sub` to equal it:
    - `procurement-agent` — the general agent. Authenticated but **not** granted the
      vendor route, so its request is the stage `403`.
-   - `vendor:vendor-northstar` — the vendor capability. **User ID must be exactly
-     `vendor:vendor-northstar`** (colon included) so it satisfies both the route policy
-     (`user.is`) and the origin check `sub == vendor:<vendorId>` in
-     `services/procurement/src/authorize.ts`.
+   - the vendor capability — in the live `dynamic-monitor-6165` cluster its **User ID is
+     `sfhack`** (already created; its token is `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR`). The
+     route policy matches `user.is: "sfhack"`, and the origin accepts an assertion `sub` of
+     `sfhack` on the `/po/vendor-northstar` path via
+     `POMERIUM_VENDOR_SUBJECT_ALIASES=vendor-northstar=sfhack`
+     (`services/procurement/src/authorize.ts` `pomeriumSubjectsForVendor`). If you recreate
+     the SA, reuse User ID `sfhack` or update the alias to the new ID.
    Save each token once (non-retrievable afterward): the `procurement-agent` token is
    `POMERIUM_AGENT_TOKEN`, the vendor token is `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR`.
    The agent presents them as `Authorization: Bearer Pomerium-<token>` (already wired in
    `services/control-plane/src/runtime.ts`).
 
-**3. Private route** (Routes → **New Route**).
-   - **From:** `https://po.<starter-domain>` (public).
+**3. Private route** (Routes → **New Route**) — the missing piece: the delivered
+   `POMERIUM_ROUTE_URL` currently points at the cluster's generic **verify** route
+   (`verify.dynamic-monitor-6165.pomerium.app`), which does NOT reach procurement. Create a
+   NEW route:
+   - **From:** a public host on the cluster domain, e.g.
+     `https://po.dynamic-monitor-6165.pomerium.app`.
    - **To:** `http://procurement:4001` (private origin on the proxy's network).
    - Enable **Pass Identity Headers** (config-YAML equivalent `pass_identity_headers:
      true`) so the origin receives `X-Pomerium-Jwt-Assertion`.
    - **Policy:** paste the ALLOW body of `infra/pomerium/vendor-policy.example.yaml`
-     (`user.is vendor:vendor-northstar` AND `POST` AND path `/po/vendor-northstar`).
-     Everything else is denied — that implicit deny is the `procurement-agent` `403`.
+     (`user.is "sfhack"` AND `POST` AND path `/po/vendor-northstar`). Everything else is
+     denied — that implicit deny is the general agent's `403`.
+   - Repoint `POMERIUM_ROUTE_URL` / JWKS / issuer / audience at THIS route, not `verify.`.
 
 **4. Environment** (set in the runtime `.env`, then `npm run doctor:prize`; do not commit
 secrets).
@@ -68,19 +77,20 @@ secrets).
    | Variable | Value | Source |
    |---|---|---|
    | `AUTH_MODE` | `pomerium` | flips the origin to assertion verification |
-   | `POMERIUM_ROUTE_URL` | `https://po.<starter-domain>` | route **From** URL |
-   | `POMERIUM_JWKS_URL` | `https://po.<starter-domain>/.well-known/pomerium/jwks.json` | route domain + fixed path |
-   | `POMERIUM_ISSUER` | `po.<starter-domain>` | route hostname (`iss` claim) |
-   | `POMERIUM_AUDIENCE` | `po.<starter-domain>` | route hostname (`aud` claim) |
-   | `POMERIUM_SUBJECT_PREFIX` | `vendor:` | origin builds `sub` = prefix + vendorId |
-   | `POMERIUM_AGENT_TOKEN` | `procurement-agent` service-account token | step 2 |
-   | `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR` | `vendor:vendor-northstar` service-account token | step 2 |
+   | `POMERIUM_ROUTE_URL` | the NEW procurement route From URL (e.g. `https://po.dynamic-monitor-6165.pomerium.app`) — NOT the `verify.` route | step 3 |
+   | `POMERIUM_JWKS_URL` | `https://<route-host>/.well-known/pomerium/jwks.json` | route domain + fixed path |
+   | `POMERIUM_ISSUER` | hosted layout: `authenticate.dynamic-monitor-6165.pomerium.app` — **validate against a real captured JWT `iss`** | step 1 |
+   | `POMERIUM_AUDIENCE` | the route host (JWT `aud`) — **validate against a real JWT** | step 3 |
+   | `POMERIUM_SUBJECT_PREFIX` | `vendor:` | origin builds the canonical `sub` = prefix + vendorId |
+   | `POMERIUM_VENDOR_SUBJECT_ALIASES` | `vendor-northstar=sfhack` | maps the live SA User ID to the vendor path (step 2) |
+   | `POMERIUM_AGENT_TOKEN` | the general-agent service-account token (denied identity) | step 2 |
+   | `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR` | the `sfhack` vendor service-account token | step 2 |
 
-The procurement origin verifies assertion signature, issuer, audience, expiry, and
-`sub == vendor:<vendorId>`. If a hosted service account uses a non-canonical subject, set
-`POMERIUM_VENDOR_SUBJECT_ALIASES` as a comma-separated map such as
-`vendor-northstar=sfhack`; this still binds the route to the request vendor and does not replace
-the signed Continuim attestation. It then verifies the attestation and every PO binding. Never
+The procurement origin verifies assertion signature, issuer, audience, expiry, and that
+`sub` is in the allowed set for the request vendor — the canonical `vendor:<vendorId>` plus
+any `POMERIUM_VENDOR_SUBJECT_ALIASES` (comma-separated `vendorId=subject` map, e.g.
+`vendor-northstar=sfhack`). This still binds the route to the request vendor and does not
+replace the signed Continuim attestation, which it then verifies for every PO binding. Never
 authorize on an unsigned `vendorId` header.
 
 ## Required Network Boundary
