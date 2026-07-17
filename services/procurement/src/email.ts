@@ -1,4 +1,4 @@
-import type { PurchaseOrder } from "@stockshield/contracts";
+import type { PurchaseOrder } from "@continuim/contracts";
 
 /**
  * StableEmail purchase-order receipt module (item B3).

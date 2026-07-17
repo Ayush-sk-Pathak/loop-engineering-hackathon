@@ -1,4 +1,4 @@
-import type { EvidenceKind, VendorCandidate } from "@stockshield/contracts";
+import type { EvidenceKind, VendorCandidate } from "@continuim/contracts";
 
 /**
  * One settled paid Zero service call. A single call may back several evidence

@@ -1,5 +1,5 @@
 {
-  "name": "@stockshield/zero-adapter",
+  "name": "@continuim/zero-adapter",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,6 +8,6 @@
     "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
-    "@stockshield/contracts": "*"
+    "@continuim/contracts": "*"
   }
 }

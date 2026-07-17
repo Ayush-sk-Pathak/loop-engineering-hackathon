@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { VendorCandidate } from "@stockshield/contracts";
+import type { VendorCandidate } from "@continuim/contracts";
 import {
   buildEvidenceResponse,
   handleEvidenceRequest,

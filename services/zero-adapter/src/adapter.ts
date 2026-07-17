@@ -3,7 +3,7 @@ import type {
   EvidenceSignal,
   EvidenceSource,
   VendorCandidate,
-} from "@stockshield/contracts";
+} from "@continuim/contracts";
 import type { ZeroServiceCall, ZeroTransport } from "./transport.ts";
 
 export interface EvidenceResponse {
