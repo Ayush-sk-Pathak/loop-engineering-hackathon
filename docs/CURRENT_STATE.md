@@ -195,3 +195,40 @@ enterprises, >$1M/hr for 40%). Current placeholder in `services/verification/src
 is `downtimeCostCentsPerMinute: 18_000` ($180/min, datacenter) — A7 replaces it with a cited,
 honestly-scoped value (whole-facility Ponemon average vs a scoped single-stockout fraction is
 a PM/A7 call). Primary source: https://www.ponemon.org/research/ponemon-library/security/2016-cost-of-data-center-outages.html
+### 2026-07-17 — Lane B / B3: StableEmail PO-receipt module (EMAIL_MODE=off default)
+
+**Built.** `services/procurement/src/email.ts` — an injectable email transport for
+post-201 PO receipts with two disclosed paths selected by `EMAIL_MODE` (default
+`off`): `stableemail` (Zero sponsor path; returns `messageId` + `zeroReceiptId`) and
+`fallback` (a disclosed **non-Zero** path, `sponsor:"none"`, never claimed as a Zero
+tool — decisions 0010/0014). Off-by-default returns a null transport; live modes fail
+closed when their URL/recipient env is missing (no silent degrade). Post-201
+fire-and-forget hook wired in `services/procurement/src/server.ts` after the response
+is written; dedupes by PO id so an idempotent `201` replay does not re-send. No
+`packages/contracts` change. New `email.test.ts` (off-default, fail-closed, disclosed
+fallback label, exactly-once) appended to the root `test` script.
+
+**Verified (this commit).** `npm run check` green in worktree `.claude/worktrees/B`:
+`tsc --noEmit` clean; `node:test` **18/18** pass (15 preexisting unchanged + 3 new).
+Live StableEmail send remains B7 (key-gated); this lands the module only.
+
+**Requested (board → PM).** `config/example.env` EMAIL_* lines (PM-owned hotspot) and
+a decision on where the StableEmail runbook lives (ZERO.md vs a new EMAIL.md).
+
+### 2026-07-17 — Lane B / B1: final vendor PPL + exact Pomerium Zero runbook
+
+**Documented.** `infra/pomerium/vendor-policy.example.yaml` finalized — corrected the
+misleading "replace the user id" comment: the vendor service-account **User ID must be
+set to exactly `vendor:vendor-northstar`** so it satisfies both the route policy
+(`user.is`) and the origin check `sub == vendor:<vendorId>`
+(`services/procurement/src/authorize.ts`). `docs/integrations/POMERIUM.md` expanded into
+an exact click-path/CLI runbook: self-hosted data-plane topology (hosted control plane +
+proxy in the compose/Akash network via `POMERIUM_ZERO_TOKEN`, reaching `procurement:4001`
+directly — **no separate tunnel/connector needed**), service-account steps, route
+creation (From/To + Pass Identity Headers / `pass_identity_headers: true`), policy paste,
+and a `POMERIUM_*` env-derivation table. Facts verified against pomerium.com docs:
+assertion header `X-Pomerium-Jwt-Assertion`, JWKS `/.well-known/pomerium/jwks.json`,
+service-account User ID == policy `user.is`, client `Authorization: Bearer Pomerium-<token>`.
+
+**Not yet live.** Cluster/route/service-account creation + PPL application + `403`/`201`
+capture are B5/B6 (key-gated, token-serialized); confirm any renamed console labels then.

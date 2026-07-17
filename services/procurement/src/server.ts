@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage } from "node:http";
 import { createPurchaseOrder, isPurchaseOrderRequest } from "./index.ts";
 import type { AuthorizationConfig } from "./authorize.ts";
+import { createEmailTransport, emitPurchaseOrderReceipt } from "./email.ts";
 
 const port = Number(process.env.PROCUREMENT_PORT ?? 4001);
 const host = process.env.PROCUREMENT_HOST ?? "127.0.0.1";
@@ -13,6 +14,9 @@ const config: AuthorizationConfig = {
   pomeriumAudience: process.env.POMERIUM_AUDIENCE,
   pomeriumSubjectPrefix: process.env.POMERIUM_SUBJECT_PREFIX ?? "vendor:",
 };
+
+// StableEmail receipt transport (item B3). Null when EMAIL_MODE is off (default).
+const emailer = createEmailTransport();
 
 createServer(async (request, response) => {
   response.setHeader("content-type", "application/json");
@@ -36,6 +40,13 @@ createServer(async (request, response) => {
     const result = await createPurchaseOrder(request.headers, body, config);
     response.setHeader("x-stockshield-request-id", result.requestId);
     response.writeHead(result.status).end(JSON.stringify(result));
+    // Post-201 hook: fire-and-forget the PO receipt after the response is sent, so
+    // email never blocks or breaks the HTTP result. No-op when EMAIL_MODE is off.
+    if (result.status === 201 && result.order && emailer) {
+      void emitPurchaseOrderReceipt(emailer, result.order).catch((error) => {
+        console.error("procurement: PO receipt email failed:", error);
+      });
+    }
   } catch (error) {
     response.writeHead(400).end(JSON.stringify({
       error: error instanceof Error ? error.message : "Invalid request",
