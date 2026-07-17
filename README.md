@@ -76,6 +76,7 @@ In another terminal:
 
 ```bash
 npm run demo       # consume spares and print the monitor-started loop
+npm run demo:verify # isolated concurrent Meridian + Northwind end-to-end verifier
 npm run check      # typecheck + security/loop tests
 npm run build      # check + production dashboard build
 ```

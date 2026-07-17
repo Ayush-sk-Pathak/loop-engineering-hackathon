@@ -27,6 +27,7 @@
     "start:web": "cd Continuum && npm run start",
     "start:evidence": "node --env-file-if-exists=.env --import tsx services/zero-adapter/src/server.ts",
     "demo": "node --env-file-if-exists=.env --import tsx scripts/demo.ts",
+    "demo:verify": "node --import tsx scripts/demo-verify.ts",
     "doctor": "node --env-file-if-exists=.env --import tsx scripts/doctor.ts",
     "doctor:prize": "CONTINUIM_REQUIRE_PRIZE=1 node --env-file-if-exists=.env --import tsx scripts/doctor.ts"
   },
