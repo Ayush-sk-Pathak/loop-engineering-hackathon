@@ -110,9 +110,10 @@ test("unkeyed runtime request returns 503 and never fixture-shaped evidence", as
   assert.ok(!(reply.body as Record<string, unknown>).signals);
 });
 
-test("createZeroTransport returns null without a Zero session key", () => {
+test("createZeroTransport gates the live transport on a Zero wallet session", () => {
   assert.equal(createZeroTransport({}), null);
-  assert.equal(createZeroTransport({ ZERO_API_KEY: "   " }), null);
+  assert.equal(createZeroTransport({ ZERO_PRIVATE_KEY: "   " }), null);
+  assert.ok(createZeroTransport({ ZERO_PRIVATE_KEY: "wallet-key" }));
 });
 
 test("bearer token is enforced when configured", async () => {
