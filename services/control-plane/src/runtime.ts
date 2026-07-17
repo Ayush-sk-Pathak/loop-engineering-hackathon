@@ -9,7 +9,7 @@ import type {
 import { SCHEMA_VERSION } from "@stockshield/contracts";
 import { runProcurementLoop } from "@stockshield/agent";
 import { encodeVendorAttestation } from "@stockshield/security";
-import { createEvidenceCollector, DEMO_VENDORS, evaluateEvidence } from "@stockshield/verification";
+import { createEvidenceCollector, evaluateEvidence } from "@stockshield/verification";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
@@ -32,12 +32,12 @@ export async function runStockout(
   store: DemoStore,
   stockout: StockoutRiskEvent,
 ): Promise<void> {
-  store.start(stockout.currentQty);
+  const state = store.start(stockout.currentQty);
   let acceptedOrder: ProcurementResult["order"];
   const evidenceCollector = createEvidenceCollector();
 
   try {
-    const result = await runProcurementLoop(stockout, DEMO_VENDORS, {
+    const result = await runProcurementLoop(stockout, state.vendors, {
       verification: {
         async verify(vendor) {
           const signals = await evidenceCollector.collect(vendor);

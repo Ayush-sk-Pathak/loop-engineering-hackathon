@@ -2,6 +2,7 @@ export const SCHEMA_VERSION = "1.1" as const;
 export const VERIFICATION_POLICY_VERSION = "vendor-risk-v1" as const;
 
 export type Currency = "USD";
+export type ScenarioId = "datacenter" | "apparel";
 export type EvidenceMode = "fixture" | "live_zero";
 export type VerificationStatus =
   | "eligible"
@@ -186,6 +187,12 @@ export interface DemoMetrics {
 
 export interface DemoState {
   runStatus: "idle" | "running" | "complete" | "failed";
+  scenario: {
+    id: ScenarioId;
+    label: string;
+    industry: string;
+    trigger: string;
+  };
   inventory: {
     sku: string;
     name: string;

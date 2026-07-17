@@ -68,3 +68,28 @@ integration runbooks under `docs/integrations/` (ZERO, POMERIUM, NEXLA, AKASH), 
 3-minute script, `CONTRIBUTING.md`. Decisions 0006–0010 recorded in `logs/DECISIONS.jsonl`.
 Pending on-site: Zero service lock (`config/zero-services.json` empty), Pomerium route +
 service accounts, StableEmail adapter, Nexla FlexFlow config, Akash deploy (P2).
+
+### 2026-07-17 — Integration: branches merged, hero/subset reframe, horizontal scenario engine
+
+**Merged.** `origin/main` (fd7cbe6: BUSINESS, PRODUCT_SCOPE, CASE_STUDIES, client mockup)
+into `dev`; cherry-picked `toolsused.md` and the user-authored `vision.md` from
+`origin/ayush` (that branch shares no git history with dev — a full merge would have
+deleted the codebase, so files were adopted instead).
+
+**Reframed (decision 0013, `logs/DECISIONS.jsonl`).** The hero across all docs is the
+autonomous emergency-procurement rescue loop; vendor-risk/fraud defense is its built-in
+trust subset. Applied to README, PRD, PROJECT_STATUS, STRATEGY-LEDGER (entry 13),
+BUSINESS, CASE_STUDIES, PRODUCT_SCOPE, mockup titles. Contradictions with settled
+decisions corrected in place: PRODUCT_SCOPE mock-registry mitigation (0003), Fillmore
+stretch (0004), toolsused.md LLM-as-decider and Resend-first (0008/0004 — reconciliation
+notes added; see also `docs/blueprint-reconciliation.md`, decision 0014).
+
+**Built.** Horizontal scenario-profile engine (`services/verification/src/scenarios.ts`):
+`datacenter` (default, DDR5-ECC-64GB + existing vendor pair) and `apparel`
+(NAVY-DYE-20L, vendor-pacificdye typosquat vs vendor-meridian) run the identical loop;
+`POST /api/demo/scenario` + dashboard toggle (disabled mid-run); scenario block on
+`DemoState` (SCHEMA_VERSION unchanged, additive). New `scenarios.test.ts`.
+
+**Verified (this commit).** `npm test` 11/11 pass; `npm run typecheck` exit 0;
+`npm run build` exit 0. DEMO.md gained the optional "same loop, any industry" closer;
+ROADMAP scenario-engine box ticked.

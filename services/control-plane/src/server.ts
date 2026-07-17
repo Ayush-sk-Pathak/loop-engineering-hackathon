@@ -46,6 +46,26 @@ createServer(async (request, response) => {
     response.writeHead(200).end(JSON.stringify(store.reset()));
     return;
   }
+  if (request.method === "POST" && request.url === "/api/demo/scenario") {
+    if (store.read()?.runStatus === "running") {
+      response.writeHead(409).end(JSON.stringify({ error: "A procurement run is already active" }));
+      return;
+    }
+    try {
+      const body = await readJson(request);
+      const id = (body as { id?: unknown })?.id;
+      if (id !== "datacenter" && id !== "apparel") {
+        response.writeHead(400).end(JSON.stringify({ error: "Unknown scenario id" }));
+        return;
+      }
+      response.writeHead(200).end(JSON.stringify(store.reset(id)));
+    } catch (error) {
+      response.writeHead(400).end(JSON.stringify({
+        error: error instanceof Error ? error.message : "Invalid request",
+      }));
+    }
+    return;
+  }
   if (request.method === "POST" && request.url === "/api/demo/run") {
     if (store.read()?.runStatus === "running") {
       response.writeHead(409).end(JSON.stringify({ error: "Demo is already running" }));

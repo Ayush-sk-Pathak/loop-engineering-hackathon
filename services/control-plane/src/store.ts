@@ -1,8 +1,13 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import type { DecisionEvent, DemoState, PurchaseOrder } from "@stockshield/contracts";
-import { DEMO_VENDORS } from "@stockshield/verification";
+import type { DecisionEvent, DemoState, PurchaseOrder, ScenarioId } from "@stockshield/contracts";
+import { SCENARIOS } from "@stockshield/verification";
+
+function defaultScenarioId(): ScenarioId {
+  const configured = process.env.SCENARIO;
+  return configured && configured in SCENARIOS ? (configured as ScenarioId) : "datacenter";
+}
 
 export class DemoStore {
   private readonly database: DatabaseSync;
@@ -25,31 +30,38 @@ export class DemoStore {
       );
     `);
     const current = this.read();
-    if (!current || !current.monitor || current.inventory.sku !== "DDR5-ECC-64GB") {
+    if (!current || !current.monitor || !current.scenario) {
       this.reset();
     }
   }
 
-  reset(): DemoState {
+  reset(scenarioId?: ScenarioId): DemoState {
+    const scenario = SCENARIOS[scenarioId ?? this.read()?.scenario?.id ?? defaultScenarioId()];
     this.database.exec("DELETE FROM decision_events");
     const state: DemoState = {
       runStatus: "idle",
+      scenario: {
+        id: scenario.id,
+        label: scenario.label,
+        industry: scenario.industry,
+        trigger: scenario.trigger,
+      },
       inventory: {
-        sku: "DDR5-ECC-64GB",
-        name: "64 GB DDR5 ECC Memory Module",
-        currentQty: 5,
-        threshold: 2,
+        sku: scenario.item.sku,
+        name: scenario.item.displayName,
+        currentQty: scenario.item.currentQty,
+        threshold: scenario.item.threshold,
         inboundQty: 0,
-        critical: true,
-        downtimeCostCentsPerMinute: 18_000,
+        critical: scenario.item.critical,
+        downtimeCostCentsPerMinute: scenario.item.downtimeCostCentsPerMinute,
       },
       monitor: {
         active: process.env.MONITOR_ENABLED !== "0",
-        watchedSkus: ["DDR5-ECC-64GB"],
+        watchedSkus: [scenario.item.sku],
         lastCheckAt: null,
       },
       events: [],
-      vendors: DEMO_VENDORS,
+      vendors: scenario.vendors,
       blacklistedVendorIds: [],
       metrics: {
         atRiskPoValuePreventedCents: 0,

@@ -58,6 +58,13 @@ Point to the two numbers: paid evidence cost and **$2,400 at-risk PO value preve
 lacked authority. Zero makes fresh evidence economical. Pomerium makes the result
 enforceable.”
 
+## Optional Closer — Same Loop, Any Industry (only if under time)
+
+Flip the dashboard scenario dropdown from **datacenter** to **apparel** (navy dye,
+halted production line) and say one line: “Same engine, different industry — the item and
+vendors are seed data, the loop and its authorization boundary never change.” Do not run a
+second full loop on stage; the toggle plus one sentence is the whole beat.
+
 ## Claims To Avoid
 
 - “We paid the supplier.” The demo issues a PO.

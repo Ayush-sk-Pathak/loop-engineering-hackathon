@@ -7,7 +7,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: #f5f6f7; }
+body { margin: 0; background: #f5f6f7; overflow-x: hidden; }
 button { font: inherit; letter-spacing: 0; }
 main { min-height: 100vh; }
 
@@ -30,6 +30,8 @@ main { min-height: 100vh; }
 .actions { gap: 9px; }
 .mode { padding: 6px 9px; border: 1px solid #d7dadd; color: #686d73; font-size: 11px; font-weight: 700; text-transform: uppercase; border-radius: 4px; }
 .mode.live_zero { color: #0e6c47; background: #e7f6ef; border-color: #a8dbc4; }
+.scenarioSelect { height: 36px; padding: 0 8px; background: #fff; border: 1px solid #cfd3d7; border-radius: 5px; color: #33383d; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.scenarioSelect:disabled { cursor: wait; opacity: .55; }
 .iconButton, .primaryButton { height: 36px; border: 1px solid #cfd3d7; border-radius: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .iconButton { width: 36px; background: #fff; color: #555b61; }
 .primaryButton { gap: 7px; padding: 0 14px; background: #17191c; color: #fff; border-color: #17191c; font-weight: 700; }
@@ -116,12 +118,13 @@ footer { padding: 0 28px 18px; display: flex; gap: 18px; color: #8b9095; font-si
 
 @media (max-width: 720px) {
   .topbar { height: auto; padding: 14px 16px; align-items: flex-start; }
-  .brand > div span, .mode { display: none; }
-  .primaryButton { padding: 0 10px; }
+  .brand > div, .mode { display: none; }
+  .actions { min-width: 0; margin-left: auto; }
+  .primaryButton { padding: 0 9px; font-size: 12px; white-space: nowrap; }
   .metricBand { padding: 14px 16px; gap: 16px 10px; }
   .monitorStrip { padding: 8px 16px; flex-wrap: wrap; gap: 6px 9px; }
   .monitorStrip span { padding-left: 0; border-left: 0; }
-  .metric strong { font-size: 15px; }
+  .metric strong { font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
   .metric small { display: none; }
   .workspace { padding: 14px 16px; grid-template-columns: 1fr; }
   .vendorPanel { grid-column: auto; }

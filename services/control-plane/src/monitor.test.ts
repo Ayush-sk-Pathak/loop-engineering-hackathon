@@ -6,6 +6,12 @@ import { checkInventoryOnce, type InventoryMonitorStore } from "./monitor.ts";
 function state(overrides: Partial<DemoState> = {}): DemoState {
   return {
     runStatus: "idle",
+    scenario: {
+      id: "datacenter",
+      label: "On-prem compute spares",
+      industry: "Regulated datacenter",
+      trigger: "Node failure drains the critical spares pool",
+    },
     inventory: {
       sku: "DDR5-ECC-64GB",
       name: "64 GB DDR5 ECC Memory Module",

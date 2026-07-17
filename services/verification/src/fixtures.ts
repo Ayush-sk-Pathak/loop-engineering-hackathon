@@ -49,7 +49,7 @@ export const DEMO_VENDORS: VendorCandidate[] = [
 ];
 
 export function fixtureEvidence(vendor: VendorCandidate): EvidenceSignal[] {
-  if (vendor.id === "vendor-lookalike") {
+  if (vendor.id === "vendor-lookalike" || vendor.id === "vendor-pacificdye") {
     return [
       { kind: "company_identity_match", value: false, outcome: "fail", detail: "No matching company profile", source: source("fixture-company") },
       { kind: "domain_age_days", value: 14, outcome: "fail", detail: "Registered 14 days ago", source: source("fixture-rdap") },
@@ -60,9 +60,10 @@ export function fixtureEvidence(vendor: VendorCandidate): EvidenceSignal[] {
       { kind: "typosquat_detected", value: true, outcome: "fail", detail: "Lookalike spelling detected", source: source("fixture-domain") },
     ];
   }
+  const domainAgeDays = vendor.id === "vendor-meridian" ? 2200 : 1840;
   return [
     { kind: "company_identity_match", value: true, outcome: "pass", detail: "Company and domain agree", source: source("fixture-company") },
-    { kind: "domain_age_days", value: 1840, outcome: "pass", detail: "Established domain history", source: source("fixture-rdap") },
+    { kind: "domain_age_days", value: domainAgeDays, outcome: "pass", detail: "Established domain history", source: source("fixture-rdap") },
     { kind: "web_presence", value: true, outcome: "pass", detail: "Consistent business footprint", source: source("fixture-web") },
     { kind: "news_presence", value: true, outcome: "pass", detail: "Independent trade mentions found", source: source("fixture-news") },
     { kind: "contact_reachable", value: true, outcome: "pass", detail: "Published contact channel responded", source: source("fixture-phone") },

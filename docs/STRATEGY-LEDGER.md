@@ -9,11 +9,13 @@ supersede to `logs/DECISIONS.jsonl`.**
 
 ## Current front (2026-07-17) — where we are right now
 
-StockShield's autonomous critical-spares slice and schema v1.1 are implemented. The active
+StockShield's autonomous critical-spares slice and schema v1.1 are implemented, and the
+horizontal scenario engine (datacenter + apparel profiles, one loop) is landing. The active
 front is the live Zero evidence adapter plus the Pomerium deny/allow path. Run
-`npm run doctor:prize` before recording. The product is vendor-risk authorization, not a
-criminal fraud verdict. The two-branch demand-audit design is approved but deliberately
-deferred until the core sponsor proof is green.
+`npm run doctor:prize` before recording. The hero is the autonomous emergency-procurement
+rescue; vendor-risk authorization is its trust subset (decision 13), not a criminal fraud
+verdict. The two-branch demand-audit design is approved but deliberately deferred until the
+core sponsor proof is green.
 
 ## The load-bearing decisions (do not silently reverse)
 
@@ -105,6 +107,16 @@ deferred until the core sponsor proof is green.
     capability, protected mutation, and queue UI. Implement it only after live Zero and
     Pomerium proof is green; never imply buyer evidence was paid through Zero while it is
     fixture-only. DECISIONS `0012`.
+
+13. **The hero is the autonomous emergency-procurement loop; fraud defense is its built-in
+    trust subset; the engine is horizontal (2026-07-17).** Explicit user direction: the
+    rescue story leads every doc and pitch, and vendor-risk verification is the tool that
+    makes the autonomy safe — never the headline. The loop is scenario-agnostic: two locked
+    profiles (datacenter compute spares, apparel dye — `PRODUCT_SCOPE.md §3a`) run through
+    the identical engine behind one dashboard toggle. **Rejected, do not re-propose:**
+    renaming to ProcureLoop (StockShield stands, `0006`); Fillmore PO drafting (`0004`
+    stands); a mocked verified-registry paid via Zero (`0003` stands); fraud-first framing.
+    DECISIONS `0013`.
 
 ## Standing directives & envelope
 

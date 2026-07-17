@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { SCHEMA_VERSION, type DecisionPhase, type DemoState } from "@stockshield/contracts";
+import { SCHEMA_VERSION, type DecisionPhase, type DemoState, type ScenarioId } from "@stockshield/contracts";
 import {
   Activity,
   Ban,
   Check,
   CircleDollarSign,
+  Droplets,
   MemoryStick,
   PackageCheck,
   RefreshCw,
@@ -17,6 +18,11 @@ import {
 } from "lucide-react";
 
 const API = "/api/control";
+
+const scenarioOptions: { id: ScenarioId; label: string }[] = [
+  { id: "datacenter", label: "On-prem compute spares" },
+  { id: "apparel", label: "Sock line dye supply" },
+];
 
 const phaseIcon: Partial<Record<DecisionPhase, React.ReactNode>> = {
   authorization_denied: <Ban size={15} />,
@@ -56,11 +62,21 @@ export function OperationsDashboard() {
     await refresh();
   };
 
+  const selectScenario = async (id: string) => {
+    await fetch(`${API}/api/demo/scenario`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    await refresh();
+  };
+
   if (!state) {
     return <main className="loading">{connectionError ? "Control plane unavailable" : "Loading operations state..."}</main>;
   }
 
   const isRunning = state.runStatus === "running";
+  const ItemIcon = state.scenario.id === "apparel" ? Droplets : MemoryStick;
   const isAtRisk = state.inventory.currentQty <= state.inventory.threshold && state.inventory.inboundQty === 0;
   const lastCheckSeconds = state.monitor.lastCheckAt
     ? Math.max(0, Math.floor((Date.now() - Date.parse(state.monitor.lastCheckAt)) / 1_000))
@@ -79,6 +95,15 @@ export function OperationsDashboard() {
           <div><strong>StockShield</strong><span>Procurement control plane</span></div>
         </div>
         <div className="actions">
+          <select
+            className="scenarioSelect"
+            value={state.scenario.id}
+            disabled={isRunning}
+            onChange={(event) => void selectScenario(event.target.value)}
+            aria-label="Demo scenario"
+          >
+            {scenarioOptions.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}
+          </select>
           <span className={`mode ${state.metrics.verificationMode}`}>{state.metrics.verificationMode === "fixture" ? "Fixture evidence" : "Live Zero"}</span>
           <button className="iconButton" onClick={() => command("/api/demo/reset")} title="Reset demo" aria-label="Reset demo"><RefreshCw size={17} /></button>
           <button
@@ -86,7 +111,7 @@ export function OperationsDashboard() {
             onClick={() => command("/api/demo/consume")}
             disabled={isRunning || state.inventory.currentQty === 0 || state.inventory.inboundQty > 0}
           >
-            <ServerCrash size={16} />{isRunning ? "Agent responding" : "Simulate node failure"}
+            <ServerCrash size={16} />{isRunning ? "Agent responding" : state.scenario.id === "apparel" ? "Consume dye stock" : "Simulate node failure"}
           </button>
         </div>
       </header>
@@ -96,6 +121,7 @@ export function OperationsDashboard() {
         <strong>{state.monitor.active ? "Inventory monitor active" : "Inventory monitor disabled"}</strong>
         <span>{state.monitor.watchedSkus.length} critical SKU watched</span>
         <span>{lastCheckSeconds === null ? "Awaiting first check" : `Checked ${lastCheckSeconds}s ago`}</span>
+        <span>{state.scenario.industry}: {state.scenario.trigger}</span>
       </div>
 
       {connectionError && <div className="connectionBanner">Control plane connection interrupted. Retrying.</div>}
@@ -123,9 +149,9 @@ export function OperationsDashboard() {
 
       <div className="workspace">
         <section className="inventoryPanel">
-          <div className="sectionHeading"><div><span>Critical spares pool</span><h1>{state.inventory.name}</h1></div><MemoryStick size={20} /></div>
+          <div className="sectionHeading"><div><span>{state.scenario.label}</span><h1>{state.inventory.name}</h1></div><ItemIcon size={20} /></div>
           <div className="productVisual">
-            <MemoryStick size={112} strokeWidth={1.1} aria-label="ECC memory module" />
+            <ItemIcon size={112} strokeWidth={1.1} aria-label={state.inventory.name} />
             <span className="sku">{state.inventory.sku}</span>
           </div>
           <div className="stockRow">

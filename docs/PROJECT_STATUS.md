@@ -2,9 +2,12 @@
 
 **Phase:** autonomous local vertical slice hardened; live sponsor integrations in progress.
 
-- **Product:** autonomous critical-spares recovery with policy-enforced procurement, not
-  general fraud detection.
-- **Pitch:** “An agent may be wrong, but it cannot be unauthorized.”
+- **Product:** autonomous emergency procurement for any critical supply — the rescue loop
+  is the hero; vendor-risk/fraud defense is its built-in trust subset (decision 13).
+- **Pitch:** the shortage is noticed and fixed at machine speed; “an agent may be wrong,
+  but it cannot be unauthorized.”
+- **Horizontal:** scenario-profile engine — datacenter spares (default) + apparel dye run
+  the identical loop via a dashboard toggle (`PRODUCT_SCOPE.md §3a`).
 - **Local setup:** `npm run setup`, `npm run doctor`, `npm run dev`.
 - **Quality gate:** `npm run check`; production build via `npm run build`.
 - **Schema:** v1.1 frozen across stockout, evidence, attestation, PO, and decision events.

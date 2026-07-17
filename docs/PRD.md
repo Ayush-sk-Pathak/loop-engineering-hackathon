@@ -5,18 +5,30 @@
 
 ## Product
 
-StockShield is a policy-enforced autonomous procurement loop for critical-infrastructure
-stockout emergencies.
+StockShield is an autonomous emergency-procurement loop for critical-supply stockouts in
+any industry. The hero story is the rescue: a shortage that threatens operations is
+detected by an always-on monitor and resolved — sourced, verified, ordered — at machine
+speed with no human in the trigger path. The fraud-defense/vendor-risk layer is the
+built-in tool that makes that autonomy safe to deploy, not the headline product.
 
 > An agent may be wrong, but it cannot be unauthorized.
 
-An always-on monitor observes the spares pool and wakes the agent at a critical threshold.
+An always-on monitor observes the supply pool and wakes the agent at a critical threshold.
 The agent evaluates vendor candidates, buys current evidence, and replans. A deterministic
 verifier can mint a constrained vendor capability. Pomerium enforces the machine identity at
 the network boundary, and the private origin independently verifies the signed capability and
 PO object bindings.
 
-This is not a general fraud detector. It is a vendor-risk control and authorization system.
+This is not a general fraud detector. Vendor-risk control and authorization are the trust
+subset inside the procurement loop.
+
+## Horizontal Scenarios
+
+The engine is scenario-agnostic: an inventory item plus a disclosed vendor pair is seed
+data, not code. Two locked scenarios (`docs/PRODUCT_SCOPE.md §3a`) run through the
+identical loop behind a dashboard toggle: **datacenter** (on-prem compute spares,
+default demo) and **apparel** (navy dye for a halted production line). Flipping the
+scenario on stage is the "same loop, any industry" closer.
 
 ## Judging Thesis
 

@@ -11,6 +11,7 @@
 - [x] Add one-command setup, local/prize doctor, Docker build, and owner workflow (2026-07-17)
 - [x] Add real Nexla-compatible webhook ingress (2026-07-17)
 - [x] Add autonomous critical-inventory monitor and no-run-button demo path (2026-07-17)
+- [x] Add horizontal scenario-profile engine (datacenter + apparel) with dashboard toggle (2026-07-17)
 
 ## Prize-Critical Integration
 

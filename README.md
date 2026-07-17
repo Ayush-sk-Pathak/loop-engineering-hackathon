@@ -1,23 +1,35 @@
 # StockShield
 
-Autonomous emergency procurement for critical infrastructure, enforced outside the model.
+Autonomous emergency procurement for any critical supply. When a shortage threatens
+operations — a regulated datacenter down to its last ECC spare, or a textile line hours
+from halting without dye — StockShield notices on its own, sources backup vendors, and
+buys the fix at machine speed. That rescue loop is the product. Built into every pass of
+it is the reason you can turn it on: a fraud-defense trust layer that verifies every
+vendor with independently purchased evidence before a cent can move.
 
+> The rescue is the hero. The trust layer is the tool that makes it safe.
 > An agent may be wrong, but it cannot be unauthorized.
 
-StockShield watches a critical-spares pool, detects a shortage without a human pressing
+StockShield watches a critical-supply pool, detects a shortage without a human pressing
 “run,” evaluates candidate vendors, purchases current evidence through Zero.xyz, and requests
 a purchase order through a Pomerium-protected route. Verification produces a vendor-scoped,
 quote-scoped, payee-bound, amount-limited, expiring capability. The procurement origin
-verifies that capability independently.
+verifies that capability independently. The engine is scenario-agnostic: two locked demo
+scenarios (on-prem compute spares and apparel dye — `docs/PRODUCT_SCOPE.md §3a`) run through
+the identical loop behind one dashboard toggle.
 
 ![StockShield architecture](docs/assets/architecture.svg)
 
 ## Why This Exists
 
-When a datacenter has no replacement memory left, every minute of delay can prolong an
-incident. Emergency buying is useful only if speed does not let untrusted vendor input become
-spending authority. The same model that reads that input should not be the final authority on
-whether company spend is committed.
+When a datacenter has no replacement memory left, every minute of delay prolongs an
+incident; when a production line runs out of one input, downtime is priced by the hour.
+Human procurement — noticing the failure, hunting supplier lists, chasing quotes — is
+exactly the latency an emergency cannot afford, so the fix has to be autonomous. But speed
+is dangerous: the rushed emergency reorder is precisely how money gets wired to a lookalike
+supplier. Emergency buying is useful only if speed does not let untrusted vendor input
+become spending authority. The same model that reads that input should not be the final
+authority on whether company spend is committed.
 
 StockShield separates those responsibilities:
 
