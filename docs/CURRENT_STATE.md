@@ -524,3 +524,13 @@ Against an isolated fixture/development stack (ports 4500/4501/4502), the produc
 accepted `gpu-07` / `node_offline`, the monitor started the real loop, and SQLite passed
 `PRAGMA integrity_check` (`ok`) with `demo_state=1`, `decision_events=14`, and `incidents=1`.
 The recovery trace reached a signed PO and scheduled inbound supply. No paid provider call was made.
+### 2026-07-17 — Lane C: demo choreography compressed (40-min emergency)
+
+**C7 (compressed) per directive `bfe48689`.** Collapsed the timed demo from **×2 to ×1**
+(single rehearsal → immediate recording). **Deviation logged:** ROADMAP "run the timed demo
+twice" is intentionally reduced to once under the 40-minute compression. Updated `docs/DEMO.md`
+with a compressed recording plan + honest fallbacks: Nexla live proof is now optional (monitor
+path with `source:monitor` disclosure, PRD §14.3, if no console operator appears — C5 console
+build stays human-blocked); T+15 fixture fallback if the Zero lock hasn't landed. Kept proofs:
+Zero receipts + Pomerium denial. **C6 renders CUT** (the "Illustrative incident rate" label is
+unchanged; no explainer render).

@@ -1,5 +1,19 @@
 # Three-Minute Demo
 
+## Recording plan (compressed — 40-min emergency, 2026-07-17)
+
+Per PM directive `bfe48689`: **one rehearsal, then record immediately** — timed ×2 collapsed
+to **×1** (deviation logged in CURRENT_STATE). Keep, never cut: **Zero receipts + Pomerium
+denial**. Cut for this recording: C6 renders (the "Illustrative incident rate" label stays
+unchanged), StableEmail/Akash/StablePhone/demand-audit.
+
+Fallbacks, honestly labeled (never fake a sponsor surface):
+- **Nexla live is optional.** If no console operator appears, use the local monitor path and
+  narrate it as the disclosed local monitor (`source: monitor`, sanctioned by PRD §14.3) — do
+  not imply a live Nexla flow.
+- **T+15 fixture fallback.** If the Zero service lock has not landed, record with `Fixture
+  evidence` + whatever Pomerium proof exists, labeled as such, rather than miss the recording.
+
 ## Before Recording
 
 Run this whole checklist before recording **and again before every denial rehearsal** — the
