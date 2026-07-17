@@ -132,3 +132,32 @@ on the isolated lane-C worktree stack (control `:4400`, procurement `:4401`,
 scheduled. Evidence recorded in `docs/integrations/NEXLA.md` (this commit). This is the
 local ingress path only — **not** Nexla-integration proof; the live FlexFlow flow (ROADMAP
 "prove the event ID end to end") is still open and key-gated.
+### 2026-07-17 — A1: Zero evidence adapter service (lane A, `feat/zero-live`)
+
+**Built.** New `services/zero-adapter` workspace (`@stockshield/zero-adapter`) — the small
+HTTP adapter `services/verification/src/collector.ts` already POSTs to in `live_zero` mode.
+`src/transport.ts` defines the `ZeroTransport` seam and `createZeroTransport(env)`, which
+returns `null` unless a real Zero session (`ZERO_API_KEY`) is present. `src/adapter.ts`
+holds `buildEvidenceResponse` (flattens settled Zero calls into normalized
+`EvidenceSignal[]`, reusing one `receiptId`/cost across every signal a paid call backs, and
+rejecting a paid call with no receipt) and the pure `handleEvidenceRequest` (bearer check
+on `ZERO_EVIDENCE_ADAPTER_TOKEN`, routing `POST /v1/evidence` + `GET /health`);
+`src/server.ts` boots it on `ZERO_EVIDENCE_ADAPTER_PORT` (default 4100 — the canonical
+`ZERO_EVIDENCE_ADAPTER_URL` already in `config/example.env`). With no Zero session a runtime
+request returns **503 "Zero session not configured"** — it never fabricates fixture-shaped
+`live_zero` data (STRATEGY-LEDGER decision 0010). The live catalog (exact service
+IDs/prices/receipts) is settled later in item A4; `LiveZeroTransport.gather` refuses until
+then rather than invent evidence.
+
+**Verified (this commit).** `npm run check` green in worktree A — `tsc --noEmit` clean,
+`npm test` 26/26 pass (15 pre-existing + 11 new in
+`services/zero-adapter/src/adapter.test.ts`, all using a fake injected Zero transport).
+Booted standalone on port 4110: `GET /health` → `{"ok":true,"sessionConfigured":false}`;
+unkeyed `POST /v1/evidence` → HTTP 503 `{"error":"Zero session not configured"}` (no
+`signals`). Root `package.json` `test` script appended with the new test file (end of list,
+per lane-A contract).
+
+**Open.** ROADMAP "Zero evidence adapter with real receipt IDs" (line 19) stays unticked —
+real receipts require A4 live settlement against a funded wallet; A1 delivers only the
+contract + receipt-reuse plumbing, fake-transport verified. `config/example.env` needs a
+`ZERO_API_KEY` line (the Zero session gate) — posted to the board for PM to land.

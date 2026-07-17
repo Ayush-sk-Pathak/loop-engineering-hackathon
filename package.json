@@ -16,7 +16,7 @@
     "dev:control": "node --env-file-if-exists=.env.local --watch --import tsx services/control-plane/src/server.ts",
     "dev:procurement": "node --env-file-if-exists=.env.local --watch --import tsx services/procurement/src/server.ts",
     "dev:web": "node --env-file-if-exists=.env.local node_modules/next/dist/bin/next dev apps/dashboard --hostname 127.0.0.1 --port 3000",
-    "test": "node --import tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/verification/src/scenarios.test.ts services/agent/src/loop.test.ts services/agent/src/learning.test.ts services/procurement/src/authorize.test.ts services/procurement/src/index.test.ts services/control-plane/src/monitor.test.ts services/control-plane/src/store.test.ts",
+    "test": "node --import tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/verification/src/scenarios.test.ts services/agent/src/loop.test.ts services/agent/src/learning.test.ts services/procurement/src/authorize.test.ts services/procurement/src/index.test.ts services/control-plane/src/monitor.test.ts services/control-plane/src/store.test.ts services/zero-adapter/src/adapter.test.ts",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
     "build:web": "node --env-file-if-exists=.env.local node_modules/next/dist/bin/next build apps/dashboard",
