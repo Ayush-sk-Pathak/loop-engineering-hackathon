@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { PurchaseOrderRequest, VendorAttestation } from "@continuim/contracts";
 import { encodeVendorAttestation, signVendorAttestation } from "@continuim/security";
-import { authorizePurchase } from "./authorize.ts";
+import { authorizePurchase, pomeriumSubjectsForVendor } from "./authorize.ts";
 
 const secret = "test-secret";
 const attestation = signVendorAttestation({
@@ -68,5 +68,15 @@ test("development authorization requires a valid request-bound attestation", asy
       mode: "development",
       attestationSecret: secret,
     }),
+  );
+});
+
+test("pomerium subject aliases preserve vendor path binding", () => {
+  assert.deepEqual(
+    pomeriumSubjectsForVendor("vendor-northstar", {
+      pomeriumSubjectPrefix: "vendor:",
+      pomeriumVendorSubjectAliases: "vendor-northstar=sfhack,vendor-other=vendor:other",
+    }),
+    ["vendor:vendor-northstar", "sfhack"],
   );
 });

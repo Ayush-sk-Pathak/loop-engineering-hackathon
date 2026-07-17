@@ -615,7 +615,7 @@ Live Zero: `VERIFICATION_MODE=live_zero`, `ZERO_EVIDENCE_ADAPTER_URL` (example
 Pomerium: `AUTH_MODE=pomerium`, `POMERIUM_ROUTE_URL`, `POMERIUM_JWKS_URL`,
 `POMERIUM_ISSUER`, `POMERIUM_AUDIENCE`, `POMERIUM_SUBJECT_PREFIX=vendor:`,
 `POMERIUM_AGENT_TOKEN`, `POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR`.
-`.env.local` is created from `config/example.env` by `npm run setup` and is never
+`.env` is created from `config/example.env` by `npm run setup` and is never
 committed.
 
 ---

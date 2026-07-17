@@ -141,6 +141,7 @@ export type DecisionPhase =
   | "authorization_denied"
   | "replanned"
   | "verifying"
+  | "explained"
   | "ineligible"
   | "blacklisted"
   | "attested"

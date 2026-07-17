@@ -16,6 +16,7 @@ export interface AuthorizationConfig {
   pomeriumIssuer?: string;
   pomeriumAudience?: string;
   pomeriumSubjectPrefix?: string;
+  pomeriumVendorSubjectAliases?: string;
 }
 
 export interface AuthorizationResult {
@@ -66,8 +67,30 @@ async function verifyPomeriumIdentity(
     { issuer: config.pomeriumIssuer, audience: config.pomeriumAudience },
   );
   if (!payload.sub) throw new Error("Pomerium assertion has no subject");
-  const expected = `${config.pomeriumSubjectPrefix ?? "vendor:"}${request.vendorId}`;
-  if (payload.sub !== expected) throw new Error("Pomerium subject does not match vendor path");
+  const allowedSubjects = pomeriumSubjectsForVendor(request.vendorId, config);
+  if (!allowedSubjects.includes(payload.sub)) throw new Error("Pomerium subject does not match vendor path");
+}
+
+export function pomeriumSubjectsForVendor(
+  vendorId: string,
+  config: Pick<AuthorizationConfig, "pomeriumSubjectPrefix" | "pomeriumVendorSubjectAliases">,
+): string[] {
+  const canonical = `${config.pomeriumSubjectPrefix ?? "vendor:"}${vendorId}`;
+  const aliases = parseVendorSubjectAliases(config.pomeriumVendorSubjectAliases)[vendorId] ?? [];
+  return [canonical, ...aliases];
+}
+
+function parseVendorSubjectAliases(value: string | undefined): Record<string, string[]> {
+  if (!value) return {};
+  return value.split(",").reduce<Record<string, string[]>>((aliases, pair) => {
+    const separator = pair.indexOf("=");
+    if (separator === -1) return aliases;
+    const vendorId = pair.slice(0, separator).trim();
+    const subject = pair.slice(separator + 1).trim();
+    if (!vendorId || !subject) return aliases;
+    aliases[vendorId] = [...(aliases[vendorId] ?? []), subject];
+    return aliases;
+  }, {});
 }
 
 function singleHeader(value: string | string[] | undefined): string | undefined {

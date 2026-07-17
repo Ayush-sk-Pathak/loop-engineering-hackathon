@@ -11,11 +11,11 @@ node -e '
   }
 '
 
-if [ ! -f .env.local ]; then
-  cp config/example.env .env.local
-  echo "setup: created .env.local from config/example.env"
+if [ ! -f .env ]; then
+  cp config/example.env .env
+  echo "setup: created .env from config/example.env"
 else
-  echo "setup: kept existing .env.local"
+  echo "setup: kept existing .env"
 fi
 
 mkdir -p data
