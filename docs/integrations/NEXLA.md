@@ -7,13 +7,49 @@ Local development uses an always-on inventory monitor that emits the identical v
 shape with `source: "monitor"`. This proves the autonomous control flow but is not Nexla
 integration proof. Prize proof still requires the Nexla event ID below.
 
-## Flow
+## FlexFlow design
 
-1. Use a Nexla webhook source for critical-spares inventory updates.
-2. Transform the source record into schema v1.1.
-3. Filter for `currentQty <= threshold`.
-4. Send the transformed record to `POST /api/events/stockout` on the control plane.
-5. Add `X-StockShield-Webhook-Secret` when `NEXLA_WEBHOOK_SECRET` is configured.
+One FlexFlow turns a real-time critical-spares inventory stream into a stockout trigger:
+a raw inventory record is normalized to the frozen v1.1 `StockoutRiskEvent` contract, gated
+to genuine stockouts, and delivered to the control plane's authenticated webhook. Four
+stages, source → transform → filter → destination:
+
+**1. Source — webhook (push) data source.** Critical-spares updates arrive as records on a
+Nexla webhook source (one record per SKU observation: SKU, on-hand quantity, reorder point,
+site, observed-at timestamp). Nexla stamps each record with a run/record identifier — that
+identifier is what the transform carries through as `eventId`, so the *same* ID appears in
+the Nexla flow log and in the StockShield decision trail (this is the "prove the event ID
+end to end" claim).
+
+**2. Transform — attribute transform to schema v1.1.** Map the raw record onto the exact
+shape the control plane validates (`packages/contracts` → `StockoutRiskEvent`; the payload
+below). Every field is required and type-checked server-side:
+
+| v1.1 field | Transform value | Notes |
+|---|---|---|
+| `schemaVersion` | `"1.1"` (constant) | must equal `SCHEMA_VERSION`; an old schema is rejected |
+| `type` | `"stockout_risk"` (constant) | |
+| `eventId` | Nexla run/record id (e.g. `{{ nexla_run_id }}`) | non-empty; becomes the decision-trail `correlationId` |
+| `sku` | raw `sku` | non-empty; must match a configured scenario SKU (else `400`) |
+| `currentQty` | raw on-hand qty | safe integer ≥ 0 |
+| `threshold` | raw reorder point | safe integer ≥ 0 |
+| `requestedQty` | replenishment lot (constant `20`, or `target − currentQty`) | not in the source — transform-computed; integer > 0 |
+| `occurredAt` | raw observed-at, as ISO-8601 | must be `Date.parse`-able |
+| `source` | `"nexla"` (constant) | the ingress endpoint accepts only `source: "nexla"` |
+
+**3. Filter — `currentQty <= threshold`.** A Nexla filter rule forwards only records at or
+below the reorder point; everything else is dropped before the destination. The control
+plane re-checks the identical condition and returns `400` if it fails, so the filter is the
+efficiency gate (don't POST healthy-stock records), not the trust boundary.
+
+**4. Destination — webhook to the control plane.** POST the transformed record to
+`POST {CONTROL_PLANE_URL}/api/events/stockout` (canonical local: `http://127.0.0.1:4000`),
+content-type `application/json`, with header
+`X-StockShield-Webhook-Secret: {{ NEXLA_WEBHOOK_SECRET }}`. When the control plane has
+`NEXLA_WEBHOOK_SECRET` set, a missing/mismatched header is rejected `401`; when it is unset
+(local dev) the header is ignored. A successful ingest returns `202
+{"accepted":true,"eventId":"<the Nexla id>"}`; the control plane then runs autonomously and
+rejects a second event while a run is active (`409`).
 
 Canonical destination payload:
 
