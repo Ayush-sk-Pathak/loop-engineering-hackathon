@@ -99,3 +99,40 @@ no secret header was required):
 This exercises the local ingress contract only; it is **not** Nexla-integration proof. The
 live FlexFlow flow → canonical ingress carrying the Nexla-issued event ID is the prize item
 (ROADMAP: "connect Nexla FlexFlow and prove the event ID end to end").
+
+## Nexla console setup (C5 runbook — execute when Nexla keys land)
+
+The steps below build the FlexFlow above in the Nexla console. This is the **C5 execution
+plan, not a completed configuration** — no Nexla account is provisioned yet, so the exact
+console labels and the generated ingest URL are captured live during setup. C5 is
+token-gated (a serialized live run) and needs a real `NEXLA_WEBHOOK_SECRET` shared between
+the control plane and the Nexla destination header.
+
+Prereqs: a Nexla workspace/login; the control plane reachable at a URL Nexla can POST to
+(`{CONTROL_PLANE_URL}/api/events/stockout` — the canonical stack, tunnelled if it runs
+locally); `NEXLA_WEBHOOK_SECRET` set identically on the control plane and the destination.
+
+1. **Create the webhook source (design stage 1).** New data source → Webhook (push). Nexla
+   issues an ingest URL + credential — record both; this is where inventory records are
+   POSTed (by the ERP/WMS, or a manual test record in the demo). Note the Nexla
+   run/record-id field for the `eventId` mapping in step 2.
+2. **Add the v1.1 transform (stage 2).** Attach a transform and map every field per the
+   design table above: constants `schemaVersion:"1.1"`, `type:"stockout_risk"`,
+   `source:"nexla"`; `eventId` ← the Nexla run/record id (the ID proven end to end);
+   `sku`/`currentQty`/`threshold`/`occurredAt` ← the raw record; `requestedQty` ← the
+   replenishment lot (`20`, or `target − currentQty`). Ensure `occurredAt` is ISO-8601 and
+   `sku` matches a configured scenario SKU (`DDR5-ECC-64GB` for datacenter).
+3. **Add the filter (stage 3).** Forward only when `currentQty <= threshold`; drop the rest.
+   (The control plane re-checks and `400`s otherwise, so this stage is efficiency, not trust.)
+4. **Create the webhook destination (stage 4).** New destination → Webhook. Method `POST`,
+   URL `{CONTROL_PLANE_URL}/api/events/stockout`, content-type `application/json`, custom
+   header `X-Continuim-Webhook-Secret: <NEXLA_WEBHOOK_SECRET>`. Map the body to the transform
+   output (the v1.1 payload).
+5. **Activate and capture (prize proof).** Turn the flow on, send one test record at/below
+   threshold, and verify: the destination call returns `202
+   {"accepted":true,"eventId":"<nexla id>"}`, then GET `/api/state` shows that same
+   `<nexla id>` as the `correlationId` on every decision-trail event. Record the **Nexla flow
+   ID** and the **event ID** here in the same commit — that pairing, with the matching
+   `correlationId` in the Continuim trail, is the end-to-end proof.
+
+Fill live: `<ingest URL>`, `<flow ID>`, exact console labels. Until then this is design only.

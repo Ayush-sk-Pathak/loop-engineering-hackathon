@@ -306,3 +306,14 @@ with a code-verified caveat (`store.reset` clears the decision trail but not the
 ledger, so a scenario switch needs a follow-up hard-reset); (4) confirm `Live Zero` /
 `Pomerium` badges; (5) stage proof tabs + record continuous. Doc only; canonical port 4000
 preserved.
+
+### 2026-07-17 — Lane C: C5 runbook pre-draft (post-reconciliation idle prep)
+
+**C5 prep (idle-time, PM-sanctioned).** After C1–C4 merged (main `2bcd1be`) and the branch
+was rebased even with main, pre-drafted the Nexla console setup runbook in
+`docs/integrations/NEXLA.md` (§ "Nexla console setup") from C3's FlexFlow design: the 5-step
+console click-path (webhook source → v1.1 transform → `currentQty <= threshold` filter →
+webhook destination with `X-Continuim-Webhook-Secret`) plus an activate-and-capture proof
+step (Nexla flow ID + event ID → matching `correlationId` in the Continuim trail). Design/plan
+only — no Nexla account is provisioned; exact console labels + ingest URL are captured live
+when C5 runs (key- and token-gated).
