@@ -120,3 +120,23 @@ was fully merged/absorbed.
 
 **Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean;
 `npm run build` (check + Next production build) green.
+
+### 2026-07-17 — Lane B / B3: StableEmail PO-receipt module (EMAIL_MODE=off default)
+
+**Built.** `services/procurement/src/email.ts` — an injectable email transport for
+post-201 PO receipts with two disclosed paths selected by `EMAIL_MODE` (default
+`off`): `stableemail` (Zero sponsor path; returns `messageId` + `zeroReceiptId`) and
+`fallback` (a disclosed **non-Zero** path, `sponsor:"none"`, never claimed as a Zero
+tool — decisions 0010/0014). Off-by-default returns a null transport; live modes fail
+closed when their URL/recipient env is missing (no silent degrade). Post-201
+fire-and-forget hook wired in `services/procurement/src/server.ts` after the response
+is written; dedupes by PO id so an idempotent `201` replay does not re-send. No
+`packages/contracts` change. New `email.test.ts` (off-default, fail-closed, disclosed
+fallback label, exactly-once) appended to the root `test` script.
+
+**Verified (this commit).** `npm run check` green in worktree `.claude/worktrees/B`:
+`tsc --noEmit` clean; `node:test` **18/18** pass (15 preexisting unchanged + 3 new).
+Live StableEmail send remains B7 (key-gated); this lands the module only.
+
+**Requested (board → PM).** `config/example.env` EMAIL_* lines (PM-owned hotspot) and
+a decision on where the StableEmail runbook lives (ZERO.md vs a new EMAIL.md).
