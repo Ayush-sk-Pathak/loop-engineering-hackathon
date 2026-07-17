@@ -524,3 +524,17 @@ Against an isolated fixture/development stack (ports 4500/4501/4502), the produc
 accepted `gpu-07` / `node_offline`, the monitor started the real loop, and SQLite passed
 `PRAGMA integrity_check` (`ok`) with `demo_state=1`, `decision_events=14`, and `incidents=1`.
 The recovery trace reached a signed PO and scheduled inbound supply. No paid provider call was made.
+
+### 2026-07-17 — A4: Zero settle lock landed + lane-A spot-verify (KEEP: Zero receipts)
+
+**Verified (spot, per bfe48689).** PM landed the settle lock (62db3b7) from the teammate's relayed
+zero-CLI receipts — 3 services: `company_identity_match` (cap_fHxedyuNDjC6grLLINJYM /
+run_HzNTkaRe4v4Hgbd4zuH8y), `domain_age_days` (cap_PYHZbk2tn2qaZty-h5qNC / run_VKcZYwoHgXgWyCC_OdQLg),
+`web_presence` (cap_gimcJl-eOG0JdEAyZkDjG / run_93ZYeks9toPjfxOWxp_La); all 1c (~3c total, far under
+the 500c ceiling / 100c per-call stop). Non-exhaustive spot-verify: `verifiedAt` + `walletNetwork`
+set, 3 real receipts, format matches ZERO.md; `npm run check` 38/38; `npm run doctor:prize` "Zero
+service lock" row **PASS**. Observed latency + exact wallet-network marked PENDING the owner's full
+session export — honest-pending, not fabricated (decision 0010). The teammate's `zero auth login`
+gate patch (`hasZeroSession`) is merged + green; the adapter reaches the owner's remote instance via
+`ZERO_EVIDENCE_ADAPTER_URL` (the HTTP seam's designed remote path). ROADMAP settle + adapter boxes
+ticked. Token released — wallet leg done.

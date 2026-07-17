@@ -25,6 +25,6 @@
       "note": "Web scrape; settled price $0.002 (recorded at 1c minimum unit)"
     }
   ],
-  "settledBy": "teammate zero CLI session (owner machine), 2026-07-17; receipts relayed by the human and recorded by PM — lane A spot-verify pending",
+  "settledBy": "teammate zero CLI session (owner machine), 2026-07-17; receipts relayed by the human, recorded by PM (62db3b7); lane-A spot-verified 2026-07-17 (3 real receipts, prices under the 500c/100c cap, npm run check 38/38, doctor:prize Zero-lock row PASS). Observed latency + exact wallet-network detail are PENDING the owner's full zero-session export (relayed receipts carried capability ids, prices, run ids only) — honest-pending, never fabricated (decision 0010).",
   "instructions": "Owner 2 records exact live service IDs, prices, sample receipt IDs, and observed latency after one settled call per service. Do not mark verified from the marketing catalog alone."
 }
