@@ -137,7 +137,7 @@ local ingress path only — **not** Nexla-integration proof; the live FlexFlow f
 **Built.** New `services/zero-adapter` workspace (`@continuim/zero-adapter`) — the small
 HTTP adapter `services/verification/src/collector.ts` already POSTs to in `live_zero` mode.
 `src/transport.ts` defines the `ZeroTransport` seam and `createZeroTransport(env)`, which
-returns `null` unless a real Zero session (`ZERO_API_KEY`) is present. `src/adapter.ts`
+returns `null` unless a real Zero session (`ZERO_PRIVATE_KEY`) is present. `src/adapter.ts`
 holds `buildEvidenceResponse` (flattens settled Zero calls into normalized
 `EvidenceSignal[]`, reusing one `receiptId`/cost across every signal a paid call backs, and
 rejecting a paid call with no receipt) and the pure `handleEvidenceRequest` (bearer check
@@ -159,8 +159,8 @@ per lane-A contract).
 
 **Open.** ROADMAP "Zero evidence adapter with real receipt IDs" (line 19) stays unticked —
 real receipts require A4 live settlement against a funded wallet; A1 delivers only the
-contract + receipt-reuse plumbing, fake-transport verified. `config/example.env` needs a
-`ZERO_API_KEY` line (the Zero session gate) — posted to the board for PM to land.
+contract + receipt-reuse plumbing, fake-transport verified. `config/example.env` now uses
+`ZERO_PRIVATE_KEY` as the live Zero session gate.
 scheduled. Evidence recorded in `docs/integrations/NEXLA.md`. This is the local ingress path
 only — **not** Nexla-integration proof; the live FlexFlow flow (ROADMAP "prove the event ID
 end to end") is still open and key-gated.
@@ -447,9 +447,10 @@ explainer + runtime wiring + contracts `DecisionPhase "explained"`, Pomerium sub
 aliases in authorize, Akash console SDL, zero-hello page. Conflicts resolved:
 package.json (their `.env` flags + `dev:evidence`, our fuller test list),
 config/example.env (union of ZERO_PRIVATE_KEY block + their provider/Bedrock blocks).
-Verified `npm run check` 37/37 post-resolution. **Open reconciliations:** two evidence
-adapters exist (`services/zero-adapter` zero-CLI-settled vs `scripts/evidence-adapter.ts`
-direct-provider — Zero-usage honesty per decision 0010/ZERO.md must be settled before
-any live claim); two Bedrock explainers (this `bedrock.ts` on main vs lane D's held
+Verified `npm run check` 37/37 post-resolution. **Resolved follow-up:** root
+`dev:evidence` and `start:evidence` now run `services/zero-adapter/src/server.ts`, the
+settled Zero adapter path. The direct-provider `scripts/evidence-adapter.ts` is legacy
+scratch code and is not the default runtime. **Open reconciliations:** two Bedrock explainers
+(this `bedrock.ts` on main vs lane D's held
 `claude.ts`) — reconcile at W3 D-merge; contracts change landed without all-owner ack
 (retroactive ack requested on the board).

@@ -110,12 +110,13 @@ devDependencies: `typescript`, `tsx`, `concurrently`, `postcss`, `@types/*`.
 | `dev:control` | `node --env-file-if-exists=.env --watch --import tsx services/control-plane/src/server.ts` |
 | `dev:procurement` | Same pattern for `services/procurement/src/server.ts`. |
 | `dev:web` | `next dev apps/dashboard --hostname 127.0.0.1 --port 3000` (invoked via `node node_modules/next/dist/bin/next` so `--env-file-if-exists` applies). |
-| `test` | `node --import tsx --test` with an **explicit file list** (seven test files — see §13). New test files must be added to this list to run in CI/pre-commit. |
+| `dev:evidence` | Watch-mode start for `services/zero-adapter/src/server.ts` on `ZERO_EVIDENCE_ADAPTER_PORT` (default 4100). |
+| `test` | `node --import tsx --test` with an **explicit file list** (currently 12 files — see §13). New test files must be added to this list to run in CI/pre-commit. |
 | `typecheck` | `tsc --noEmit` over the whole repo (single root `tsconfig.json`: ES2022, NodeNext, `strict`, `allowImportingTsExtensions`, `noEmit`). |
 | `check` | `npm run typecheck && npm test` — also what the pre-commit hook runs. |
 | `build:web` | `next build apps/dashboard`. |
 | `build` | `npm run check && npm run build:web` (also the Docker image build step). |
-| `start:control` / `start:procurement` | Non-watch tsx starts of the two servers (Docker/compose/Akash commands). |
+| `start:control` / `start:procurement` / `start:evidence` | Non-watch tsx starts of the runtime services (Docker/compose/Akash commands). |
 | `start:web` | `next start apps/dashboard --hostname 0.0.0.0 --port 3000`. |
 | `demo` | `tsx scripts/demo.ts` — scripted three-node-failure demo driver (§14.1). |
 | `doctor` | `tsx scripts/doctor.ts` — local readiness checks. |

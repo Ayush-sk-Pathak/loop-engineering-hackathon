@@ -62,7 +62,8 @@ console while applying this live (B5).
      (`user.is vendor:vendor-northstar` AND `POST` AND path `/po/vendor-northstar`).
      Everything else is denied — that implicit deny is the `procurement-agent` `403`.
 
-**4. Environment** (set in the runtime `.env.local`, then `npm run doctor:prize`).
+**4. Environment** (set in the runtime `.env`, then `npm run doctor:prize`; do not commit
+secrets).
 
    | Variable | Value | Source |
    |---|---|---|
