@@ -104,6 +104,7 @@ export interface DemoState {
     lastCheckAt: string | null;
   };
   clientIncident?: {
+    clientId: "meridian" | "northwind";
     nodeId: string;
     faultType: string;
     detectedAt: string;

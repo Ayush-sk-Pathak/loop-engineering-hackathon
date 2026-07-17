@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import type { StockoutRiskEvent } from "@continuim/contracts";
 import { SCHEMA_VERSION } from "@continuim/contracts";
@@ -8,27 +9,36 @@ import { startInventoryMonitor } from "./monitor.ts";
 
 const port = Number(process.env.CONTROL_PLANE_PORT ?? 4000);
 const host = process.env.CONTROL_PLANE_HOST ?? "127.0.0.1";
-const store = new DemoStore();
-const clientFaultTypes = new Set([
-  "node_offline",
-  "thermal_runaway",
-  "ecc_spike",
-  "network_loss",
-  "power_failure",
-]);
+type ClientId = "meridian" | "northwind";
+const clientIncidentRoutes = {
+  meridian: {
+    scenario: "datacenter",
+    faultTypes: new Set(["node_offline", "thermal_runaway", "ecc_spike", "network_loss", "power_failure"]),
+  },
+  northwind: {
+    scenario: "apparel",
+    faultTypes: new Set(["supplier_delay", "inventory_stockout", "quality_hold", "line_outage"]),
+  },
+} as const;
+const stores: Record<ClientId, DemoStore> = {
+  meridian: new DemoStore(process.env.SQLITE_PATH, "meridian"),
+  northwind: new DemoStore(process.env.SQLITE_PATH, "northwind"),
+};
+if (stores.meridian.read()?.scenario.id !== "datacenter") stores.meridian.reset("datacenter");
+if (stores.northwind.read()?.scenario.id !== "apparel") stores.northwind.reset("apparel");
 
 if (process.env.MONITOR_ENABLED !== "0") {
-  startInventoryMonitor(
-    store,
-    (event) => runStockout(store, event),
-    {
+  for (const [clientId, store] of Object.entries(stores) as [ClientId, DemoStore][]) {
+    startInventoryMonitor(store, (event) => runStockout(store, event), {
       intervalMs: Number(process.env.MONITOR_INTERVAL_MS ?? 2_000),
       requestedQty: Number(process.env.MONITOR_REQUESTED_QTY ?? 20),
-    },
-  );
+      onError: (error) => console.error(`control-plane: ${clientId} monitor failed`, error),
+    });
+  }
 }
 
 createServer(async (request, response) => {
+  const url = new URL(request.url ?? "/", `http://${host}:${port}`);
   response.setHeader("access-control-allow-origin", "*");
   response.setHeader("access-control-allow-methods", "GET, POST, OPTIONS");
   response.setHeader("access-control-allow-headers", "content-type, x-continuim-webhook-secret");
@@ -37,26 +47,31 @@ createServer(async (request, response) => {
     response.writeHead(204).end();
     return;
   }
-  if (request.method === "GET" && request.url === "/health") {
+  if (request.method === "GET" && url.pathname === "/health") {
     response.writeHead(200).end(JSON.stringify({
       ok: true,
       verificationMode: process.env.VERIFICATION_MODE ?? "fixture",
       authorizationMode: process.env.AUTH_MODE ?? "development",
-      monitorEnabled: store.read()?.monitor.active ?? false,
+      clients: Object.fromEntries(Object.entries(stores).map(([clientId, store]) => [clientId, {
+        scenario: store.read()?.scenario.id,
+        monitorEnabled: store.read()?.monitor.active ?? false,
+      }])),
     }));
     return;
   }
-  if (request.method === "GET" && request.url === "/api/state") {
-    response.writeHead(200).end(JSON.stringify(store.read()));
+  if (request.method === "GET" && url.pathname === "/api/state") {
+    response.writeHead(200).end(JSON.stringify(stores[clientIdFromUrl(url)].read()));
     return;
   }
-  if (request.method === "POST" && request.url === "/api/demo/reset") {
+  if (request.method === "POST" && url.pathname === "/api/demo/reset") {
+    const store = stores[clientIdFromUrl(url)];
     const body = await readJson(request).catch(() => undefined);
     const hard = (body as { hard?: unknown } | undefined)?.hard === true;
     response.writeHead(200).end(JSON.stringify(store.reset(undefined, hard)));
     return;
   }
-  if (request.method === "POST" && request.url === "/api/demo/scenario") {
+  if (request.method === "POST" && url.pathname === "/api/demo/scenario") {
+    const store = stores[clientIdFromUrl(url)];
     if (store.read()?.runStatus === "running") {
       response.writeHead(409).end(JSON.stringify({ error: "A procurement run is already active" }));
       return;
@@ -76,7 +91,8 @@ createServer(async (request, response) => {
     }
     return;
   }
-  if (request.method === "POST" && request.url === "/api/demo/run") {
+  if (request.method === "POST" && url.pathname === "/api/demo/run") {
+    const store = stores[clientIdFromUrl(url)];
     if (store.read()?.runStatus === "running") {
       response.writeHead(409).end(JSON.stringify({ error: "Demo is already running" }));
       return;
@@ -85,7 +101,8 @@ createServer(async (request, response) => {
     void runDemo(store).catch((error) => console.error("control-plane: demo failed", error));
     return;
   }
-  if (request.method === "POST" && request.url === "/api/demo/consume") {
+  if (request.method === "POST" && url.pathname === "/api/demo/consume") {
+    const store = stores[clientIdFromUrl(url)];
     const state = store.read();
     if (state?.runStatus === "running") {
       response.writeHead(409).end(JSON.stringify({ error: "Procurement is already running" }));
@@ -98,41 +115,66 @@ createServer(async (request, response) => {
     response.writeHead(200).end(JSON.stringify(store.consumeUnit()));
     return;
   }
-  if (request.method === "POST" && request.url === "/api/demo/client-incident") {
-    const state = store.read();
-    if (!state || state.scenario.id !== "datacenter") {
-      response.writeHead(409).end(JSON.stringify({ error: "Client incident bridge requires the datacenter scenario" }));
-      return;
-    }
-    if (state.runStatus === "running") {
-      response.writeHead(409).end(JSON.stringify({ error: "Procurement is already running" }));
-      return;
-    }
-    if (state.inventory.inboundQty > 0) {
-      response.writeHead(409).end(JSON.stringify({ error: "Recovery is already scheduled; reset before starting another incident" }));
-      return;
-    }
+  if (request.method === "POST" && url.pathname === "/api/demo/client-incident") {
     try {
-      const body = await readJson(request) as { nodeId?: unknown; faultType?: unknown };
+      const body = await readJson(request) as { clientId?: unknown; nodeId?: unknown; faultType?: unknown };
+      const clientId = body.clientId === undefined ? "meridian" : body.clientId;
+      if (clientId !== "meridian" && clientId !== "northwind") {
+        response.writeHead(400).end(JSON.stringify({ error: "A supported clientId is required" }));
+        return;
+      }
+      const store = stores[clientId];
+      const state = store.read();
+      if (!state) {
+        response.writeHead(503).end(JSON.stringify({ error: "Control-plane state is unavailable" }));
+        return;
+      }
+      if (state.runStatus === "running") {
+        response.writeHead(409).end(JSON.stringify({ error: "A recovery is already active for this client" }));
+        return;
+      }
+      if (state.inventory.inboundQty > 0) {
+        response.writeHead(409).end(JSON.stringify({ error: "Recovery is already scheduled for this client; reset it before starting another incident" }));
+        return;
+      }
+      const route = clientIncidentRoutes[clientId];
       if (
         typeof body.nodeId !== "string" ||
         typeof body.faultType !== "string" ||
-        !clientFaultTypes.has(body.faultType)
+        !(route.faultTypes as Set<string>).has(body.faultType)
       ) {
-        response.writeHead(400).end(JSON.stringify({ error: "A nodeId and supported faultType are required" }));
+        response.writeHead(400).end(JSON.stringify({ error: "An asset id and supported fault type are required for this client" }));
         return;
       }
-      store.setClientIncident(body.nodeId, body.faultType);
+      if (state.scenario.id !== route.scenario) store.reset(route.scenario);
+      store.setClientIncident(clientId, body.nodeId, body.faultType);
       let next = store.read();
       while (next && next.inventory.currentQty > next.inventory.threshold) {
         next = store.consumeUnit();
       }
       response.writeHead(202).end(JSON.stringify({
         accepted: true,
+        clientId,
         nodeId: body.nodeId,
         faultType: body.faultType,
         inventory: next?.inventory,
       }));
+      if (next) {
+        const event: StockoutRiskEvent = {
+          schemaVersion: SCHEMA_VERSION,
+          type: "stockout_risk",
+          eventId: randomUUID(),
+          sku: next.inventory.sku,
+          currentQty: next.inventory.currentQty,
+          threshold: next.inventory.threshold,
+          requestedQty: Number(process.env.MONITOR_REQUESTED_QTY ?? 20),
+          occurredAt: new Date().toISOString(),
+          source: "monitor",
+        };
+        void runStockout(store, event).catch((error) => {
+          console.error(`control-plane: ${clientId} client-incident recovery failed`, error);
+        });
+      }
     } catch (error) {
       response.writeHead(400).end(JSON.stringify({
         error: error instanceof Error ? error.message : "Invalid request",
@@ -140,11 +182,7 @@ createServer(async (request, response) => {
     }
     return;
   }
-  if (request.method === "POST" && request.url === "/api/events/stockout") {
-    if (store.read()?.runStatus === "running") {
-      response.writeHead(409).end(JSON.stringify({ error: "A procurement run is already active" }));
-      return;
-    }
+  if (request.method === "POST" && url.pathname === "/api/events/stockout") {
     const expectedSecret = process.env.NEXLA_WEBHOOK_SECRET;
     if (expectedSecret && request.headers["x-continuim-webhook-secret"] !== expectedSecret) {
       response.writeHead(401).end(JSON.stringify({ error: "Invalid Nexla webhook secret" }));
@@ -163,6 +201,12 @@ createServer(async (request, response) => {
         response.writeHead(400).end(JSON.stringify({ error: "No scenario is configured for this SKU" }));
         return;
       }
+      const clientId: ClientId = scenario.id === "datacenter" ? "meridian" : "northwind";
+      const store = stores[clientId];
+      if (store.read()?.runStatus === "running") {
+        response.writeHead(409).end(JSON.stringify({ error: "A recovery is already active for this client" }));
+        return;
+      }
       if (store.read()?.scenario.id !== scenario.id) store.reset(scenario.id);
       response.writeHead(202).end(JSON.stringify({ accepted: true, eventId: event.eventId }));
       void runStockout(store, event).catch((error) => {
@@ -179,6 +223,10 @@ createServer(async (request, response) => {
 }).listen(port, host, () => {
   console.log(`control-plane: http://${host}:${port}`);
 });
+
+function clientIdFromUrl(url: URL): ClientId {
+  return url.searchParams.get("clientId") === "northwind" ? "northwind" : "meridian";
+}
 
 async function readJson(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];

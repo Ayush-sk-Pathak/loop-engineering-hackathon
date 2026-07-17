@@ -53,6 +53,11 @@ console while applying this live (B5).
    The agent presents them as `Authorization: Bearer Pomerium-<token>` (already wired in
    `services/control-plane/src/runtime.ts`).
 
+   Important: these must be Pomerium **service-account tokens** from the Service Accounts
+   screen. A user-session JWT or console API code is the wrong credential type; it will
+   usually produce `401` or an interactive `302`, not the authenticated-but-denied `403`
+   needed for the prize proof.
+
 **3. Private route** (Routes → **New Route**).
    - **From:** `https://po.<starter-domain>` (public).
    - **To:** `http://procurement:4001` (private origin on the proxy's network).

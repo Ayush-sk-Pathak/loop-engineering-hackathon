@@ -5,7 +5,7 @@ import { useLiveState } from "@/lib/live/useLiveState";
 import { datacenterRuntime } from "./runtime";
 
 export function useDatacenter() {
-  const { state: controlPlaneState, connected } = useLiveState();
+  const { state: controlPlaneState, connected } = useLiveState("meridian");
   const snapshot = useSyncExternalStore(
     datacenterRuntime.subscribe,
     datacenterRuntime.getSnapshot,

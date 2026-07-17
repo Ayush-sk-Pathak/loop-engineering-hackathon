@@ -558,3 +558,17 @@ Continuum on `:3201`: all four actions through the proxy — consume (on-hand 5�
 soft+hard reset, run (202 → complete, order `PO-1EC01832`, 14 events); a headless-browser click of
 the dashboard "Simulate node failure" button dropped on-hand 5→4 live with the control bar
 reflecting it. `next build` green (15 routes). Read-only write actions gate cleanly; no fake success.
+### 2026-07-17 — Two-client concurrent recovery isolation
+
+**Built.** The control plane now maintains independent SQLite tables and monitor loops for the
+Meridian GPU client (`clientId=meridian`, `datacenter`) and Northwind Textiles client
+(`clientId=northwind`, `apparel`). `GET /api/state?clientId=<id>` is client-scoped; client
+incident submission never resets or reads the other client's state. The UI polls the matching
+client state, and Northwind has a dedicated `/client/northwind` incident console for material and
+supplier failure signals.
+
+**Verified.** Two incidents submitted concurrently through the production Next proxy both returned
+`202` and completed: Meridian `gpu-04 / network_loss` produced PO `PO-0F194013`; Northwind
+`navy-dye-line-04 / quality_hold` produced PO `PO-0DFF844E`. Each retained its own 14-event trace,
+blacklisted vendor, and 20-unit inbound schedule. `npm run check` passed (**39/39**) and
+`npm --prefix Continuum run build` passed. Fixture/development mode only; no paid provider call.

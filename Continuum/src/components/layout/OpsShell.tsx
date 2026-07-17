@@ -15,6 +15,7 @@ const NAV = [
   { href: "/continuum", label: "Continuum", icon: "shield", group: "Installed app" },
   { href: "/learning", label: "Learning", icon: "learning", group: "Installed app" },
   { href: "/datacenter", label: "Client console", icon: "dashboard", group: "Installed app" },
+  { href: "/client/northwind", label: "Textile client", icon: "inventory", group: "Installed app" },
   { href: "/reports", label: "Reports", icon: "reports", group: "Manage" },
   { href: "/settings", label: "Settings", icon: "settings", group: "Manage" },
 ];

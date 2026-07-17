@@ -59,6 +59,7 @@ export function DatacenterShell({
               {lastUpdated ? `Updated ${new Date(lastUpdated).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Awaiting sample"}
             </span>
             <Link href="/dashboard" className="btn-secondary hidden sm:inline-flex">Open business agent</Link>
+            <Link href="/client/northwind" className="btn-secondary hidden sm:inline-flex">Northwind client</Link>
           </div>
         </div>
       </header>

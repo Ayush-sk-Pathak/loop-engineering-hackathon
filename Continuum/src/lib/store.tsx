@@ -92,7 +92,7 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
     continuumEngine.setWorkspace(nextWorkspaceId);
   }, []);
 
-  const { state: liveState, connected } = useLiveState();
+  const { state: liveState, connected } = useLiveState(workspaceId);
   const live = connected && liveState !== null;
 
   const baseWorkspace = getWorkspace(workspaceId);

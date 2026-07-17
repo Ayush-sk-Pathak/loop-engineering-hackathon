@@ -37,11 +37,11 @@ export function hostOf(domain: string): string {
 export function mapEnrichment(body: unknown, vendor: VendorCandidate): ZeroSignalDraft[] {
   const record = asRecord(body);
   const enrichedName = firstString(record, ["legalName", "name", "companyName"]);
-  const enrichedDomain = firstString(record, ["domain", "website", "url"]);
+  const enrichedDomain = firstString(record, ["domain", "company_domain", "website", "url"]);
   const domainAgrees = !!enrichedDomain && hostOf(enrichedDomain) === hostOf(vendor.domain);
   const nameAgrees =
     namesAgree(enrichedName, vendor.legalName) || namesAgree(enrichedName, vendor.tradingName);
-  const companyMatch = !!enrichedName && (domainAgrees || nameAgrees);
+  const companyMatch = domainAgrees || nameAgrees;
   // Payee identity checks the quoted payee against the enriched legal entity when
   // one was found; with no enrichment record, fall back to the vendor's declared
   // legal name (quote self-consistency — catches a payee/account swap).

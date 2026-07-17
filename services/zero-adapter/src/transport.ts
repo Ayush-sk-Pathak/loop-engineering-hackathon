@@ -7,7 +7,6 @@ import {
   hostOf,
   mapDomainAge,
   mapEnrichment,
-  mapNewsPresence,
   mapWebPresence,
 } from "./signals.ts";
 
@@ -49,6 +48,7 @@ export interface ZeroTransport {
 export interface ZeroServiceRef {
   serviceId: string;
   provider: string;
+  method: "GET" | "POST";
   capabilityUrl: string;
   capabilityToken: string;
 }
@@ -72,10 +72,27 @@ export interface ZeroClient {
  * refuses loudly rather than call an unsettled coordinate.
  */
 export const CANDIDATE_SERVICES = {
-  enrichment: { serviceId: "wiza-company-enrichment", provider: "Wiza", capabilityUrl: "", capabilityToken: "" },
-  domain: { serviceId: "domain-availability-rdap", provider: "RDAP", capabilityUrl: "", capabilityToken: "" },
-  web: { serviceId: "firecrawl-scrape-stableenrich", provider: "Firecrawl", capabilityUrl: "", capabilityToken: "" },
-  news: { serviceId: "serper-google-news", provider: "Serper", capabilityUrl: "", capabilityToken: "" },
+  enrichment: {
+    serviceId: "cap_fHxedyuNDjC6grLLINJYM",
+    provider: "Riley Craig x402 Agent Store",
+    method: "GET",
+    capabilityUrl: "https://store.agentexchange.work/connect/company",
+    capabilityToken: "z_tVSxYo.10",
+  },
+  domain: {
+    serviceId: "cap_PYHZbk2tn2qaZty-h5qNC",
+    provider: "ZeroClick x402 Service Registry",
+    method: "POST",
+    capabilityUrl: "https://whois.withzero.ai/run",
+    capabilityToken: "z_ArG8Uy.1",
+  },
+  web: {
+    serviceId: "cap_gimcJl-eOG0JdEAyZkDjG",
+    provider: "J-sey Data API",
+    method: "GET",
+    capabilityUrl: "https://johncross-data-api.johncrossugwuegede.workers.dev/scrape",
+    capabilityToken: "z_tQpXUH.12",
+  },
 } satisfies Record<string, ZeroServiceRef>;
 
 /**
@@ -126,14 +143,13 @@ export class LiveZeroTransport implements ZeroTransport {
     const calls: ZeroServiceCall[] = [];
 
     const enrichment = await this.client.run(CANDIDATE_SERVICES.enrichment, {
-      name: vendor.legalName,
-      domain: vendor.domain,
+      domain: hostOf(vendor.domain),
     });
     calls.push(
       toCall(CANDIDATE_SERVICES.enrichment, enrichment, observedAt, mapEnrichment(enrichment.body, vendor)),
     );
 
-    const domain = await this.client.run(CANDIDATE_SERVICES.domain, { domain: vendor.domain });
+    const domain = await this.client.run(CANDIDATE_SERVICES.domain, { domain: hostOf(vendor.domain) });
     const ageSignals = mapDomainAge(domain.body, observedAt);
     if (!ageSignals.length) {
       throw new Error(
@@ -145,9 +161,6 @@ export class LiveZeroTransport implements ZeroTransport {
 
     const web = await this.client.run(CANDIDATE_SERVICES.web, { url: `https://${hostOf(vendor.domain)}` });
     calls.push(toCall(CANDIDATE_SERVICES.web, web, observedAt, mapWebPresence(web.body)));
-
-    const news = await this.client.run(CANDIDATE_SERVICES.news, { q: vendor.legalName });
-    calls.push(toCall(CANDIDATE_SERVICES.news, news, observedAt, mapNewsPresence(news.body)));
 
     return calls;
   }
@@ -188,17 +201,19 @@ export class CliZeroClient implements ZeroClient {
           "(A4 fills config/zero-services.json)",
       );
     }
-    const { stdout } = await execFileAsync("zero", [
-      "fetch",
-      service.capabilityUrl,
-      "--capability",
-      service.capabilityToken,
-      "-d",
-      JSON.stringify(input),
-      "--json",
-      "--max-pay",
-      String(this.maxPayUsd),
-    ]);
+    const args = ["fetch", service.capabilityUrl, "--capability", service.capabilityToken];
+    if (service.method === "GET") {
+      const url = new URL(service.capabilityUrl);
+      if (!input || typeof input !== "object") throw new Error("GET Zero input must be an object");
+      for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+        if (typeof value === "string") url.searchParams.set(key, value);
+      }
+      args[1] = url.toString();
+    } else {
+      args.push("-d", JSON.stringify(input));
+    }
+    args.push("--json", "--max-pay", String(this.maxPayUsd));
+    const { stdout } = await execFileAsync("zero", args);
     const envelope = JSON.parse(stdout) as {
       runId?: string;
       ok?: boolean;

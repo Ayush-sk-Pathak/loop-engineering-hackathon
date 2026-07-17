@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import type { PurchaseOrder } from "@continuim/contracts";
 import { DemoStore } from "./store.ts";
@@ -50,11 +53,37 @@ test("store persists a client incident with the live control-plane state", () =>
   const store = new DemoStore(":memory:");
   store.reset("datacenter");
 
-  store.setClientIncident("gpu-07", "node_offline");
+  store.setClientIncident("meridian", "gpu-07", "node_offline");
   const incident = store.read()?.clientIncident;
   assert.equal(incident?.nodeId, "gpu-07");
+  assert.equal(incident?.clientId, "meridian");
   assert.equal(incident?.faultType, "node_offline");
   assert.ok(!Number.isNaN(Date.parse(incident?.detectedAt ?? "")));
 
   assert.equal(store.reset().clientIncident, undefined);
+});
+
+test("client-scoped stores keep concurrent client recovery state isolated", () => {
+  const directory = mkdtempSync(join(tmpdir(), "continuim-client-state-"));
+  try {
+    const database = join(directory, "control-plane.db");
+    const meridian = new DemoStore(database, "meridian");
+    const northwind = new DemoStore(database, "northwind");
+    meridian.reset("datacenter");
+    northwind.reset("apparel");
+
+    meridian.setClientIncident("meridian", "gpu-02", "thermal_runaway");
+    northwind.setClientIncident("northwind", "navy-dye-line-04", "supplier_delay");
+    meridian.start(0);
+    northwind.start(0);
+
+    assert.equal(meridian.read()?.scenario.id, "datacenter");
+    assert.equal(meridian.read()?.clientIncident?.nodeId, "gpu-02");
+    assert.equal(meridian.read()?.runStatus, "running");
+    assert.equal(northwind.read()?.scenario.id, "apparel");
+    assert.equal(northwind.read()?.clientIncident?.nodeId, "navy-dye-line-04");
+    assert.equal(northwind.read()?.runStatus, "running");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
