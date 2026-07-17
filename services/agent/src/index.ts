@@ -33,11 +33,38 @@ export interface DecisionSink {
   emit(event: DecisionEvent): Promise<void>;
 }
 
+export interface PlannerContext {
+  stockout: StockoutRiskEvent;
+  /** Candidates in deterministic policy order (proven-first, then lowest price). */
+  rankedCandidates: VendorCandidate[];
+}
+
+export interface PlannerAdvice {
+  /**
+   * Advisory vendor-id ordering, most-preferred first. The deterministic policy
+   * ranking is authoritative and overrides this on any disagreement.
+   */
+  preferredVendorIds?: string[];
+  /** Natural-language explanation surfaced verbatim via decision-event metadata. */
+  rationale?: string;
+}
+
+export interface PlannerPort {
+  /**
+   * Optional LLM planner/explainer. May rank eligible options and explain
+   * evidence, but its output is advisory only: it never adjudicates eligibility,
+   * never mints a capability, and never feeds verification or authorization
+   * inputs (decisions 0008/0014). Failures degrade to no advice.
+   */
+  advise(context: PlannerContext): Promise<PlannerAdvice>;
+}
+
 export interface LoopPorts {
   verification: VerificationPort;
   procurement: ProcurementPort;
   credentials: CredentialPort;
   decisions: DecisionSink;
+  planner?: PlannerPort;
 }
 
 export interface LoopHistory {
@@ -118,6 +145,39 @@ export async function runProcurementLoop(
     ...priced.filter((vendor) => provenVendorIds.has(vendor.id)),
     ...priced.filter((vendor) => !provenVendorIds.has(vendor.id)),
   ];
+
+  if (ports.planner) {
+    let advice: PlannerAdvice | undefined;
+    try {
+      advice = await ports.planner.advise({ stockout, rankedCandidates: ranked });
+    } catch {
+      // Advisory only: a planner failure must never disturb the deterministic loop.
+      advice = undefined;
+    }
+    if (advice) {
+      const policyOrder = ranked.map((vendor) => vendor.id);
+      const plannerTop = (advice.preferredVendorIds ?? []).find((id) =>
+        policyOrder.includes(id),
+      );
+      const policyTop = policyOrder[0];
+      const policyOverride = Boolean(plannerTop && policyTop && plannerTop !== policyTop);
+      await emit(
+        "planned",
+        policyOverride
+          ? "Advisory planner preferred a different vendor; the deterministic policy ranking overrides it"
+          : "Advisory planner explanation attached; the deterministic policy ranking is unchanged",
+        undefined,
+        {
+          planner: "advisory",
+          plannerRationale: advice.rationale ?? null,
+          plannerPreferredVendorId: plannerTop ?? null,
+          policySelectedVendorId: policyTop ?? null,
+          policyOverride,
+        },
+      );
+    }
+  }
+
   for (const vendor of ranked) {
     await emit(
       "sourced",
