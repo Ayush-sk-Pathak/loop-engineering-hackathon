@@ -13,6 +13,7 @@ import {
 import { continuumEngine } from "@/lib/simulation/engine";
 import { getWorkspace } from "@/lib/data/workspaces";
 import { useLiveState } from "@/lib/live/useLiveState";
+import type { LiveClientId } from "@/lib/live/useLiveState";
 import { adaptWorkspace } from "@/lib/live/adapt";
 import type { DemoState } from "@/lib/live/contracts";
 import type {
@@ -49,6 +50,8 @@ interface ContinuumStore {
   live: boolean;
   /** Raw control-plane payload when live; null in mock mode. Read-only. */
   liveState: DemoState | null;
+  /** Both client streams, used by the business agent to listen globally. */
+  liveStates: Record<LiveClientId, DemoState | null>;
 }
 
 const Ctx = createContext<ContinuumStore | null>(null);
@@ -93,6 +96,12 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const { state: liveState, connected } = useLiveState(workspaceId);
+  const meridianLive = useLiveState("meridian");
+  const northwindLive = useLiveState("northwind");
+  const liveStates = useMemo<Record<LiveClientId, DemoState | null>>(
+    () => ({ meridian: meridianLive.state, northwind: northwindLive.state }),
+    [meridianLive.state, northwindLive.state],
+  );
   const live = connected && liveState !== null;
 
   const baseWorkspace = getWorkspace(workspaceId);
@@ -113,6 +122,7 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
       setSpeed,
       live,
       liveState,
+      liveStates,
     }),
     [
       snapshot,
@@ -126,6 +136,7 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
       setSpeed,
       live,
       liveState,
+      liveStates,
     ],
   );
 

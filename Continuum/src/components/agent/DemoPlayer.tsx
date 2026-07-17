@@ -12,6 +12,7 @@ import {
 } from "@/components/agent/ContinuumPanels";
 import { formatCurrency, formatTs } from "@/lib/format";
 import type { DecisionEvent, DemoState } from "@/lib/live/contracts";
+import type { LiveClientId } from "@/lib/live/useLiveState";
 import { useContinuum } from "@/lib/store";
 
 export function AgentTheater({
@@ -21,7 +22,7 @@ export function AgentTheater({
   autoStart?: boolean;
   compact?: boolean;
 }) {
-  const { snapshot, workspace, trigger, live, liveState } = useContinuum();
+  const { snapshot, workspace, trigger, live, liveState, liveStates } = useContinuum();
   const startedScenario = useRef<string | null>(null);
 
   useEffect(() => {
@@ -34,8 +35,15 @@ export function AgentTheater({
     return () => clearTimeout(t);
   }, [autoStart, live, snapshot.running, trigger, workspace.scenario.id]);
 
-  if (live && liveState) {
-    return <LiveAgentTheater state={liveState} />;
+  const connectedStates = Object.entries(liveStates).filter(([, state]) => state) as [LiveClientId, DemoState][];
+  const listeningState = connectedStates
+    .map(([, state]) => state)
+    .find((state) => state.runStatus === "running" || state.runStatus === "failed" || state.clientIncident)
+    ?? liveState
+    ?? connectedStates[0]?.[1];
+
+  if (listeningState && connectedStates.length > 0) {
+    return <LiveAgentTheater state={listeningState} states={connectedStates} selectedClientId={workspace.id} />;
   }
 
   return (
@@ -77,15 +85,43 @@ function eventTone(event: DecisionEvent) {
   return "text-brand-ink";
 }
 
-function LiveAgentTheater({ state }: { state: DemoState }) {
+function LiveAgentTheater({
+  state,
+  states,
+  selectedClientId,
+}: {
+  state: DemoState;
+  states: [LiveClientId, DemoState][];
+  selectedClientId: LiveClientId;
+}) {
   const incident = state.clientIncident;
   const completed = state.runStatus === "complete";
   const statusLabel = state.runStatus === "running" ? "Agent working autonomously" : completed ? "Recovery complete" : state.runStatus === "failed" ? "Recovery failed" : "Waiting for client incident";
   const clientHref = incident?.clientId === "northwind" ? "/client/northwind" : "/datacenter";
   const clientLabel = incident?.clientId === "northwind" ? "Open Northwind client" : "Open Meridian client";
+  const activeClients = states.filter(([, clientState]) => clientState.clientIncident);
+  const selectedIsDisplayed = incident?.clientId === selectedClientId;
 
   return (
     <div>
+      <section className="mb-4 rounded-xl border border-line bg-surface p-3" aria-label="Agent listener status">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+          <span className="live-dot size-2 rounded-full bg-ok" />
+          <span className="font-semibold text-ink">Agent listening across {states.length} client surfaces</span>
+          {activeClients.map(([clientId, clientState]) => (
+            <Link
+              key={clientId}
+              href={clientId === "northwind" ? "/client/northwind" : "/datacenter"}
+              className={`status-pill ${clientState.runStatus === "failed" ? "bad" : clientState.runStatus === "running" ? "warn" : "ok"}`}
+            >
+              {clientId === "northwind" ? "Northwind" : "Meridian"}: {clientState.runStatus}
+            </Link>
+          ))}
+          {!selectedIsDisplayed && incident && (
+            <span className="text-faint">Showing the active incident from the other workspace.</span>
+          )}
+        </div>
+      </section>
       <section className="mb-4 rounded-xl border border-brand-line bg-brand-soft/45 p-3.5" aria-live="polite">
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">

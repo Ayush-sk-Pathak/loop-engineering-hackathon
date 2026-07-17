@@ -109,6 +109,15 @@ export async function runStockout(
 
     store.complete({ ...result, order: acceptedOrder });
   } catch (error) {
+    store.appendEvent({
+      schemaVersion: SCHEMA_VERSION,
+      id: randomUUID(),
+      correlationId: stockout.eventId,
+      phase: "failed",
+      detail: error instanceof Error ? error.message : "Recovery stopped because the control plane returned an unknown error.",
+      occurredAt: new Date().toISOString(),
+      metadata: { authoritative: true },
+    });
     store.fail();
     throw error;
   }
