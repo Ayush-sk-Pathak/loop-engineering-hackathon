@@ -15,8 +15,8 @@
 
 ## Prize-Critical Integration
 
-- [ ] Owner 2: settle one live Zero call per candidate service and fill the service lock
-- [ ] Owner 2: implement the Zero evidence adapter with real receipt IDs
+- [x] Owner 2: settle one live Zero call per candidate service and fill the service lock (62db3b7, 2026-07-17)
+- [x] Owner 2: implement the Zero evidence adapter with real receipt IDs (62db3b7, 2026-07-17)
 - [ ] Owner 3: create Pomerium general-agent and verified-vendor service accounts
 - [ ] Owner 3: configure exact-route PPL and capture `403`/`201` authorize logs
 - [ ] Owners 1+3: run the complete live Zero -> Pomerium vertical slice
