@@ -4,6 +4,7 @@
 
 # claude local overrides
 .claude/settings.local.json
+.claude/worktrees/
 
 # node / build
 node_modules/

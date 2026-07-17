@@ -1,0 +1,4 @@
+# Append-only shared docs/logs: union-merge so parallel lanes' appends never conflict.
+# (Entries are order-insensitive dated appends; see docs/boards/OPERATING-MANUAL.md.)
+docs/CURRENT_STATE.md merge=union
+logs/*.jsonl merge=union
