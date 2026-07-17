@@ -496,3 +496,16 @@ stack: two `/api/demo/run`s (soft reset between) produced `learning.incidentCoun
 badge, "Northstar Supply" proven, 2 incidents resolved / 339ms tiles, the recall event — screenshot
 captured. `next build` green (14 routes; `/learning`, `/incidents` now real pages). Read-only — no
 write buttons.
+### 2026-07-17 — Lane C: C5 console-side (authenticated ingress verified; console/canonical gated)
+
+**C5 GO console-side (directive `f21ddeed`).** Nexla keys landed (`NEXLA_WEBHOOK_SECRET` +
+`NEXLA_API_KEY` in main `.env`). Rebased onto current main (`dce90ce`), `npm install` clean.
+Verified the authenticated Nexla-destination handshake on the isolated lane-C stack
+(`:4400`/`:4401`, dev/fixture, **test secret** — the real `.env` secret is never read into a
+worktree): missing header → `401`, wrong secret → `401`, correct `X-Continuim-Webhook-Secret`
+→ `202 {"accepted":true,"eventId":"nexla-event-001"}`; the accepted run drained to `complete`
+with `correlationId == "nexla-event-001"` end to end. Evidence in `docs/integrations/NEXLA.md`
+(§ "Authenticated ingress verified"). **Still gated:** the actual Nexla-console flow build is
+human-legs (needs console access + `NEXLA_API_KEY`; this lane has no Nexla API tool and never
+touches the main `.env`), and the live canonical `:4000` delivery is token-serialized (sequence
+A → B → PM slice → C). ROADMAP "prove the event ID end to end" stays open until that live run.
