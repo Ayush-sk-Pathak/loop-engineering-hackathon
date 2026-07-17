@@ -50,9 +50,10 @@ test("store persists a client incident with the live control-plane state", () =>
   const store = new DemoStore(":memory:");
   store.reset("datacenter");
 
-  store.setClientIncident("gpu-07", "node_offline");
+  store.setClientIncident("meridian", "gpu-07", "node_offline");
   const incident = store.read()?.clientIncident;
   assert.equal(incident?.nodeId, "gpu-07");
+  assert.equal(incident?.clientId, "meridian");
   assert.equal(incident?.faultType, "node_offline");
   assert.ok(!Number.isNaN(Date.parse(incident?.detectedAt ?? "")));
 

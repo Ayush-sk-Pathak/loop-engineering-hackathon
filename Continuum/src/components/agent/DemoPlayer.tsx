@@ -81,6 +81,8 @@ function LiveAgentTheater({ state }: { state: DemoState }) {
   const incident = state.clientIncident;
   const completed = state.runStatus === "complete";
   const statusLabel = state.runStatus === "running" ? "Agent working autonomously" : completed ? "Recovery complete" : state.runStatus === "failed" ? "Recovery failed" : "Waiting for client incident";
+  const clientHref = incident?.clientId === "northwind" ? "/client/northwind" : "/datacenter";
+  const clientLabel = incident?.clientId === "northwind" ? "Open Northwind client" : "Open Meridian client";
 
   return (
     <div>
@@ -95,7 +97,7 @@ function LiveAgentTheater({ state }: { state: DemoState }) {
                 : "Create a GPU incident in Client board to begin a real persisted recovery run."}
             </p>
           </div>
-          <Link href="/datacenter" className="btn-secondary shrink-0">Open Client board</Link>
+          <Link href={clientHref} className="btn-secondary shrink-0">{clientLabel}</Link>
         </div>
       </section>
 

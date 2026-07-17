@@ -92,15 +92,11 @@ function fakeClient(bodies: Record<string, unknown>): ZeroClient {
 }
 
 const liveBodies: Record<string, unknown> = {
-  [CANDIDATE_SERVICES.enrichment.serviceId]: {
-    name: "Northstar Supply Cooperative",
-    domain: "northstar-supply.example",
-  },
+  [CANDIDATE_SERVICES.enrichment.serviceId]: { domain: "northstar-supply.example" },
   [CANDIDATE_SERVICES.domain.serviceId]: {
     events: [{ eventAction: "registration", eventDate: "2019-01-01T00:00:00.000Z" }],
   },
-  [CANDIDATE_SERVICES.web.serviceId]: { markdown: "# Northstar Supply" },
-  [CANDIDATE_SERVICES.news.serviceId]: { news: [{ title: "Northstar Supply expands capacity" }] },
+  [CANDIDATE_SERVICES.web.serviceId]: { text: "Northstar Supply" },
 };
 
 test("gather runs the candidate services and reuses one receipt for company+payee", async () => {
@@ -110,7 +106,6 @@ test("gather runs the candidate services and reuses one receipt for company+paye
   assert.deepEqual(kinds, [
     "company_identity_match",
     "domain_age_days",
-    "news_presence",
     "payee_identity_match",
     "web_presence",
   ]);

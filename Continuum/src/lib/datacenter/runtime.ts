@@ -91,11 +91,24 @@ class DatacenterRuntime {
       return;
     }
 
+    // This console is Meridian's client surface. A Northwind incident belongs
+    // only in its own client console and must not be presented as GPU telemetry.
+    if (state.scenario.id !== "datacenter") {
+      this.publish({
+        ...this.snapshot,
+        connected,
+        activeFault: null,
+        incident: null,
+        timeline: this.snapshot.timeline.filter((item) => item.simulated || item.id === "boot"),
+      });
+      return;
+    }
+
     const localTimeline = this.snapshot.timeline.filter((item) => item.simulated || item.id === "boot");
     const timeline = [...localTimeline, ...state.events.map(controlTimelineItem)];
     const completed = state.runStatus === "complete";
     const failed = state.runStatus === "failed";
-    const persistedIncident = state.clientIncident
+    const persistedIncident = state.clientIncident && (state.clientIncident.clientId ?? "meridian") === "meridian"
       ? incidentFromControlPlane(state.clientIncident)
       : null;
     const incident = (this.snapshot.incident ?? persistedIncident)

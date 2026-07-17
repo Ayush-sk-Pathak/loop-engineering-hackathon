@@ -9,13 +9,16 @@ import { startInventoryMonitor } from "./monitor.ts";
 const port = Number(process.env.CONTROL_PLANE_PORT ?? 4000);
 const host = process.env.CONTROL_PLANE_HOST ?? "127.0.0.1";
 const store = new DemoStore();
-const clientFaultTypes = new Set([
-  "node_offline",
-  "thermal_runaway",
-  "ecc_spike",
-  "network_loss",
-  "power_failure",
-]);
+const clientIncidentRoutes = {
+  meridian: {
+    scenario: "datacenter",
+    faultTypes: new Set(["node_offline", "thermal_runaway", "ecc_spike", "network_loss", "power_failure"]),
+  },
+  northwind: {
+    scenario: "apparel",
+    faultTypes: new Set(["supplier_delay", "inventory_stockout", "quality_hold", "line_outage"]),
+  },
+} as const;
 
 if (process.env.MONITOR_ENABLED !== "0") {
   startInventoryMonitor(
@@ -100,35 +103,39 @@ createServer(async (request, response) => {
   }
   if (request.method === "POST" && request.url === "/api/demo/client-incident") {
     const state = store.read();
-    if (!state || state.scenario.id !== "datacenter") {
-      response.writeHead(409).end(JSON.stringify({ error: "Client incident bridge requires the datacenter scenario" }));
+    if (!state) {
+      response.writeHead(503).end(JSON.stringify({ error: "Control-plane state is unavailable" }));
       return;
     }
     if (state.runStatus === "running") {
       response.writeHead(409).end(JSON.stringify({ error: "Procurement is already running" }));
       return;
     }
-    if (state.inventory.inboundQty > 0) {
-      response.writeHead(409).end(JSON.stringify({ error: "Recovery is already scheduled; reset before starting another incident" }));
-      return;
-    }
     try {
-      const body = await readJson(request) as { nodeId?: unknown; faultType?: unknown };
+      const body = await readJson(request) as { clientId?: unknown; nodeId?: unknown; faultType?: unknown };
+      const clientId = body.clientId === undefined ? "meridian" : body.clientId;
+      if (clientId !== "meridian" && clientId !== "northwind") {
+        response.writeHead(400).end(JSON.stringify({ error: "A supported clientId is required" }));
+        return;
+      }
+      const route = clientIncidentRoutes[clientId];
       if (
         typeof body.nodeId !== "string" ||
         typeof body.faultType !== "string" ||
-        !clientFaultTypes.has(body.faultType)
+        !(route.faultTypes as Set<string>).has(body.faultType)
       ) {
-        response.writeHead(400).end(JSON.stringify({ error: "A nodeId and supported faultType are required" }));
+        response.writeHead(400).end(JSON.stringify({ error: "An asset id and supported fault type are required for this client" }));
         return;
       }
-      store.setClientIncident(body.nodeId, body.faultType);
+      if (state.scenario.id !== route.scenario || state.inventory.inboundQty > 0) store.reset(route.scenario);
+      store.setClientIncident(clientId, body.nodeId, body.faultType);
       let next = store.read();
       while (next && next.inventory.currentQty > next.inventory.threshold) {
         next = store.consumeUnit();
       }
       response.writeHead(202).end(JSON.stringify({
         accepted: true,
+        clientId,
         nodeId: body.nodeId,
         faultType: body.faultType,
         inventory: next?.inventory,
