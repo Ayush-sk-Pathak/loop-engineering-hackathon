@@ -80,6 +80,7 @@ export function OperationsDashboard() {
   const isRunning = state.runStatus === "running";
   const ItemIcon = state.scenario.id === "apparel" ? Droplets : MemoryStick;
   const isAtRisk = state.inventory.currentQty <= state.inventory.threshold && state.inventory.inboundQty === 0;
+  const correlationId = state.events.length > 0 ? state.events[state.events.length - 1].correlationId : null;
   const lastCheckSeconds = state.monitor.lastCheckAt
     ? Math.max(0, Math.floor((Date.now() - Date.parse(state.monitor.lastCheckAt)) / 1_000))
     : null;
@@ -107,6 +108,7 @@ export function OperationsDashboard() {
             {scenarioOptions.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}
           </select>
           <span className={`mode ${state.metrics.verificationMode}`}>{state.metrics.verificationMode === "fixture" ? "Fixture evidence" : "Live Zero"}</span>
+          <span className={`mode ${state.metrics.authorizationMode}`}>{state.metrics.authorizationMode === "pomerium" ? "Pomerium" : "Development"}</span>
           <button className="iconButton" onClick={() => command("/api/demo/reset")} title="Reset demo" aria-label="Reset demo"><RefreshCw size={17} /></button>
           <button
             className="primaryButton"
@@ -175,7 +177,7 @@ export function OperationsDashboard() {
         </section>
 
         <section className="tracePanel">
-          <div className="sectionHeading"><div><span>Autonomous decision trace</span><h2>{state.runStatus === "idle" ? "Ready" : state.runStatus}</h2></div><span className={`pulse ${isRunning ? "active" : ""}`} /></div>
+          <div className="sectionHeading"><div><span>Autonomous decision trace</span><h2>{state.runStatus === "idle" ? "Ready" : state.runStatus}</h2></div><div className="traceHeadRight">{correlationId && <span className="eventChip" title="Nexla event / correlation ID">{correlationId}</span>}<span className={`pulse ${isRunning ? "active" : ""}`} /></div></div>
           <div className="timeline" aria-live="polite">
             {state.events.length === 0 && <div className="emptyState"><Activity size={28} /><strong>Watching critical inventory</strong><span>Node failures consume spares. The monitor starts procurement when stock reaches the threshold.</span></div>}
             {[...state.events].reverse().map((event) => (

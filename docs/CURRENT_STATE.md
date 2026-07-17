@@ -285,3 +285,24 @@ Wave-new files swept `@stockshield` → `@continuim` (`services/zero-adapter/*`,
 `npm run check` green 29/29 under the new scope. Lanes A–D continue on pre-rename
 worktrees; the rename is absorbed at each lane's next merge (lazy rebase per the human's
 call). `Continuum/` frontend role: under tab-E investigation before any dashboard decision.
+**C2 — event-ID chip + mode badges.** Surgical dashboard edits (chips/badges/labels only,
+per the pending UI handoff): added a legible monospace event-ID/correlation chip in the
+decision-trace header (renders the run's `correlationId`, e.g. `nexla-event-001`) and a new
+authorization-mode badge (`Pomerium` / `Development`) beside the existing verification badge
+(`Live Zero` / `Fixture evidence`) in `apps/dashboard/components/operations-dashboard.tsx`
+(+ `.mode.pomerium` and `.eventChip` rules in `apps/dashboard/app/styles.css`). Verified:
+`npm run build:web` green; a headless render of the lane-C stack confirmed both badges and
+the chip legible for **fixture+development** (chip `nexla-event-001`) and **fixture+pomerium**
+(blue `Pomerium`, computed `#1c5b88` on `#e1f0fa`), no console errors. The `Live Zero` label
+is the pre-existing verification conditional (unchanged), reachable only with the live Zero
+adapter (deferred to W2/C6).
+
+**C4 — DEMO.md rehearsal hardening.** Rewrote the "Before Recording" prose in `docs/DEMO.md`
+into an explicit 5-step pre-rehearsal checklist, run before recording **and before every
+denial rehearsal**: (1) `doctor:prize` + `check` green; (2) hard-reset the incident ledger
+(`{"hard":true}`) before EVERY denial rehearsal — flagged the #1 rehearsal failure, since the
+Learning Layer otherwise suppresses the prize-critical 403 beat; (3) datacenter scenario lock
+with a code-verified caveat (`store.reset` clears the decision trail but not the incident
+ledger, so a scenario switch needs a follow-up hard-reset); (4) confirm `Live Zero` /
+`Pomerium` badges; (5) stage proof tabs + record continuous. Doc only; canonical port 4000
+preserved.
