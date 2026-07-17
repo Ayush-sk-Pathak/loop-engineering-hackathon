@@ -8,6 +8,7 @@ import {
   Check,
   CircleDollarSign,
   Droplets,
+  History,
   MemoryStick,
   PackageCheck,
   RefreshCw,
@@ -20,11 +21,12 @@ import {
 const API = "/api/control";
 
 const scenarioOptions: { id: ScenarioId; label: string }[] = [
-  { id: "datacenter", label: "On-prem compute spares" },
-  { id: "apparel", label: "Sock line dye supply" },
+  { id: "datacenter", label: "Datacenter" },
+  { id: "apparel", label: "Apparel" },
 ];
 
 const phaseIcon: Partial<Record<DecisionPhase, React.ReactNode>> = {
+  recalled_history: <History size={15} />,
   authorization_denied: <Ban size={15} />,
   replanned: <RefreshCw size={15} />,
   ineligible: <TriangleAlert size={15} />,
@@ -111,7 +113,9 @@ export function OperationsDashboard() {
             onClick={() => command("/api/demo/consume")}
             disabled={isRunning || state.inventory.currentQty === 0 || state.inventory.inboundQty > 0}
           >
-            <ServerCrash size={16} />{isRunning ? "Agent responding" : state.scenario.id === "apparel" ? "Consume dye stock" : "Simulate node failure"}
+            <ServerCrash size={16} />
+            <span className="desktopActionLabel">{isRunning ? "Agent responding" : state.scenario.id === "apparel" ? "Consume dye stock" : "Simulate node failure"}</span>
+            <span className="mobileActionLabel">{isRunning ? "Running" : state.scenario.id === "apparel" ? "Use dye" : "Failure"}</span>
           </button>
         </div>
       </header>
@@ -122,6 +126,13 @@ export function OperationsDashboard() {
         <span>{state.monitor.watchedSkus.length} critical SKU watched</span>
         <span>{lastCheckSeconds === null ? "Awaiting first check" : `Checked ${lastCheckSeconds}s ago`}</span>
         <span>{state.scenario.industry}: {state.scenario.trigger}</span>
+        <span className="learningStat">
+          Learning: {state.learning.incidentCount === 0
+            ? "no incidents in ledger"
+            : `${state.learning.incidentCount} incident${state.learning.incidentCount === 1 ? "" : "s"} resolved${
+              state.learning.lastResolutionMs === null ? "" : ` · last in ${(state.learning.lastResolutionMs / 1000).toFixed(1)}s`
+            }`}
+        </span>
       </div>
 
       {connectionError && <div className="connectionBanner">Control plane connection interrupted. Retrying.</div>}
@@ -182,8 +193,9 @@ export function OperationsDashboard() {
             {state.vendors.map((vendor) => {
               const blocked = state.blacklistedVendorIds.includes(vendor.id);
               const selected = state.order?.vendorId === vendor.id;
+              const proven = state.learning.provenVendorIds.includes(vendor.id);
               return <article className={`vendorRow ${blocked ? "blocked" : ""} ${selected ? "selected" : ""}`} key={vendor.id}>
-                <div className="vendorIdentity"><span className="vendorLogo">{vendor.tradingName.slice(0, 2).toUpperCase()}</span><div><strong>{vendor.tradingName}</strong><span>{vendor.domain}</span></div></div>
+                <div className="vendorIdentity"><span className="vendorLogo">{vendor.tradingName.slice(0, 2).toUpperCase()}</span><div><strong>{vendor.tradingName}</strong><span>{vendor.domain}</span></div>{proven && <span className="provenChip"><History size={11} /> Proven</span>}</div>
                 <div className="vendorQuote"><strong>{money(vendor.quote.unitPriceCents)}</strong><span>{vendor.quote.leadTimeDays}d lead</span></div>
                 <div className="vendorStatus">{blocked ? <><Ban size={15} /> Ineligible</> : selected ? <><Check size={15} /> PO accepted</> : <>Pending</>}</div>
               </article>;

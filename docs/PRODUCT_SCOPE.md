@@ -10,11 +10,13 @@ labels.
 
 ## Demo-Stable Product
 
-One deterministic scenario ships: a datacenter consumes its final safe 64 GB ECC memory
-spare. The inventory monitor detects the threshold crossing and starts the loop without a
-separate run action. The agent attempts its lowest-cost plan, observes an authorization
-denial, buys evidence, blacklists an ineligible lookalike, and issues a PO to an eligible
-vendor. A PO schedules inbound stock; it does not pay a supplier or claim receipt of goods.
+Two deterministic scenario profiles ship through one engine: a datacenter consumes its final
+safe 64 GB ECC memory spare, or an apparel line consumes its navy dye reserve. The datacenter
+profile is the primary stage path; the apparel selector is a short generalization closer.
+The inventory monitor detects the threshold crossing and starts the loop without a separate
+run action. The agent attempts its lowest-cost plan, observes an authorization denial, buys
+evidence, blacklists an ineligible lookalike, and issues a PO to an eligible vendor. A PO
+schedules inbound stock; it does not pay a supplier or claim receipt of goods.
 
 The two candidate vendors are disclosed synthetic inputs. Dynamic vendor discovery is out of
 scope.
@@ -39,6 +41,7 @@ scope.
 - Authorization before idempotency; changed replay and nonce reuse are rejected.
 - Pomerium assertion verification with exact vendor subject-to-path equality.
 - Fixture and live-Zero collector modes with receipt enforcement for paid signals.
+- Data-driven datacenter/apparel scenario profiles with quote-to-SKU consistency tests.
 - SQLite decision state, responsive dashboard, one-command setup, Docker image, and runbooks.
 
 ## Prize-Critical P1

@@ -7,6 +7,20 @@ npm run doctor:prize
 npm run check
 ```
 
+**Hard-reset the incident ledger first.** The Learning Layer remembers completed runs:
+after any prior run, the agent emits `recalled_history` and **skips the unattested-denial
+beat** — the prize-critical 403 moment will not play. Before the recording (and before
+each full rehearsal of the denial beat), clear the ledger:
+
+```bash
+curl -X POST http://127.0.0.1:4000/api/demo/reset \
+  -H "content-type: application/json" --data '{"hard": true}'
+```
+
+A plain reset (dashboard Reset button) is **soft** — it keeps the ledger on purpose. Use
+soft reset when you *want* to show the learning beat (`recalled_history` + proven-vendor
+chip) as a second run after the main arc.
+
 Confirm the dashboard says **Live Zero** and **Pomerium**, not Fixture or Development. Keep
 the Pomerium authorize log and the received PO email ready in separate tabs. Record a single
 continuous critical path where possible.

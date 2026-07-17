@@ -1,11 +1,9 @@
 # StockShield
 
-Autonomous emergency procurement for any critical supply. When a shortage threatens
-operations — a regulated datacenter down to its last ECC spare, or a textile line hours
-from halting without dye — StockShield notices on its own, sources backup vendors, and
-buys the fix at machine speed. That rescue loop is the product. Built into every pass of
-it is the reason you can turn it on: a fraud-defense trust layer that verifies every
-vendor with independently purchased evidence before a cent can move.
+Autonomous emergency procurement for critical supplies. When a shortage threatens
+operations, StockShield notices on its own, evaluates backup vendors, and prepares the
+recovery PO at machine speed. That rescue loop is the product. Its trust layer requires
+independent evidence and constrained authority before a PO can be committed.
 
 > The rescue is the hero. The trust layer is the tool that makes it safe.
 > An agent may be wrong, but it cannot be unauthorized.
@@ -14,9 +12,8 @@ StockShield watches a critical-supply pool, detects a shortage without a human p
 “run,” evaluates candidate vendors, purchases current evidence through Zero.xyz, and requests
 a purchase order through a Pomerium-protected route. Verification produces a vendor-scoped,
 quote-scoped, payee-bound, amount-limited, expiring capability. The procurement origin
-verifies that capability independently. The engine is scenario-agnostic: two locked demo
-scenarios (on-prem compute spares and apparel dye — `docs/PRODUCT_SCOPE.md §3a`) run through
-the identical loop behind one dashboard toggle.
+verifies that capability independently. Two disclosed scenario profiles, on-prem compute
+spares and apparel dye, run through the same loop behind one dashboard selector.
 
 ![StockShield architecture](docs/assets/architecture.svg)
 

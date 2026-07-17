@@ -1,7 +1,8 @@
 # StockShield Scenario Notes
 
-These are product-expansion hypotheses, not features in the demo. Only the critical-memory
-scenario is implemented. Dollar outcomes remain illustrative until tied to operator data.
+The datacenter and apparel profiles are implemented as disclosed synthetic demo inputs.
+Other cases are product-expansion hypotheses. Dollar outcomes remain illustrative until tied
+to operator data.
 
 ## Implemented: Datacenter Memory Spares
 
@@ -26,10 +27,11 @@ age or generic web search.
 
 ## Future: Manufacturing Inputs
 
-For dye, chemicals, packaging, or automotive inputs, the authorization design remains useful,
-but the evidence policy must be domain-specific. Certification validity, lot traceability,
-material safety, and legal-entity checks require real providers and cannot be represented by
-the current vendor fixtures.
+The implemented apparel profile shows that navy dye can use the same event, evidence,
+capability, and PO contracts. Its evidence remains the same generic synthetic vendor-risk
+fixture; it does not prove chemical certification or lot suitability. Broader chemicals,
+packaging, or automotive inputs need domain-specific providers for certification, lot
+traceability, material safety, and legal-entity checks.
 
 ## Future: Demand Audit And Protected Purge
 

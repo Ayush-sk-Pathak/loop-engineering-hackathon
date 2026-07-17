@@ -32,6 +32,7 @@ function state(overrides: Partial<DemoState> = {}): DemoState {
       verificationMode: "fixture",
       authorizationMode: "development",
     },
+    learning: { incidentCount: 0, lastResolutionMs: null, provenVendorIds: [] },
     updatedAt: new Date().toISOString(),
     ...overrides,
   };

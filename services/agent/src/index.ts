@@ -40,6 +40,11 @@ export interface LoopPorts {
   decisions: DecisionSink;
 }
 
+export interface LoopHistory {
+  provenVendorIds: string[];
+  knowsAuthorizationRequired: boolean;
+}
+
 export interface LoopResult {
   orderedVendorId?: string;
   blacklistedVendorIds: string[];
@@ -57,6 +62,7 @@ export async function runProcurementLoop(
   candidates: VendorCandidate[],
   ports: LoopPorts,
   stepDelayMs = 0,
+  history?: LoopHistory,
 ): Promise<LoopResult> {
   const correlationId = stockout.eventId;
   const blacklistedVendorIds: string[] = [];
@@ -65,7 +71,8 @@ export async function runProcurementLoop(
   let verificationMode: VerificationVerdict["evidenceMode"] = "fixture";
   let deniedRequestId: string | undefined;
   let deniedEnforcementPoint: ProcurementResult["enforcementPoint"] | undefined;
-  let learnedAuthorizationRequirement = false;
+  let learnedAuthorizationRequirement = history?.knowsAuthorizationRequired ?? false;
+  const provenVendorIds = new Set(history?.provenVendorIds ?? []);
 
   const emit = async (
     phase: DecisionEvent["phase"],
@@ -95,14 +102,30 @@ export async function runProcurementLoop(
     "planned",
     "Select the lowest-priced candidate, observe procurement controls, and adapt without human intervention",
   );
+  if (learnedAuthorizationRequirement) {
+    await emit(
+      "recalled_history",
+      "Recalled from the incident ledger: procurement requires vendor-scoped evidence; skipping the unattested attempt",
+    );
+  }
 
-  const ranked = [...candidates]
-    .filter((vendor) => vendor.quote.availableQty >= stockout.requestedQty)
+  const priced = [...candidates]
+    .filter((vendor) =>
+      vendor.quote.sku === stockout.sku &&
+      vendor.quote.availableQty >= stockout.requestedQty)
     .sort((a, b) => a.quote.unitPriceCents - b.quote.unitPriceCents);
+  const ranked = [
+    ...priced.filter((vendor) => provenVendorIds.has(vendor.id)),
+    ...priced.filter((vendor) => !provenVendorIds.has(vendor.id)),
+  ];
   for (const vendor of ranked) {
     await emit(
       "sourced",
-      `Candidate quoted ${(vendor.quote.unitPriceCents / 100).toFixed(2)} USD per unit`,
+      `Candidate quoted ${(vendor.quote.unitPriceCents / 100).toFixed(2)} USD per unit${
+        provenVendorIds.has(vendor.id)
+          ? " (prioritized: proven fulfillment in prior incidents)"
+          : ""
+      }`,
       vendor,
     );
 

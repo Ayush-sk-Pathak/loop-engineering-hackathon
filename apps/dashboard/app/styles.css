@@ -32,6 +32,7 @@ main { min-height: 100vh; }
 .mode.live_zero { color: #0e6c47; background: #e7f6ef; border-color: #a8dbc4; }
 .scenarioSelect { height: 36px; padding: 0 8px; background: #fff; border: 1px solid #cfd3d7; border-radius: 5px; color: #33383d; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
 .scenarioSelect:disabled { cursor: wait; opacity: .55; }
+.mobileActionLabel { display: none; }
 .iconButton, .primaryButton { height: 36px; border: 1px solid #cfd3d7; border-radius: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .iconButton { width: 36px; background: #fff; color: #555b61; }
 .primaryButton { gap: 7px; padding: 0 14px; background: #17191c; color: #fff; border-color: #17191c; font-weight: 700; }
@@ -81,6 +82,7 @@ main { min-height: 100vh; }
 .timelineIcon { margin-top: 1px; width: 24px; height: 24px; display: grid; place-items: center; color: #697077; background: #f1f2f3; border-radius: 4px; }
 .phase-authorization_denied .timelineIcon, .phase-ineligible .timelineIcon { color: #a62525; background: #fde8e7; }
 .phase-replanned .timelineIcon { color: #86600e; background: #fff2ce; }
+.phase-recalled_history .timelineIcon { color: #1c5b88; background: #e1f0fa; }
 .phase-attested .timelineIcon, .phase-ordered .timelineIcon, .phase-inbound_scheduled .timelineIcon { color: #14704c; background: #ddf4e9; }
 .eventMeta { justify-content: space-between; gap: 10px; }
 .eventMeta strong { font-size: 11px; text-transform: uppercase; }
@@ -102,6 +104,7 @@ main { min-height: 100vh; }
 .vendorStatus { grid-column: 1 / -1; width: fit-content; display: flex; gap: 5px; align-items: center; color: #7a7f85; font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .vendorRow.blocked .vendorStatus { color: #a62525; }
 .vendorRow.selected .vendorStatus { color: #14704c; }
+.vendorIdentity .provenChip { margin-left: auto; padding: 3px 6px; display: inline-flex; gap: 4px; align-items: center; color: #1c5b88; background: #e1f0fa; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; overflow: visible; }
 .controlProof { margin: 12px 14px 16px; padding: 12px; gap: 9px; align-items: flex-start; color: #1c5b88; background: #edf6fc; border: 1px solid #c4dfef; border-radius: 5px; }
 .controlProof div { display: flex; flex-direction: column; gap: 2px; }
 .controlProof strong { color: #274d68; font-size: 11px; }
@@ -117,10 +120,14 @@ footer { padding: 0 28px 18px; display: flex; gap: 18px; color: #8b9095; font-si
 }
 
 @media (max-width: 720px) {
-  .topbar { height: auto; padding: 14px 16px; align-items: flex-start; }
+  .topbar { height: auto; padding: 14px 16px; align-items: flex-start; gap: 8px; }
+  .brand { flex: 0 0 36px; }
   .brand > div, .mode { display: none; }
-  .actions { min-width: 0; margin-left: auto; }
-  .primaryButton { padding: 0 9px; font-size: 12px; white-space: nowrap; }
+  .actions { min-width: 0; margin-left: auto; gap: 6px; }
+  .scenarioSelect { width: 100px; min-width: 0; }
+  .primaryButton { padding: 0 8px; font-size: 12px; white-space: nowrap; }
+  .desktopActionLabel { display: none; }
+  .mobileActionLabel { display: inline; }
   .metricBand { padding: 14px 16px; gap: 16px 10px; }
   .monitorStrip { padding: 8px 16px; flex-wrap: wrap; gap: 6px 9px; }
   .monitorStrip span { padding-left: 0; border-left: 0; }

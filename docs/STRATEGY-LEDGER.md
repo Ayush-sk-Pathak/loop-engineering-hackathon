@@ -118,9 +118,28 @@ core sponsor proof is green.
     stands); a mocked verified-registry paid via Zero (`0003` stands); fraud-first framing.
     DECISIONS `0013`.
 
+14. **The external tool-blueprint is reconciled: adopt its additive wins behind existing
+    ports; reject what reverses a decision or discards the green slice (2026-07-17).**
+    Adopt: AWS Bedrock backing the planner/explainer port (LLM explains, never adjudicates —
+    `0008` holds), a clearly-badged real-artifact replay mode for the recording, one real
+    paid WHOIS/domain-age Zero call as the authentic anchor, and StableEmail-primary with a
+    disclosed non-sponsor email fallback. Full map: `docs/blueprint-reconciliation.md`.
+    DECISIONS `0014`.
+
+15. **ProcureLoop's three-layer definition is absorbed: Hero Runway / Secondary Guardrail /
+    Learning Layer (2026-07-17).** The hero runway (autonomous monitoring + procurement) and
+    the guardrail's vendor-verification half are implemented; the demand-audit half stays the
+    deferred extension (`0012`). New: an append-only **incident ledger** — every resolved run
+    logs anomaly profile, vendor, spend, and resolution speed; later runs skip the
+    already-learned unattested probe (emitting `recalled_history`) and prefer
+    proven-fulfillment vendors. **Invariant: learning never bypasses the evidence gate or the
+    signed capability.** **Rejected, do not re-propose:** Fillmore auto-PO (`0004`), paid
+    B2B registry lookup via Zero (`0003`), renaming to ProcureLoop (`0006`/`0013`).
+    DECISIONS `0015`.
+
 ## Standing directives & envelope
 
-- **Demo-first scope.** If a feature isn't on the 3-minute demo script (`docs/PRD.md §9`),
+- **Demo-first scope.** If a feature isn't on the 3-minute demo script (`docs/PRD.md §14`),
   it isn't in scope today. A smaller thing that runs beats a bigger thing that doesn't.
 - **Determinism over live-API roulette.** Vendors are disclosed synthetic candidates and the
   scenario is scripted; the *only* things that must be genuinely live are the Zero paid calls

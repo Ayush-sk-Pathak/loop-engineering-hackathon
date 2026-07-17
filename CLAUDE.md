@@ -119,7 +119,7 @@ require constant clarification.
 
 This is a ~5.5-hour sprint. When these principles collide with the clock, the tiebreaker
 is: **a smaller thing that runs and demos beats a bigger thing that doesn't.** Every
-feature must be reachable from the 3-minute demo script in `docs/PRD.md §9`. If it isn't
+feature must be reachable from the 3-minute demo script in `docs/PRD.md §14`. If it isn't
 on that script, it isn't in scope today.
 
 ### Documentation cadence (same-commit, never batched)
@@ -154,8 +154,9 @@ true when written — **verify it against the repo before acting on it.** In par
 
 ### Branch model
 
-`main` = demo-stable; each owner works on `feat/<area>` and merges only after `npm run check`.
-`dev` may be used for a short integration rehearsal, but it must not diverge indefinitely.
+`main` is the **single long-lived branch** (demo-stable). Each owner works on a
+short-lived `feat/<area>` branch and merges to `main` only after `npm run check` is
+green; feature branches are deleted after merge. There is no standing `dev` branch.
 Never force-push `main`. The full workflow is in `CONTRIBUTING.md`.
 
 ---

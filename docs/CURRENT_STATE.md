@@ -93,3 +93,30 @@ notes added; see also `docs/blueprint-reconciliation.md`, decision 0014).
 **Verified (this commit).** `npm test` 11/11 pass; `npm run typecheck` exit 0;
 `npm run build` exit 0. DEMO.md gained the optional "same loop, any industry" closer;
 ROADMAP scenario-engine box ticked.
+
+### 2026-07-17 — Learning Layer, exhaustive docs, advisor audit fixes, single-branch consolidation
+
+**Built.** Learning Layer landed per decision 0015: `incidents` SQLite ledger written on
+`complete()`; `DemoState.learning` (count, last resolution, proven vendors); `history()`
+drives the loop — later runs emit `recalled_history` instead of the unattested probe and
+rank proven vendors first; soft reset preserves the ledger, `POST /api/demo/reset
+{"hard":true}` clears it; dashboard learning strip + Proven chips. New tests:
+`services/agent/src/learning.test.ts`, `services/control-plane/src/store.test.ts`.
+
+**Documented.** `docs/PRD.md` rewritten as the exhaustive product document (1,194 lines,
+19 sections incl. decision index + glossary); new `docs/SYSTEM.md` (1,106 lines) — the
+complete technical reference read from the code.
+
+**Advisor audit (docs↔docs + docs↔code lenses) findings fixed:** stale 11/11 test counts
+→ 15/15 (PRD); demo-script pointer `PRD §9` → `§14` (CLAUDE.md, STRATEGY-LEDGER);
+SYSTEM.md §12 updated from "landing" to "landed", §13 test inventory 7→9 files, reset
+endpoint hard-flag documented; `SCENARIO=datacenter` added to `config/example.env`;
+**docs/DEMO.md now requires a hard reset before recording** — the learning ledger
+otherwise suppresses the prize-critical denial beat on repeat runs.
+
+**Workflow.** Single long-lived branch: `main` only (CLAUDE.md §Branch model,
+CONTRIBUTING.md updated); `dev` and `ayush` remote branches deleted after their content
+was fully merged/absorbed.
+
+**Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean;
+`npm run build` (check + Next production build) green.

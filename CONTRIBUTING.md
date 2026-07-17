@@ -43,8 +43,8 @@ git push -u origin HEAD
 
 Merge the reviewed branch to `main` only while `npm run check` is green. Do not force-push
 `main`, commit another owner's unfinished files, or use `git add .` without reviewing
-`git status --short`. During the hackathon, `dev` may be used for a temporary integration,
-but `main` remains the demo-stable branch.
+`git status --short`. `main` is the **single long-lived branch**; feature branches are
+short-lived and deleted after merge. There is no standing `dev` branch.
 
 ## Integration Rules
 

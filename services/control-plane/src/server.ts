@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage } from "node:http";
 import type { StockoutRiskEvent } from "@stockshield/contracts";
 import { SCHEMA_VERSION } from "@stockshield/contracts";
+import { SCENARIOS } from "@stockshield/verification";
 import { DemoStore } from "./store.ts";
 import { runDemo, runStockout } from "./runtime.ts";
 import { startInventoryMonitor } from "./monitor.ts";
@@ -43,7 +44,9 @@ createServer(async (request, response) => {
     return;
   }
   if (request.method === "POST" && request.url === "/api/demo/reset") {
-    response.writeHead(200).end(JSON.stringify(store.reset()));
+    const body = await readJson(request).catch(() => undefined);
+    const hard = (body as { hard?: unknown } | undefined)?.hard === true;
+    response.writeHead(200).end(JSON.stringify(store.reset(undefined, hard)));
     return;
   }
   if (request.method === "POST" && request.url === "/api/demo/scenario") {
@@ -104,6 +107,14 @@ createServer(async (request, response) => {
         response.writeHead(400).end(JSON.stringify({ error: "Invalid Nexla stockout event" }));
         return;
       }
+      const scenario = Object.values(SCENARIOS).find(
+        (candidate) => candidate.item.sku === event.sku,
+      );
+      if (!scenario) {
+        response.writeHead(400).end(JSON.stringify({ error: "No scenario is configured for this SKU" }));
+        return;
+      }
+      if (store.read()?.scenario.id !== scenario.id) store.reset(scenario.id);
       response.writeHead(202).end(JSON.stringify({ accepted: true, eventId: event.eventId }));
       void runStockout(store, event).catch((error) => {
         console.error("control-plane: Nexla-triggered run failed", error);
@@ -142,6 +153,7 @@ function isStockoutRiskEvent(value: unknown): value is StockoutRiskEvent {
     typeof event.sku === "string" && event.sku.length > 0 &&
     Number.isSafeInteger(event.currentQty) && Number(event.currentQty) >= 0 &&
     Number.isSafeInteger(event.threshold) && Number(event.threshold) >= 0 &&
+    Number(event.currentQty) <= Number(event.threshold) &&
     Number.isSafeInteger(event.requestedQty) && Number(event.requestedQty) > 0 &&
     typeof event.occurredAt === "string" && !Number.isNaN(Date.parse(event.occurredAt)) &&
     (event.source === "nexla" || event.source === "local" || event.source === "monitor")

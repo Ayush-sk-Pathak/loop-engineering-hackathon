@@ -135,6 +135,7 @@ export interface PurchaseOrder {
 export type DecisionPhase =
   | "observed"
   | "planned"
+  | "recalled_history"
   | "sourced"
   | "authorization_attempted"
   | "authorization_denied"
@@ -175,6 +176,21 @@ export interface ProcurementResult {
   requestId: string;
 }
 
+export interface IncidentRecord {
+  id: string;
+  scenarioId: ScenarioId;
+  sku: string;
+  startedAt: string;
+  resolvedAt: string;
+  resolutionMs: number;
+  orderedVendorId: string | null;
+  blacklistedVendorIds: string[];
+  verificationSpendCents: number;
+  poValueCents: number;
+  atRiskPoValuePreventedCents: number;
+  evidenceMode: EvidenceMode;
+}
+
 export interface DemoMetrics {
   atRiskPoValuePreventedCents: number;
   verificationSpendCents: number;
@@ -212,5 +228,10 @@ export interface DemoState {
   blacklistedVendorIds: string[];
   order?: PurchaseOrder;
   metrics: DemoMetrics;
+  learning: {
+    incidentCount: number;
+    lastResolutionMs: number | null;
+    provenVendorIds: string[];
+  };
   updatedAt: string;
 }

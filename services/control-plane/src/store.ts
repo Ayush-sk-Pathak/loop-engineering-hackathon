@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import type { DecisionEvent, DemoState, PurchaseOrder, ScenarioId } from "@stockshield/contracts";
+import type { DecisionEvent, DemoState, EvidenceMode, IncidentRecord, PurchaseOrder, ScenarioId } from "@stockshield/contracts";
 import { SCENARIOS } from "@stockshield/verification";
 
 function defaultScenarioId(): ScenarioId {
@@ -11,6 +12,7 @@ function defaultScenarioId(): ScenarioId {
 
 export class DemoStore {
   private readonly database: DatabaseSync;
+  private runStartedAt: string | null = null;
 
   constructor(path = process.env.SQLITE_PATH ?? "data/stockshield.db") {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
@@ -28,6 +30,15 @@ export class DemoStore {
         payload TEXT NOT NULL,
         occurred_at TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS incidents (
+        id TEXT PRIMARY KEY,
+        scenario_id TEXT NOT NULL,
+        sku TEXT NOT NULL,
+        resolution_ms INTEGER NOT NULL,
+        ordered_vendor_id TEXT,
+        payload TEXT NOT NULL,
+        resolved_at TEXT NOT NULL
+      );
     `);
     const current = this.read();
     if (!current || !current.monitor || !current.scenario) {
@@ -35,9 +46,11 @@ export class DemoStore {
     }
   }
 
-  reset(scenarioId?: ScenarioId): DemoState {
+  reset(scenarioId?: ScenarioId, hard = false): DemoState {
     const scenario = SCENARIOS[scenarioId ?? this.read()?.scenario?.id ?? defaultScenarioId()];
     this.database.exec("DELETE FROM decision_events");
+    if (hard) this.database.exec("DELETE FROM incidents");
+    this.runStartedAt = null;
     const state: DemoState = {
       runStatus: "idle",
       scenario: {
@@ -70,6 +83,7 @@ export class DemoStore {
         verificationMode: "fixture",
         authorizationMode: process.env.AUTH_MODE === "pomerium" ? "pomerium" : "development",
       },
+      learning: this.learningSummary(scenario.id),
       updatedAt: new Date().toISOString(),
     };
     this.write(state);
@@ -80,10 +94,32 @@ export class DemoStore {
     const row = this.database.prepare("SELECT payload FROM demo_state WHERE id = 1").get() as
       | { payload: string }
       | undefined;
-    return row ? (JSON.parse(row.payload) as DemoState) : undefined;
+    if (!row) return undefined;
+    const state = JSON.parse(row.payload) as DemoState;
+    if (state.scenario) state.learning = this.learningSummary(state.scenario.id);
+    return state;
   }
 
-  start(currentQty = 0): DemoState {
+  history(): { provenVendorIds: string[]; knowsAuthorizationRequired: boolean } {
+    const learning = this.learningSummary(this.read()?.scenario?.id ?? defaultScenarioId());
+    // Simplest honest signal: every completed run either observed the unattested
+    // denial or recalled it, so any recorded incident implies the requirement is known.
+    return {
+      provenVendorIds: learning.provenVendorIds,
+      knowsAuthorizationRequired: learning.incidentCount > 0,
+    };
+  }
+
+  start(currentQty = 0, sku?: string): DemoState {
+    const current = this.read();
+    if (sku && current?.inventory.sku !== sku) {
+      const matchingScenario = Object.values(SCENARIOS).find(
+        (scenario) => scenario.item.sku === sku,
+      );
+      if (!matchingScenario) throw new Error(`No scenario is configured for SKU ${sku}`);
+      this.reset(matchingScenario.id);
+    }
+    this.runStartedAt = new Date().toISOString();
     return this.update((state) => ({
       ...state,
       runStatus: "running",
@@ -131,6 +167,7 @@ export class DemoStore {
     deniedEnforcementPoint?: DemoState["metrics"]["deniedEnforcementPoint"];
     order?: PurchaseOrder;
   }): DemoState {
+    this.recordIncident(input);
     return this.update((state) => ({
       ...state,
       runStatus: input.order ? "complete" : "failed",
@@ -154,6 +191,62 @@ export class DemoStore {
 
   fail(): DemoState {
     return this.update((state) => ({ ...state, runStatus: "failed" }));
+  }
+
+  private recordIncident(input: {
+    blacklistedVendorIds: string[];
+    atRiskPoValuePreventedCents: number;
+    verificationSpendCents: number;
+    verificationMode: EvidenceMode;
+    order?: PurchaseOrder;
+  }): void {
+    const state = this.read();
+    if (!state) return;
+    const resolvedAt = new Date().toISOString();
+    const startedAt = this.runStartedAt ?? resolvedAt;
+    const incident: IncidentRecord = {
+      id: randomUUID(),
+      scenarioId: state.scenario.id,
+      sku: state.inventory.sku,
+      startedAt,
+      resolvedAt,
+      resolutionMs: Math.max(0, Date.parse(resolvedAt) - Date.parse(startedAt)),
+      orderedVendorId: input.order?.vendorId ?? null,
+      blacklistedVendorIds: input.blacklistedVendorIds,
+      verificationSpendCents: input.verificationSpendCents,
+      poValueCents: input.order?.totalAmountCents ?? 0,
+      atRiskPoValuePreventedCents: input.atRiskPoValuePreventedCents,
+      evidenceMode: input.verificationMode,
+    };
+    this.database.prepare(
+      "INSERT INTO incidents (id, scenario_id, sku, resolution_ms, ordered_vendor_id, payload, resolved_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    ).run(
+      incident.id,
+      incident.scenarioId,
+      incident.sku,
+      incident.resolutionMs,
+      incident.orderedVendorId,
+      JSON.stringify(incident),
+      incident.resolvedAt,
+    );
+    this.runStartedAt = null;
+  }
+
+  private learningSummary(scenarioId: ScenarioId): DemoState["learning"] {
+    const count = this.database
+      .prepare("SELECT COUNT(*) AS count FROM incidents WHERE scenario_id = ?")
+      .get(scenarioId) as { count: number };
+    const last = this.database
+      .prepare("SELECT resolution_ms FROM incidents WHERE scenario_id = ? ORDER BY rowid DESC LIMIT 1")
+      .get(scenarioId) as { resolution_ms: number } | undefined;
+    const proven = this.database
+      .prepare("SELECT DISTINCT ordered_vendor_id AS id FROM incidents WHERE scenario_id = ? AND ordered_vendor_id IS NOT NULL")
+      .all(scenarioId) as { id: string }[];
+    return {
+      incidentCount: count.count,
+      lastResolutionMs: last?.resolution_ms ?? null,
+      provenVendorIds: proven.map((row) => row.id),
+    };
   }
 
   private update(mutator: (state: DemoState) => DemoState): DemoState {

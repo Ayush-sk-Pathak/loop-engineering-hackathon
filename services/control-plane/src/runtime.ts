@@ -32,7 +32,7 @@ export async function runStockout(
   store: DemoStore,
   stockout: StockoutRiskEvent,
 ): Promise<void> {
-  const state = store.start(stockout.currentQty);
+  const state = store.start(stockout.currentQty, stockout.sku);
   let acceptedOrder: ProcurementResult["order"];
   const evidenceCollector = createEvidenceCollector();
 
@@ -65,7 +65,7 @@ export async function runStockout(
           store.appendEvent(event);
         },
       },
-    }, Number(process.env.DEMO_STEP_DELAY_MS ?? 350));
+    }, Number(process.env.DEMO_STEP_DELAY_MS ?? 350), store.history());
 
     store.complete({ ...result, order: acceptedOrder });
   } catch (error) {
