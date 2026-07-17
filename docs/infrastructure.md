@@ -12,7 +12,8 @@ browser :3000
        -> SQLite decision state
 ```
 
-`npm run dev` runs the three processes. `docker compose up --build` runs the same topology
+`npm run dev` runs the control plane, procurement origin, evidence adapter, and primary
+Continuum UI. `docker compose up --build` runs the same topology
 with the procurement service exposed only to the container network. The monitor checks the
 spares pool every two seconds by default and emits the same contract as the Nexla ingress.
 Local mode uses a signed attestation guard and is visibly labeled **development**, not

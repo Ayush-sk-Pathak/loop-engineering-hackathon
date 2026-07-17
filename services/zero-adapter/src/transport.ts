@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import type { EvidenceKind, VendorCandidate } from "@continuim/contracts";
 import {
@@ -77,17 +79,35 @@ export const CANDIDATE_SERVICES = {
 } satisfies Record<string, ZeroServiceRef>;
 
 /**
- * Returns a live Zero transport only when a real Zero session is configured:
- * `ZERO_PRIVATE_KEY` — the wallet credential the `zero` CLI consumes (or a
- * `zero auth login` session). With no session it returns `null`, and the adapter
- * answers 503 "Zero session not configured": it must never fabricate
- * fixture-shaped `live_zero` evidence (STRATEGY-LEDGER decision 0010).
+ * Returns a live Zero transport only when a real Zero session is configured.
+ * Current Zero supports a managed wallet session from `zero auth login`; a
+ * bring-your-own wallet can also be provided with `ZERO_PRIVATE_KEY`, and
+ * sandbox runs may pass `ZERO_SESSION_TOKEN`. With no session it returns `null`,
+ * and the adapter answers 503 "Zero session not configured": it must never
+ * fabricate fixture-shaped `live_zero` evidence (STRATEGY-LEDGER decision 0010).
  */
 export function createZeroTransport(
   env: Record<string, string | undefined> = process.env,
 ): ZeroTransport | null {
-  if (!env.ZERO_PRIVATE_KEY?.trim()) return null;
+  if (!hasZeroSession(env)) return null;
   return new LiveZeroTransport(new CliZeroClient());
+}
+
+function hasZeroSession(env: Record<string, string | undefined>): boolean {
+  if (env.ZERO_PRIVATE_KEY?.trim()) return true;
+  if (env.ZERO_SESSION_TOKEN?.trim()) return true;
+  if (env.ZERO_AUTH_TOKEN?.trim()) return true;
+
+  const home = env.HOME?.trim();
+  if (!home) return false;
+  const configPath = join(home, ".zero", "config.json");
+  if (!existsSync(configPath)) return false;
+  try {
+    const config = JSON.parse(readFileSync(configPath, "utf8")) as Record<string, unknown>;
+    return Boolean(config.session || config.auth || config.byoPrivateKey);
+  } catch {
+    return false;
+  }
 }
 
 /**

@@ -51,11 +51,11 @@ pool, buys the recovery part, and keeps authorization outside the model.”
 
 **0:15-0:40 - Autonomous trigger**
 
-Click **Simulate node failure** until the final safe spare is consumed, then take your hands
-off the controls. Show the monitor's last-check time change and the `stockout_risk` event
-appear without a run action. If the live Nexla path is ready, show its event ID; otherwise
-call this the disclosed local monitor. Do not say the vendors were discovered dynamically.
-They are disclosed synthetic candidates.
+Open **Client console**, inject a node fault, and take your hands off the controls. The
+client detector waits for the telemetry breach, posts the incident to the control-plane
+bridge, and the always-on monitor starts the procurement loop. Switch to **Operations** to
+show the live denial, evidence decision, authorized PO, and inbound schedule. Do not say
+the vendors were discovered dynamically; they are disclosed synthetic candidates.
 
 **0:40-1:00 - Load-bearing denial**
 

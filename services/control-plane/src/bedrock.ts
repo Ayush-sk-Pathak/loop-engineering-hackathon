@@ -15,8 +15,8 @@ export async function explainVerdictWithBedrock(
   if (env.BEDROCK_EXPLAINER_ENABLED !== "1") return undefined;
 
   const token = env.AWS_BEARER_TOKEN_BEDROCK ?? env.BEDROCK_API_KEY;
-  const region = env.BEDROCK_REGION ?? env.AWS_REGION ?? "us-east-1";
-  const modelId = env.BEDROCK_MODEL_ID ?? "global.anthropic.claude-sonnet-4-5-20250929-v1:0";
+  const region = env.BEDROCK_REGION ?? env.AWS_REGION ?? "ap-south-1";
+  const modelId = env.BEDROCK_MODEL_ID ?? "apac.amazon.nova-micro-v1:0";
   if (!token) {
     throw new Error("BEDROCK_EXPLAINER_ENABLED=1 requires AWS_BEARER_TOKEN_BEDROCK");
   }
@@ -86,7 +86,14 @@ export async function explainVerdictWithBedrock(
   });
 
   if (!response.ok) {
-    throw new Error(`Bedrock Converse failed with ${response.status}`);
+    let detail = "";
+    try {
+      const body = await response.json() as { message?: unknown; Message?: unknown; __type?: unknown };
+      detail = String(body.message ?? body.Message ?? body.__type ?? "");
+    } catch {
+      detail = await response.text().catch(() => "");
+    }
+    throw new Error(`Bedrock Converse failed with ${response.status}${detail ? `: ${detail}` : ""}`);
   }
   const body = await response.json() as {
     output?: { message?: { content?: { text?: string }[] } };

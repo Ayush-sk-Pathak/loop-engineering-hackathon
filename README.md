@@ -67,8 +67,10 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000). The control plane listens on port
 `4000`; the procurement origin listens on `127.0.0.1:4001` in local mode.
 
-Click **Simulate node failure** three times. The monitor detects the threshold crossing and
-starts the loop on its next check. The operator does not click a separate run control.
+Open **Client console** from the landing page and inject a test fault. The client detector
+hands the incident to the always-on control-plane monitor; the business-facing
+**Operations** view then shows the denial, evidence decision, authorized PO, and inbound
+schedule. The operator does not click a separate run control.
 
 In another terminal:
 
@@ -131,7 +133,8 @@ It must not be marked verified from a marketing page alone.
 ## Repository Map
 
 ```text
-apps/dashboard/          Next.js operations surface
+Continuum/                Primary business UI plus client datacenter console
+apps/dashboard/          Legacy judge-facing dashboard surface
 packages/contracts/      authoritative seam definitions
 packages/security/       attestation signing, verification, and request binding
 services/agent/          bounded observe/act/replan loop

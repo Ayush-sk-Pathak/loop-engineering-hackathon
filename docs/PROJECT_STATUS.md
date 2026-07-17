@@ -17,7 +17,9 @@
   triggers during active runs or existing inbound supply.
 - **Security:** full vendor/payee/quote/price/amount binding, authorization before idempotency,
   request fingerprints, and nonce replay defense are implemented and tested.
-- **Dashboard:** one responsive operations screen; fixture/local/live modes are explicit.
+- **UIs:** a primary Continuum business workspace plus a separate client datacenter console;
+  the client fault bridge feeds the always-on control-plane monitor and the business UI
+  renders the resulting live decision trace. Fixture/local/live modes are explicit.
 - **Nexla:** webhook ingress exists; external FlexFlow configuration is pending.
 - **Zero:** strict HTTP adapter seam exists; no live services are locked yet.
 - **Pomerium:** assertion verification exists; route, policy, and two service accounts are pending.

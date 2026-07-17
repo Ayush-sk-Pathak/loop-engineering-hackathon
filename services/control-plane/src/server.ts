@@ -9,6 +9,13 @@ import { startInventoryMonitor } from "./monitor.ts";
 const port = Number(process.env.CONTROL_PLANE_PORT ?? 4000);
 const host = process.env.CONTROL_PLANE_HOST ?? "127.0.0.1";
 const store = new DemoStore();
+const clientFaultTypes = new Set([
+  "node_offline",
+  "thermal_runaway",
+  "ecc_spike",
+  "network_loss",
+  "power_failure",
+]);
 
 if (process.env.MONITOR_ENABLED !== "0") {
   startInventoryMonitor(
@@ -89,6 +96,48 @@ createServer(async (request, response) => {
       return;
     }
     response.writeHead(200).end(JSON.stringify(store.consumeUnit()));
+    return;
+  }
+  if (request.method === "POST" && request.url === "/api/demo/client-incident") {
+    const state = store.read();
+    if (!state || state.scenario.id !== "datacenter") {
+      response.writeHead(409).end(JSON.stringify({ error: "Client incident bridge requires the datacenter scenario" }));
+      return;
+    }
+    if (state.runStatus === "running") {
+      response.writeHead(409).end(JSON.stringify({ error: "Procurement is already running" }));
+      return;
+    }
+    if (state.inventory.inboundQty > 0) {
+      response.writeHead(409).end(JSON.stringify({ error: "Recovery is already scheduled; reset before starting another incident" }));
+      return;
+    }
+    try {
+      const body = await readJson(request) as { nodeId?: unknown; faultType?: unknown };
+      if (
+        typeof body.nodeId !== "string" ||
+        typeof body.faultType !== "string" ||
+        !clientFaultTypes.has(body.faultType)
+      ) {
+        response.writeHead(400).end(JSON.stringify({ error: "A nodeId and supported faultType are required" }));
+        return;
+      }
+      store.setClientIncident(body.nodeId, body.faultType);
+      let next = store.read();
+      while (next && next.inventory.currentQty > next.inventory.threshold) {
+        next = store.consumeUnit();
+      }
+      response.writeHead(202).end(JSON.stringify({
+        accepted: true,
+        nodeId: body.nodeId,
+        faultType: body.faultType,
+        inventory: next?.inventory,
+      }));
+    } catch (error) {
+      response.writeHead(400).end(JSON.stringify({
+        error: error instanceof Error ? error.message : "Invalid request",
+      }));
+    }
     return;
   }
   if (request.method === "POST" && request.url === "/api/events/stockout") {
