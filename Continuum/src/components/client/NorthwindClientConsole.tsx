@@ -12,7 +12,7 @@ const INCIDENTS = [
 ] as const;
 
 export function NorthwindClientConsole() {
-  const { state, connected } = useLiveState();
+  const { state, connected } = useLiveState("northwind");
   const [incidentType, setIncidentType] = useState<(typeof INCIDENTS)[number]["id"]>("supplier_delay");
   const [status, setStatus] = useState<string | null>(null);
   const active = state?.runStatus === "running";
@@ -30,7 +30,7 @@ export function NorthwindClientConsole() {
   }
 
   async function reset() {
-    await fetch("/api/control/api/demo/reset", { method: "POST" });
+    await fetch("/api/control/api/demo/reset?clientId=northwind", { method: "POST" });
     setStatus("Client demo reset.");
   }
 

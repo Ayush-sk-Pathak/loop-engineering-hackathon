@@ -538,3 +538,17 @@ session export — honest-pending, not fabricated (decision 0010). The teammate'
 gate patch (`hasZeroSession`) is merged + green; the adapter reaches the owner's remote instance via
 `ZERO_EVIDENCE_ADAPTER_URL` (the HTTP seam's designed remote path). ROADMAP settle + adapter boxes
 ticked. Token released — wallet leg done.
+### 2026-07-17 — Two-client concurrent recovery isolation
+
+**Built.** The control plane now maintains independent SQLite tables and monitor loops for the
+Meridian GPU client (`clientId=meridian`, `datacenter`) and Northwind Textiles client
+(`clientId=northwind`, `apparel`). `GET /api/state?clientId=<id>` is client-scoped; client
+incident submission never resets or reads the other client's state. The UI polls the matching
+client state, and Northwind has a dedicated `/client/northwind` incident console for material and
+supplier failure signals.
+
+**Verified.** Two incidents submitted concurrently through the production Next proxy both returned
+`202` and completed: Meridian `gpu-04 / network_loss` produced PO `PO-0F194013`; Northwind
+`navy-dye-line-04 / quality_hold` produced PO `PO-0DFF844E`. Each retained its own 14-event trace,
+blacklisted vendor, and 20-unit inbound schedule. `npm run check` passed (**39/39**) and
+`npm --prefix Continuum run build` passed. Fixture/development mode only; no paid provider call.

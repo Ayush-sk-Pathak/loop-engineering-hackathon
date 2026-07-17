@@ -274,7 +274,7 @@ class DatacenterRuntime {
       ],
     });
     this.tick();
-    void fetch("/api/control/api/demo/reset", { method: "POST" }).catch(() => undefined);
+    void fetch("/api/control/api/demo/reset?clientId=meridian", { method: "POST" }).catch(() => undefined);
   };
 
   reset = () => {
@@ -282,7 +282,7 @@ class DatacenterRuntime {
     const next = initialSnapshot();
     this.publish({ ...next, connected: this.timer !== null });
     this.tick();
-    void fetch("/api/control/api/demo/reset", { method: "POST" }).catch(() => undefined);
+    void fetch("/api/control/api/demo/reset?clientId=meridian", { method: "POST" }).catch(() => undefined);
   };
 
   selectNode = (nodeId: string) => {
