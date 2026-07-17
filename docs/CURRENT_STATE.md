@@ -50,3 +50,21 @@ tool mapping, the embedded topology diagram (linking to the full infra doc), rep
 local quickstart, and the team split. `.gitignore` extended (user) to cover `data/`,
 `coverage/`, `*.tsbuildinfo`. Key infra invariant documented: `services/procurement` is
 reachable **only** through Pomerium — no route exists for the agent to bypass the gate.
+
+### 2026-07-17 — Green vertical slice: monitor, signed attestations, pre-verification denial, infra
+
+**Built (working tree integrated this session; tests 9/9, `tsc --noEmit` clean).**
+The full local vertical slice now exists and runs: always-on inventory monitor
+(`services/control-plane/src/monitor.ts`, 2s interval, threshold + idle + no-inbound guards);
+agent loop that attempts the cheapest **unattested** PO first, observes the live 403, replans,
+buys evidence, and orders with a signed capability (`services/agent/src/index.ts`);
+HMAC-signed quote/payee/amount-bound `VendorAttestation` with nonce replay defense
+(`packages/security`, `services/procurement`); deterministic vendor-risk policy v1.1
+(`services/verification/src/policy.ts`); pluggable fixture/live_zero evidence collector
+(`collector.ts`); Nexla webhook ingress (`POST /api/events/stockout`); ops dashboard with
+decision trail. Infra: `Dockerfile`, `compose.yaml`, `deploy/akash/deploy.example.yaml`,
+`infra/pomerium/vendor-policy.example.yaml`, `scripts/doctor.ts` readiness checker,
+integration runbooks under `docs/integrations/` (ZERO, POMERIUM, NEXLA, AKASH), `docs/DEMO.md`
+3-minute script, `CONTRIBUTING.md`. Decisions 0006–0010 recorded in `logs/DECISIONS.jsonl`.
+Pending on-site: Zero service lock (`config/zero-services.json` empty), Pomerium route +
+service accounts, StableEmail adapter, Nexla FlexFlow config, Akash deploy (P2).

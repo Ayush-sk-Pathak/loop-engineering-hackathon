@@ -8,12 +8,12 @@ import type {
 } from "@stockshield/contracts";
 import { SCHEMA_VERSION } from "@stockshield/contracts";
 import { runProcurementLoop } from "@stockshield/agent";
-import { issueDevelopmentCapability } from "@stockshield/security";
-import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@stockshield/verification";
+import { encodeVendorAttestation } from "@stockshield/security";
+import { createEvidenceCollector, DEMO_VENDORS, evaluateEvidence } from "@stockshield/verification";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
-  const state = store.start();
+  const state = store.read() ?? store.reset();
   const stockout: StockoutRiskEvent = {
     schemaVersion: SCHEMA_VERSION,
     type: "stockout_risk",
@@ -23,17 +23,27 @@ export async function runDemo(store: DemoStore): Promise<void> {
     threshold: state.inventory.threshold,
     requestedQty: 20,
     occurredAt: new Date().toISOString(),
-    source: process.env.NEXLA_LIVE === "1" ? "nexla" : "local",
+    source: "local",
   };
+  return runStockout(store, stockout);
+}
+
+export async function runStockout(
+  store: DemoStore,
+  stockout: StockoutRiskEvent,
+): Promise<void> {
+  store.start(stockout.currentQty);
   let acceptedOrder: ProcurementResult["order"];
+  const evidenceCollector = createEvidenceCollector();
 
   try {
     const result = await runProcurementLoop(stockout, DEMO_VENDORS, {
       verification: {
         async verify(vendor) {
+          const signals = await evidenceCollector.collect(vendor);
           return evaluateEvidence(
             vendor,
-            fixtureEvidence(vendor),
+            signals,
             process.env.ATTESTATION_SIGNING_SECRET ?? "local-attestation-only-change-me",
           );
         },
@@ -69,15 +79,9 @@ function resolveCredential(attestation: VendorAttestation): ProcurementCredentia
     const key = `POMERIUM_VENDOR_TOKEN_${attestation.vendorId.toUpperCase().replaceAll("-", "_")}`;
     const token = process.env[key];
     if (!token) throw new Error(`Missing vendor-scoped credential ${key}`);
-    return { kind: "pomerium", serviceAccountToken: token };
+    return { kind: "pomerium", serviceAccountToken: token, attestation };
   }
-  return {
-    kind: "development",
-    token: issueDevelopmentCapability(
-      attestation,
-      process.env.DEV_CAPABILITY_SECRET ?? "local-development-only-change-me",
-    ),
-  };
+  return { kind: "development", attestation };
 }
 
 async function submitPurchaseOrder(
@@ -89,24 +93,44 @@ async function submitPurchaseOrder(
     : process.env.PROCUREMENT_URL ?? "http://127.0.0.1:4001";
   if (!baseUrl) throw new Error("Missing procurement route URL");
 
-  const headers: Record<string, string> = { "content-type": "application/json" };
-  if (credential?.kind === "development") {
-    headers["x-stockshield-dev-capability"] = credential.token;
+  const headers: Record<string, string> = {
+    accept: "application/json",
+    "content-type": "application/json",
+  };
+  if (credential) {
+    headers["x-stockshield-vendor-attestation"] = encodeVendorAttestation(
+      credential.attestation,
+    );
   }
   if (credential?.kind === "pomerium") {
     headers.authorization = `Bearer Pomerium-${credential.serviceAccountToken}`;
+  } else if (!credential && process.env.AUTH_MODE === "pomerium") {
+    const agentToken = process.env.POMERIUM_AGENT_TOKEN;
+    if (!agentToken) throw new Error("Missing POMERIUM_AGENT_TOKEN for the denied policy attempt");
+    headers.authorization = `Bearer Pomerium-${agentToken}`;
   }
   const response = await fetch(`${baseUrl}/po/${encodeURIComponent(request.vendorId)}`, {
     method: "POST",
     headers,
     body: JSON.stringify(request),
   });
-  const body = (await response.json()) as Partial<ProcurementResult>;
+  const body = await readProcurementResponse(response);
   return {
     status: response.status,
     order: body.order,
     reason: body.reason,
     enforcementPoint: process.env.AUTH_MODE === "pomerium" ? "pomerium" : body.enforcementPoint ?? "development",
-    requestId: response.headers.get("x-stockshield-request-id") ?? body.requestId ?? randomUUID(),
+    requestId: response.headers.get("x-request-id") ??
+      response.headers.get("x-stockshield-request-id") ?? body.requestId ?? randomUUID(),
   };
+}
+
+async function readProcurementResponse(response: Response): Promise<Partial<ProcurementResult>> {
+  const text = await response.text();
+  if (!text) return { reason: response.statusText };
+  try {
+    return JSON.parse(text) as Partial<ProcurementResult>;
+  } catch {
+    return { reason: `${response.status} ${response.statusText}: ${text.slice(0, 160)}` };
+  }
 }

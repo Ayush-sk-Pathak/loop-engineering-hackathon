@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
   EvidenceKind,
   EvidenceSignal,
@@ -7,12 +7,14 @@ import type {
   VerificationVerdict,
 } from "@stockshield/contracts";
 import { VERIFICATION_POLICY_VERSION } from "@stockshield/contracts";
+import { signVendorAttestation } from "@stockshield/security";
 
 const REQUIRED_SIGNALS: EvidenceKind[] = [
   "company_identity_match",
   "domain_age_days",
   "web_presence",
-  "contact_reachable",
+  "payee_identity_match",
+  "typosquat_detected",
 ];
 
 export interface VerificationResult {
@@ -43,7 +45,7 @@ export function evaluateEvidence(
   const domainAge = numberSignal(signals, "domain_age_days");
   const webPresence = boolSignal(signals, "web_presence");
   const contactReachable = boolSignal(signals, "contact_reachable");
-  const bankMatch = boolSignal(signals, "bank_entity_match");
+  const payeeMatch = boolSignal(signals, "payee_identity_match");
   const typosquat = boolSignal(signals, "typosquat_detected");
 
   let riskScore = 0;
@@ -67,7 +69,7 @@ export function evaluateEvidence(
     riskScore += 20;
     reasons.push("The listed contact channel was unreachable");
   }
-  if (bankMatch === false) {
+  if (payeeMatch === false) {
     riskScore += 100;
     reasons.push("Quoted payee entity does not match the vendor identity");
   }
@@ -77,7 +79,7 @@ export function evaluateEvidence(
   }
 
   riskScore = Math.min(riskScore, 100);
-  const hardFailure = bankMatch === false || typosquat === true;
+  const hardFailure = payeeMatch === false || typosquat === true;
   const compoundFailure = domainAge !== undefined && domainAge < 30 && webPresence === false;
   const status = missing.length
     ? "insufficient_evidence"
@@ -88,7 +90,12 @@ export function evaluateEvidence(
   if (!reasons.length) reasons.push("Required identity and contact signals are consistent");
 
   const evidenceHash = createHash("sha256")
-    .update(JSON.stringify(signals))
+    .update(JSON.stringify({
+      vendorId: vendor.id,
+      vendorDomain: vendor.domain,
+      quoteId: vendor.quote.id,
+      signals,
+    }))
     .digest("hex");
   const evaluatedAt = now.toISOString();
   const expiresAt = new Date(now.getTime() + 15 * 60_000).toISOString();
@@ -104,7 +111,7 @@ export function evaluateEvidence(
     signals,
     evidenceMode,
     evidenceHash,
-    totalCostCents: signals.reduce((total, signal) => total + signal.source.costCents, 0),
+    totalCostCents: paidCallCost(signals),
     policyVersion: VERIFICATION_POLICY_VERSION,
     evaluatedAt,
     expiresAt,
@@ -115,18 +122,32 @@ export function evaluateEvidence(
   const unsigned = {
     id: randomUUID(),
     vendorId: vendor.id,
+    vendorDomain: vendor.domain,
     verified: true as const,
     quoteId: vendor.quote.id,
+    sku: vendor.quote.sku,
+    payeeName: vendor.quote.payeeName,
+    payeeAccountRef: vendor.quote.payeeAccountRef,
     evidenceHash,
     policyVersion: VERIFICATION_POLICY_VERSION,
+    unitPriceCents: vendor.quote.unitPriceCents,
+    maxQuantity: vendor.quote.availableQty,
     maxAmountCents: vendor.quote.unitPriceCents * vendor.quote.availableQty,
     currency: vendor.quote.currency,
     nonce: randomUUID(),
     issuedAt: evaluatedAt,
     expiresAt,
   };
-  const signature = createHmac("sha256", signingSecret)
-    .update(JSON.stringify(unsigned))
-    .digest("base64url");
-  return { verdict, attestation: { ...unsigned, signature } };
+  return { verdict, attestation: signVendorAttestation(unsigned, signingSecret) };
+}
+
+function paidCallCost(signals: EvidenceSignal[]): number {
+  const calls = new Map<string, number>();
+  for (const signal of signals) {
+    const source = signal.source;
+    const callId = source.receiptId ??
+      `${source.provider}:${source.serviceId}:${source.observedAt}`;
+    calls.set(callId, Math.max(calls.get(callId) ?? 0, source.costCents));
+  }
+  return [...calls.values()].reduce((total, cost) => total + cost, 0);
 }

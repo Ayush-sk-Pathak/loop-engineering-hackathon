@@ -9,11 +9,11 @@ supersede to `logs/DECISIONS.jsonl`.**
 
 ## Current front (2026-07-17) — where we are right now
 
-Concept is **locked**: Aegis, the autonomous procurement agent with fraud defense in the
-loop (see `docs/PRD.md`). Repo scaffolded with the anti-drift doc system. Immediate next
-step: the 4 owners agree the five interface signatures in `docs/architecture.md §Data flow`,
-then build against mocks in parallel. **Before any Zero code: re-verify the live catalog at
-`zero.xyz/browse`** (decision 3).
+StockShield's autonomous critical-spares slice and schema v1.1 are implemented. The active
+front is the live Zero evidence adapter plus the Pomerium deny/allow path. Run
+`npm run doctor:prize` before recording. The product is vendor-risk authorization, not a
+criminal fraud verdict. The two-branch demand-audit design is approved but deliberately
+deferred until the core sponsor proof is green.
 
 ## The load-bearing decisions (do not silently reverse)
 
@@ -67,18 +67,53 @@ then build against mocks in parallel. **Before any Zero code: re-verify the live
    MCP Studio on the day (EA risk); forcing an Akash GPU/compute angle we don't need.
    DECISIONS `0005`.
 
+6. **The public product is StockShield and the security thesis is policy-enforced agentic
+   procurement (2026-07-17).** The value is that an agent may research and replan but cannot
+   commit a PO without constrained authority. **Rejected:** “cannot be scammed,” a general
+   fraud detector, or merging customer checkout screening into this workflow. DECISIONS
+   `0006`, superseding the naming/framing in `0002`.
+
+7. **Pomerium enforces vendor-scoped machine identity; the origin enforces request-object
+   binding (2026-07-17).** A shared agent token cannot distinguish vendors, and Pomerium does
+   not read local SQLite. Prize mode requires a general agent identity for the denial and a
+   separate eligible-vendor identity for the allow. The origin verifies Pomerium's assertion
+   and StockShield's signed attestation. **Rejected:** arbitrary attestation-header presence,
+   shared agent identity, and application 403s presented as proxy proof. DECISIONS `0007`.
+
+8. **Verification has three deterministic outcomes (2026-07-17).** Evidence supports
+   `eligible`, `ineligible`, or `insufficient_evidence`; an LLM explains but does not decide.
+   Payee mismatch and typosquatting are hard failures. **Rejected:** fraud labels based on
+   young domains, missing news, or model prose. DECISIONS `0008`.
+
+9. **The self-correction is learned from a pre-verification authorization denial
+   (2026-07-17).** The general agent's cheapest plan receives a live 403, then the agent
+   acquires evidence and replans. **Rejected:** forcing an already-correct agent to order from
+   a blacklisted candidate. DECISIONS `0009`.
+
+10. **Every sponsor mode requires external proof (2026-07-17).** Zero requires receipts,
+    Pomerium requires authorize logs, Nexla requires an event ID, StableEmail a message ID,
+    and Akash a lease/URL. **Rejected:** silent fixture fallback and environment labels as
+    proof. DECISIONS `0010`.
+
+11. **The local demo is self-starting and critical-spares-first (2026-07-17).** A two-second
+    monitor emits the same versioned event shape as Nexla when a simulated node failure
+    consumes the final safe spare. The local source remains labeled `monitor`; it is not
+    presented as Nexla proof. DECISIONS `0011`.
+
+12. **The demand-audit/purge branch is an approved extension, not part of the demo-stable
+    baseline (2026-07-17).** It needs a separate buyer evidence policy, signed purge
+    capability, protected mutation, and queue UI. Implement it only after live Zero and
+    Pomerium proof is green; never imply buyer evidence was paid through Zero while it is
+    fixture-only. DECISIONS `0012`.
+
 ## Standing directives & envelope
 
 - **Demo-first scope.** If a feature isn't on the 3-minute demo script (`docs/PRD.md §9`),
   it isn't in scope today. A smaller thing that runs beats a bigger thing that doesn't.
-- **Determinism over live-API roulette.** Vendors are planted (1 legit, 1 fraud) and the
+- **Determinism over live-API roulette.** Vendors are disclosed synthetic candidates and the
   scenario is scripted; the *only* things that must be genuinely live are the Zero paid calls
   and the Pomerium denial. Everything else is controllable.
-- **Envelope (2026-07-17):** nothing is built yet — the repo contains only the doc system and
-  this plan. Unproven until code exists: (a) that the specific Zero tools (Apollo/PDL,
-  Firecrawl, serp, StablePhone) are live and settle from our wallet on the day — **must
-  re-verify on-site**; (b) that Pomerium policy can read our attestation store within the
-  time box (fallback: a thin reverse-proxy policy check if Pomerium cloud setup stalls);
-  (c) the cash-metric figure — anchor on FBI IC3 Business Email Compromise (~$2.9B/yr,
-  vendor-impersonation / bank-change fraud) but **source the exact current number before it
-  goes on a slide** (deep research did not verify cash figures).
+- **Envelope (2026-07-17):** local contracts, security, loop, state, dashboard, Docker build,
+  and Nexla ingress exist. Unproven: live Zero settlements, live Pomerium route/service
+  accounts, StableEmail delivery, Claude Agent SDK adapter, Nexla control-plane flow, and
+  Akash deployment. Do not claim any of those until its runbook contains external proof.

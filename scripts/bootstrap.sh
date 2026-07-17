@@ -1,10 +1,28 @@
 #!/bin/sh
-# Installs the enforcement layer — run once per clone, AFTER the initial commit
-# (the pre-commit hook would otherwise reject the scaffold's own first commit).
-# Constitution: enforcement lives below the harness (CLAUDE.md).
 set -eu
+
 cd "$(dirname "$0")/.."
-git config core.hooksPath scripts/githooks
-chmod 444 vision.md CLAUDE.md docs/architecture.md
-echo "bootstrap: core.hooksPath = $(git config core.hooksPath)"
-echo "bootstrap: read-only 444 -> vision.md CLAUDE.md docs/architecture.md"
+
+node -e '
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  if (major < 22 || (major === 22 && minor < 10)) {
+    console.error(`setup: Node >=22.10 is required; found ${process.versions.node}`);
+    process.exit(1);
+  }
+'
+
+if [ ! -f .env.local ]; then
+  cp config/example.env .env.local
+  echo "setup: created .env.local from config/example.env"
+else
+  echo "setup: kept existing .env.local"
+fi
+
+mkdir -p data
+
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  git config core.hooksPath scripts/githooks
+  echo "setup: configured scripts/githooks"
+fi
+
+echo "setup: run 'npm run doctor', then 'npm run dev'"

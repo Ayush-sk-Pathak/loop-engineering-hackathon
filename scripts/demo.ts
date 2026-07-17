@@ -1,11 +1,20 @@
 const controlPlane = process.env.CONTROL_PLANE_URL ?? "http://127.0.0.1:4000";
 
-const run = await fetch(`${controlPlane}/api/demo/run`, { method: "POST" });
-if (!run.ok) throw new Error(`Unable to start demo: ${run.status}`);
-console.log("Stockout event accepted. Watching autonomous loop...");
+const reset = await fetch(`${controlPlane}/api/demo/reset`, { method: "POST" });
+if (!reset.ok) throw new Error(`Unable to reset demo: ${reset.status}`);
+
+for (let failure = 1; failure <= 3; failure += 1) {
+  const consume = await fetch(`${controlPlane}/api/demo/consume`, { method: "POST" });
+  if (!consume.ok) throw new Error(`Unable to consume spare ${failure}: ${consume.status}`);
+  console.log(`node_failure ${failure} consumed one critical spare`);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+}
+console.log("Threshold reached. Waiting for the autonomous inventory monitor...");
 
 let previousCount = 0;
+const deadline = Date.now() + 30_000;
 while (true) {
+  if (Date.now() > deadline) throw new Error("Demo timed out; confirm MONITOR_ENABLED=1");
   await new Promise((resolve) => setTimeout(resolve, 250));
   const state = await fetch(`${controlPlane}/api/state`).then((response) => response.json()) as {
     runStatus: string;

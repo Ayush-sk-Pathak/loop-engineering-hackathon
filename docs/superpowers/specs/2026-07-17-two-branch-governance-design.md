@@ -1,6 +1,6 @@
 # Design: StockShield Two-Branch Governance Loop (Monitor → Freeze → Audit → Purge-or-Procure)
 
-**Date:** 2026-07-17 · **Status:** Approved concept (this session) · **Extends:** DECISIONS 0007/0008 · **Supersedes in part:** 0006's rejection of demand-side auditing (user-directed fusion) · **New record:** DECISIONS 0009
+**Date:** 2026-07-17 · **Status:** Approved extension; deferred until the core sponsor proof is green · **Extends:** DECISIONS 0007/0008 · **Supersedes in part:** 0006's rejection of demand-side auditing (user-directed fusion) · **New record:** DECISIONS 0012
 
 ## 1. What StockShield is (framing for ALL docs)
 
@@ -9,8 +9,8 @@
 > freezes the fulfillment queue, runs a paid identity audit on the demand, and
 > self-corrects: purging fraudulent orders to restore stock for $0 — or, when
 > demand is real, buying from a backup supplier it has cryptographically
-> verified. It cannot pay a vendor it hasn't verified, and it cannot touch the
-> order pipeline without a signed capability.**
+> verified. On the configured protected paths, a vendor PO or order purge is
+> rejected unless its exact object carries a valid signed capability.**
 
 The story order everywhere: **(1) stockout emergency → (2) autonomous detection
 and triage ("is this demand even real?") → (3) the cheap rescue (purge, $0) →
@@ -20,10 +20,10 @@ and triage ("is this demand even real?") → (3) the cheap rescue (purge, $0) �
 
 | Criterion (20%) | Answer |
 |---|---|
-| Autonomy | Always-on monitor fires the loop unprompted; the fraud-vs-real branch is a live decision, not a script |
+| Autonomy | Always-on monitor fires the loop unprompted; a deterministic policy decides the branch from disclosed evidence |
 | Idea | Dual loss: phantom stockouts drive away real customers while bot demand tricks you into buying inventory you don't need; plus vendor fraud lands exactly when buying is rushed |
 | Technical | Signed, quote-bound attestations; signed purge capabilities; nonce replay protection; deterministic policies |
-| Tool Use (≥3) | Zero.xyz paid evidence on both buyers and vendors (star) · Pomerium gates BOTH protected actions (order purge + vendor payment) · Nexla-shaped event stream (monitor emits the exact payload FlexFlow would) |
+| Tool Use (≥3) | Zero.xyz paid vendor evidence (and buyer evidence only if catalog-verified) · Pomerium gates both protected actions · Nexla-shaped event stream |
 | Presentation | One arc, two beats (§7) |
 
 ## 2. The flywheel
@@ -113,7 +113,7 @@ tick; `MONITOR_ENABLED` toggle. Emits the Nexla-compatible event.
 - Fulfillment queue panel: orders with live status chips
   (pending → held → purged/released).
 - Monitor strip ("Monitoring N critical items · last check Xs ago").
-- Metrics band: capital preserved · chargebacks avoided · fraud blocked
+- Metrics band: capital preserved · chargeback exposure · at-risk PO value prevented
   (vendor) · verification spend.
 - Branch visualization: the decision-matrix moment gets its own trail entries.
 - Copy: governance/ops language; "Simulate hype drop" button.
@@ -158,15 +158,16 @@ tick; `MONITOR_ENABLED` toggle. Emits the Nexla-compatible event.
 1. **0:00–0:25** — Hype drop live; stock ticker draining; monitor strip ticking.
 2. **0:25–0:50** — Stock hits 0 in an anomalous window. Hands off. Monitor
    fires; **fulfillment freezes** itself. *(Autonomy beat.)*
-3. **0:50–1:35** — Paid demand audit: 6 orders light red (proxy IPs, day-old
+3. **0:50–1:35** — Disclosed demand audit: 6 orders light red (proxy IPs, day-old
    emails, card-identity mismatch) → purge capability minted → gated purge →
    **shelves restore +6 for $0**; counter: capital preserved + chargebacks avoided.
 4. **1:35–2:30** — 4 real orders release; stock dips below threshold →
    procurement branch: lookalike distributor denied unattested + fails paid
    verification → blacklisted; verified distributor → attested PO → inbound.
 5. **2:30–3:00** — Close: *"It noticed, it triaged, it restored stock for zero
-   dollars, and when it did have to spend, it physically couldn't pay the fake
-   vendor. Everyone here gave an agent a wallet today — we built the reason you can."*
+   dollars, and when it did have to spend, the protected route rejected an
+   unauthorized vendor plan. Everyone here gave an agent a wallet today — we
+   built the reason you can."*
 
 ## 8. Build order under the clock (degrade gracefully)
 P0: monitor → orders model + freeze → demand policy + fixtures → purge via

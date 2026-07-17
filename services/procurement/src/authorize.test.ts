@@ -1,34 +1,72 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { PurchaseOrderRequest, VendorAttestation } from "@stockshield/contracts";
-import { issueDevelopmentCapability } from "@stockshield/security";
+import { encodeVendorAttestation, signVendorAttestation } from "@stockshield/security";
 import { authorizePurchase } from "./authorize.ts";
 
 const secret = "test-secret";
-const attestation: VendorAttestation = {
-  id: "att-1", vendorId: "vendor-a", verified: true, quoteId: "quote-1",
-  evidenceHash: "evidence-1", policyVersion: "vendor-risk-v1", maxAmountCents: 240_000,
-  currency: "USD", nonce: "nonce-1", issuedAt: new Date().toISOString(),
-  expiresAt: new Date(Date.now() + 60_000).toISOString(), signature: "sig",
-};
+const attestation = signVendorAttestation({
+  id: "att-1",
+  vendorId: "vendor-a",
+  vendorDomain: "vendor-a.example",
+  verified: true,
+  quoteId: "quote-1",
+  sku: "DDR5-ECC-64GB",
+  payeeName: "Vendor A LLC",
+  payeeAccountRef: "acct-a",
+  evidenceHash: "evidence-1",
+  policyVersion: "vendor-risk-v1",
+  unitPriceCents: 12_000,
+  maxQuantity: 20,
+  maxAmountCents: 240_000,
+  currency: "USD",
+  nonce: "nonce-1",
+  issuedAt: new Date().toISOString(),
+  expiresAt: new Date(Date.now() + 60_000).toISOString(),
+}, secret);
 const request: PurchaseOrderRequest = {
-  vendorId: "vendor-a", sku: "LAPTOP-14", quantity: 20, quoteId: "quote-1",
-  unitPriceCents: 12_000, currency: "USD", attestationId: "att-1",
-  evidenceHash: "evidence-1", idempotencyKey: "idempotency-1",
+  vendorId: "vendor-a",
+  vendorDomain: "vendor-a.example",
+  sku: "DDR5-ECC-64GB",
+  quantity: 20,
+  quoteId: "quote-1",
+  payeeName: "Vendor A LLC",
+  payeeAccountRef: "acct-a",
+  unitPriceCents: 12_000,
+  currency: "USD",
+  attestationId: "att-1",
+  evidenceHash: "evidence-1",
+  authorizationNonce: "nonce-1",
+  idempotencyKey: "idempotency-1",
 };
 
-test("development authorization denies missing and cross-vendor capabilities", async () => {
+const headers = (value: VendorAttestation = attestation) => ({
+  "x-stockshield-vendor-attestation": encodeVendorAttestation(value),
+});
+
+test("development authorization requires a valid request-bound attestation", async () => {
   await assert.rejects(
-    authorizePurchase({}, request, { mode: "development", developmentSecret: secret }),
-    /Missing development capability/,
+    authorizePurchase({}, request, { mode: "development", attestationSecret: secret }),
+    /Missing signed vendor attestation/,
   );
-  const token = issueDevelopmentCapability(attestation, secret);
   await assert.rejects(
-    authorizePurchase(
-      { "x-stockshield-dev-capability": token },
-      { ...request, vendorId: "vendor-b" },
-      { mode: "development", developmentSecret: secret },
-    ),
+    authorizePurchase(headers(), { ...request, vendorId: "vendor-b" }, {
+      mode: "development",
+      attestationSecret: secret,
+    }),
     /Vendor binding mismatch/,
+  );
+  await assert.rejects(
+    authorizePurchase(headers(), { ...request, unitPriceCents: 13_000 }, {
+      mode: "development",
+      attestationSecret: secret,
+    }),
+    /Unit price binding mismatch/,
+  );
+  await assert.doesNotReject(
+    authorizePurchase(headers(), request, {
+      mode: "development",
+      attestationSecret: secret,
+    }),
   );
 });

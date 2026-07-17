@@ -1,12 +1,13 @@
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage } from "node:http";
 import { createPurchaseOrder, isPurchaseOrderRequest } from "./index.ts";
 import type { AuthorizationConfig } from "./authorize.ts";
 
 const port = Number(process.env.PROCUREMENT_PORT ?? 4001);
+const host = process.env.PROCUREMENT_HOST ?? "127.0.0.1";
 const authMode = process.env.AUTH_MODE === "pomerium" ? "pomerium" : "development";
 const config: AuthorizationConfig = {
   mode: authMode,
-  developmentSecret: process.env.DEV_CAPABILITY_SECRET ?? "local-development-only-change-me",
+  attestationSecret: process.env.ATTESTATION_SIGNING_SECRET ?? "local-attestation-only-change-me",
   pomeriumJwksUrl: process.env.POMERIUM_JWKS_URL,
   pomeriumIssuer: process.env.POMERIUM_ISSUER,
   pomeriumAudience: process.env.POMERIUM_AUDIENCE,
@@ -40,12 +41,18 @@ createServer(async (request, response) => {
       error: error instanceof Error ? error.message : "Invalid request",
     }));
   }
-}).listen(port, "127.0.0.1", () => {
-  console.log(`procurement: http://127.0.0.1:${port} (${authMode})`);
+}).listen(port, host, () => {
+  console.log(`procurement: http://${host}:${port} (${authMode})`);
 });
 
-async function readJson(request: NodeJS.AsyncIterable<Buffer | string>): Promise<unknown> {
+async function readJson(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
-  for await (const chunk of request) chunks.push(Buffer.from(chunk));
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.from(chunk);
+    size += buffer.length;
+    if (size > 64 * 1024) throw new Error("Request body exceeds 64 KiB");
+    chunks.push(buffer);
+  }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }

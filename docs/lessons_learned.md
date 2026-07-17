@@ -1,4 +1,4 @@
-# Aegis — Lessons Learned (root causes, not symptoms)
+# StockShield Lessons Learned
 
 > A **prevention doc, not a bug changelog.** Each lesson is a named disease — the
 > class of mistake — with the rule that now prevents the whole class. Read the
@@ -34,6 +34,22 @@
    *Prevention:* the load-bearing demo beat must use the real tool. If the specific tool is
    missing, swap to another *real* tool of the same platform — never a mock. (Cross-link:
    `STRATEGY-LEDGER` decision 3; `architecture.md §Invariants`.)
+
+**3. Confusing caller identity with request-object identity.** The agent is the HTTP caller;
+   the selected vendor is data in the request. A shared agent token therefore cannot make a
+   vendor-specific authorization decision.
+   *Prevention:* use a vendor-scoped machine identity at Pomerium and independently bind the
+   signed vendor attestation to every mutable PO field at the origin.
+
+**4. Returning idempotent state before authorization.** An early idempotency lookup can
+   disclose or return a prior protected result to an unauthenticated retry.
+   *Prevention:* authorize every request before idempotency lookup, fingerprint the complete
+   request, and consume the authorization nonce once.
+
+**5. Treating a mode label as an integration.** Setting `source: nexla` or displaying a
+   sponsor name does not prove traffic crossed that sponsor's system.
+   *Prevention:* every live mode has an external artifact: a Zero receipt, Pomerium authorize
+   log, Nexla event ID, StableEmail message ID, or Akash lease.
 
 ## Incident index (evidence → where fixed → guarded by)
 

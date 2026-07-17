@@ -2,7 +2,7 @@
 
 > Standing instructions for every Claude Code session in this repository.
 >
-> **Start here:** `vision.md` (the north star — approval-locked) →
+> **Start here:** `vision.md` (the north star) →
 > `docs/PROJECT_STATUS.md` (30-second orientation) → `START-HERE.md`
 > (the full session reading order). The full plan lives in `docs/PRD.md`.
 
@@ -20,8 +20,8 @@ never "recently".
 
 | Doc | Role | Update rule |
 |---|---|---|
-| `vision.md` | **Intent** — north star, in the user's own words | **User only.** Changed only with the user's explicit line-by-line approval, never by an agent. Enforced below the agent (chmod 444 + pre-commit). |
-| `CLAUDE.md` (this file) | **Laws** — behavioral rules + standing protocols | Rare, deliberate; protected (444 + pre-commit; override = `git commit --no-verify` after user approval). |
+| `vision.md` | **Intent** — north star and product boundary | Change only with explicit product-direction approval. |
+| `CLAUDE.md` (this file) | **Laws** — behavioral rules + standing protocols | Rare and deliberate. |
 | `docs/PRD.md` | **The plan** — hackathon context, requirements, architecture, demo, team split | The single source of truth for what we're building and why. Update deliberately as scope settles. |
 | `docs/architecture.md` | **Design** — the blueprint of record | Deliberate; protected like CLAUDE.md. |
 | `docs/STRATEGY-LEDGER.md` | **Decisions & invariants** — settled calls, rejected options, honest envelope | Update as decisions settle; **never silently reverse — log a supersede to `logs/DECISIONS.jsonl` first.** Injected every session by the SessionStart hook. |
@@ -154,20 +154,17 @@ true when written — **verify it against the repo before acting on it.** In par
 
 ### Branch model
 
-`main` = demo-stable (only fast-forwarded after a green integration on `dev`); `dev` =
-integration branch; each of the 4 owners works on `feat/<area>` branches and merges to
-`dev` via a quick review. Never push to `main` mid-build. Never push unless the user asks.
+`main` = demo-stable; each owner works on `feat/<area>` and merges only after `npm run check`.
+`dev` may be used for a short integration rehearsal, but it must not diverge indefinitely.
+Never force-push `main`. The full workflow is in `CONTRIBUTING.md`.
 
 ---
 
 ## Enforcement lives below the harness
 
-`vision.md`, `CLAUDE.md`, and `docs/architecture.md` are chmod 444 and rejected by the
-pre-commit hook (`scripts/githooks/pre-commit`, installed via
-`scripts/bootstrap.sh` → `core.hooksPath`). The hook also refuses any staged `.env*`
-file. The deliberate, user-approved override is: `chmod u+w <file>`, edit,
-`git commit --no-verify`, then re-run `scripts/bootstrap.sh`. Instructions request;
-the environment enforces — do not ask the agent to "remember" these rules.
+`npm run setup` installs `scripts/githooks/pre-commit`. The hook rejects runtime environment
+files and recognizable private credentials, then runs `npm run check`. It does not make
+shared documentation read-only; a team must be able to keep design and status synchronized.
 
 ---
 

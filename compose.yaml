@@ -1,0 +1,55 @@
+name: stockshield
+
+services:
+  procurement:
+    build: .
+    command: npm run start:procurement
+    env_file: .env.local
+    environment:
+      AUTH_MODE: development
+      PROCUREMENT_HOST: 0.0.0.0
+      SQLITE_PATH: /app/data/stockshield.db
+    expose:
+      - "4001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4001/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+  control-plane:
+    build: .
+    command: npm run start:control
+    env_file: .env.local
+    environment:
+      AUTH_MODE: development
+      CONTROL_PLANE_HOST: 0.0.0.0
+      PROCUREMENT_URL: http://procurement:4001
+      SQLITE_PATH: /app/data/stockshield.db
+    ports:
+      - "4000:4000"
+    volumes:
+      - stockshield-data:/app/data
+    depends_on:
+      procurement:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+  dashboard:
+    build: .
+    command: npm run start:web
+    env_file: .env.local
+    environment:
+      CONTROL_PLANE_INTERNAL_URL: http://control-plane:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      control-plane:
+        condition: service_healthy
+
+volumes:
+  stockshield-data:

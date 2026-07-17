@@ -16,8 +16,8 @@
 
   <rect x="0" y="0" width="1200" height="430" fill="#ffffff"/>
 
-  <text x="600" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#15161f">Aegis — an agent that verifies suppliers before it can pay them</text>
-  <text x="600" y="70" text-anchor="middle" font-size="14" fill="#5b6470">plan → act → observe → self-correct · only the Zero.xyz calls and the Pomerium 403 are live</text>
+  <text x="600" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#15161f">StockShield — policy-enforced autonomous procurement</text>
+  <text x="600" y="70" text-anchor="middle" font-size="14" fill="#5b6470">observe → attempt → deny → buy evidence → replan → authorized PO</text>
 
   <!-- lane arrows -->
   <line x1="204" y1="210" x2="242" y2="210" stroke="#5b6470" stroke-width="2.5" marker-end="url(#arw)"/>
@@ -29,18 +29,18 @@
   <!-- branch arrows -->
   <path d="M924 190 L962 158" stroke="#2e9e5b" stroke-width="2.5" fill="none" marker-end="url(#arwG)"/>
   <path d="M924 232 L962 292" stroke="#d64545" stroke-width="2.5" fill="none" marker-end="url(#arwR)"/>
-  <text x="944" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#2e9e5b">200</text>
+  <text x="944" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#2e9e5b">201</text>
   <text x="946" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#d64545">403</text>
 
   <!-- self-correct loop -->
   <path d="M964 300 C 620 400, 560 400, 344 268" stroke="#7b4dff" stroke-width="2.2" fill="none" stroke-dasharray="6 5" marker-end="url(#arwP)"/>
-  <text x="628" y="392" text-anchor="middle" font-size="12" font-weight="600" fill="#7b4dff">self-correct: blacklist the fraud vendor + re-source</text>
+  <text x="628" y="392" text-anchor="middle" font-size="12" font-weight="600" fill="#7b4dff">self-correct: observe denial · acquire evidence · choose eligible vendor</text>
 
-  <!-- Storefront -->
+  <!-- Critical spares -->
   <rect x="24" y="155" width="180" height="110" rx="12" fill="#f4f5f7" stroke="#334155" stroke-width="1.6"/>
-  <text x="114" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#15161f">Storefront</text>
-  <text x="114" y="223" text-anchor="middle" font-size="12" fill="#5b6470">stock → 0</text>
-  <text x="114" y="241" text-anchor="middle" font-size="12" fill="#5b6470">stockout_risk (Nexla)</text>
+  <text x="114" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#15161f">Critical spares</text>
+  <text x="114" y="223" text-anchor="middle" font-size="12" fill="#5b6470">stock reaches threshold</text>
+  <text x="114" y="241" text-anchor="middle" font-size="12" fill="#5b6470">monitor / Nexla event</text>
 
   <!-- Agent -->
   <rect x="244" y="155" width="200" height="110" rx="12" fill="#f1ecff" stroke="#7b4dff" stroke-width="2"/>
@@ -51,33 +51,33 @@
   <!-- Verify / Zero -->
   <rect x="484" y="150" width="220" height="120" rx="12" fill="#fff7e6" stroke="#f5a623" stroke-width="2"/>
   <text x="594" y="182" text-anchor="middle" font-size="16" font-weight="700" fill="#15161f">Verify · Zero.xyz 💰</text>
-  <text x="594" y="203" text-anchor="middle" font-size="11.5" fill="#5b6470">real paid checks (USDC):</text>
-  <text x="594" y="221" text-anchor="middle" font-size="11.5" fill="#5b6470">footprint · domain age</text>
-  <text x="594" y="238" text-anchor="middle" font-size="11.5" fill="#5b6470">adverse-media · AI phone call</text>
-  <text x="594" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#d64545">fraud vendor → fails all 4</text>
+  <text x="594" y="203" text-anchor="middle" font-size="11.5" fill="#5b6470">paid evidence when live:</text>
+  <text x="594" y="221" text-anchor="middle" font-size="11.5" fill="#5b6470">company · domain · web</text>
+  <text x="594" y="238" text-anchor="middle" font-size="11.5" fill="#5b6470">search · contact · receipts</text>
+  <text x="594" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#d64545">eligible · ineligible · insufficient</text>
 
   <!-- Pomerium -->
   <rect x="744" y="160" width="180" height="100" rx="12" fill="#e8f0fe" stroke="#2d6cdf" stroke-width="2"/>
   <text x="834" y="200" text-anchor="middle" font-size="16" font-weight="700" fill="#15161f">POMERIUM 🛡️</text>
   <text x="834" y="222" text-anchor="middle" font-size="12" fill="#5b6470">hard gate:</text>
-  <text x="834" y="240" text-anchor="middle" font-size="12" fill="#5b6470">vendor attested?</text>
+  <text x="834" y="240" text-anchor="middle" font-size="12" fill="#5b6470">vendor identity allowed?</text>
 
   <!-- Verified -->
   <rect x="964" y="118" width="212" height="82" rx="12" fill="#e9f7ef" stroke="#2e9e5b" stroke-width="2"/>
-  <text x="1070" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="#15161f">✅ Verified vendor</text>
-  <text x="1070" y="172" text-anchor="middle" font-size="12" fill="#5b6470">PO (StableEmail) + refill</text>
+  <text x="1070" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="#15161f">✅ Eligible vendor</text>
+  <text x="1070" y="172" text-anchor="middle" font-size="12" fill="#5b6470">PO accepted · inbound scheduled</text>
 
   <!-- Blocked -->
   <rect x="964" y="252" width="212" height="82" rx="12" fill="#fdecec" stroke="#d64545" stroke-width="2"/>
-  <text x="1070" y="284" text-anchor="middle" font-size="15" font-weight="700" fill="#15161f">⛔ Fraud vendor</text>
+  <text x="1070" y="284" text-anchor="middle" font-size="15" font-weight="700" fill="#15161f">⛔ Unattested plan</text>
   <text x="1070" y="306" text-anchor="middle" font-size="12" fill="#5b6470">blocked at the proxy</text>
 
   <!-- legend -->
   <circle cx="250" cy="410" r="6" fill="#fff7e6" stroke="#f5a623" stroke-width="2"/>
-  <text x="262" y="414" font-size="12" fill="#5b6470">Zero.xyz — paid, live</text>
+  <text x="262" y="414" font-size="12" fill="#5b6470">Zero.xyz — paid in live mode</text>
   <circle cx="430" cy="410" r="6" fill="#e8f0fe" stroke="#2d6cdf" stroke-width="2"/>
-  <text x="442" y="414" font-size="12" fill="#5b6470">Pomerium — hard gate, live</text>
+  <text x="442" y="414" font-size="12" fill="#5b6470">Pomerium — prize-mode gate</text>
   <circle cx="650" cy="410" r="6" fill="#f1ecff" stroke="#7b4dff" stroke-width="2"/>
   <text x="662" y="414" font-size="12" fill="#5b6470">agent loop</text>
-  <text x="770" y="414" font-size="12" fill="#5b6470">— procurement is reachable ONLY through Pomerium</text>
+  <text x="770" y="414" font-size="12" fill="#5b6470">— prize origin reachable only through Pomerium</text>
 </svg>

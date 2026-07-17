@@ -1,22 +1,25 @@
-# START HERE — session reading order for StockShield
+# Start Here
 
-> Every session (human or AI) starts here. Read in this order — each layer grounds
-> the next. The strategy ledger is also injected automatically at session start by
-> the hook in `.claude/settings.json`.
+For a first local run:
 
-**Building today?** Read `docs/PRD.md` end to end first — it is the full plan (hackathon
-context, requirements, architecture, the 3-minute demo, and who owns what). Then find
-your workstream in `docs/PRD.md §10`.
+```bash
+npm run setup
+npm run doctor
+npm run check
+npm run dev
+```
 
-1. **`vision.md`** — the north star (intent; user-authored, approval-locked) —
-   and **`CLAUDE.md`** — the laws (behavioral rules + standing protocols).
-2. **`docs/PRD.md`** — the plan of record — and **`docs/architecture.md`** — the
-   blueprint (design).
-3. **`docs/STRATEGY-LEDGER.md`** — settled decisions, rejected options, the honest
-   envelope — and **`docs/ROADMAP.md`** — the current front and what's next.
-4. **`docs/PROJECT_STATUS.md`** — the 30-second snapshot — then the tail of
-   **`docs/CURRENT_STATE.md`** — the most recent session entries (the detail).
+Then open `http://localhost:3000` or run `npm run demo` in a second terminal.
 
-Evidence trails when you need them: `logs/DECISIONS.jsonl` (why-trail),
-`logs/errors.jsonl` (incidents), `docs/lessons_learned.md` (prevention rules —
-read before repeating any past class of work).
+## Reading Order
+
+1. `vision.md` - the product boundary and non-claims.
+2. `README.md` - setup, current capabilities, and live-proof requirements.
+3. `CONTRIBUTING.md` - ownership, branches, and handoff rules.
+4. `docs/PROJECT_STATUS.md` - current sprint state.
+5. `docs/architecture.md` - binding trust boundaries and contracts.
+6. Your integration runbook under `docs/integrations/`.
+7. `docs/DEMO.md` before recording or presenting.
+
+For deeper context, read `docs/PRD.md`, `docs/STRATEGY-LEDGER.md`, and the append-only
+`docs/CURRENT_STATE.md`. Raw decisions and incidents live under `logs/`.

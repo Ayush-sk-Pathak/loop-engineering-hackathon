@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": null,
+  "walletNetwork": null,
+  "services": [],
+  "instructions": "Owner 2 records exact live service IDs, prices, sample receipt IDs, and observed latency after one settled call per service. Do not mark verified from the marketing catalog alone."
+}

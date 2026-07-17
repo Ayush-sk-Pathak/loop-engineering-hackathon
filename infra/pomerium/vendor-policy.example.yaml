@@ -1,0 +1,10 @@
+# Copy the policy body into the Pomerium Zero route editor and replace the user ID
+# with the exact service-account subject shown by your Pomerium authorize log.
+allow:
+  and:
+    - user:
+        is: "vendor:vendor-northstar"
+    - http_method:
+        is: "POST"
+    - http_path:
+        is: "/po/vendor-northstar"

@@ -45,6 +45,9 @@ export interface LoopResult {
   blacklistedVendorIds: string[];
   atRiskPoValuePreventedCents: number;
   verificationSpendCents: number;
+  verificationMode: VerificationVerdict["evidenceMode"];
+  deniedRequestId?: string;
+  deniedEnforcementPoint?: ProcurementResult["enforcementPoint"];
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,6 +62,10 @@ export async function runProcurementLoop(
   const blacklistedVendorIds: string[] = [];
   let atRiskPoValuePreventedCents = 0;
   let verificationSpendCents = 0;
+  let verificationMode: VerificationVerdict["evidenceMode"] = "fixture";
+  let deniedRequestId: string | undefined;
+  let deniedEnforcementPoint: ProcurementResult["enforcementPoint"] | undefined;
+  let learnedAuthorizationRequirement = false;
 
   const emit = async (
     phase: DecisionEvent["phase"],
@@ -86,7 +93,7 @@ export async function runProcurementLoop(
   });
   await emit(
     "planned",
-    "Evaluate the lowest-priced candidate first; require paid evidence before ordering",
+    "Select the lowest-priced candidate, observe procurement controls, and adapt without human intervention",
   );
 
   const ranked = [...candidates]
@@ -98,9 +105,45 @@ export async function runProcurementLoop(
       `Candidate quoted ${(vendor.quote.unitPriceCents / 100).toFixed(2)} USD per unit`,
       vendor,
     );
+
+    if (!learnedAuthorizationRequirement) {
+      await emit(
+        "authorization_attempted",
+        "Submitting the lowest-cost plan before a vendor capability has been issued",
+        vendor,
+      );
+      const attempted = await ports.procurement.submit(
+        makePurchaseRequest(vendor, stockout),
+      );
+      if (attempted.status !== 403) {
+        throw new Error(`Unattested purchase must be denied, received ${attempted.status}`);
+      }
+      learnedAuthorizationRequirement = true;
+      deniedRequestId = attempted.requestId;
+      deniedEnforcementPoint = attempted.enforcementPoint;
+      const prevented = vendor.quote.unitPriceCents * stockout.requestedQty;
+      atRiskPoValuePreventedCents += prevented;
+      await emit(
+        "authorization_denied",
+        `Procurement policy denied the unattested plan (${attempted.requestId})`,
+        vendor,
+        {
+          enforcementPoint: attempted.enforcementPoint,
+          preventedValueCents: prevented,
+          requestId: attempted.requestId,
+        },
+      );
+      await emit(
+        "replanned",
+        "Observed that procurement requires vendor-scoped evidence; acquiring it before retrying",
+        vendor,
+      );
+    }
+
     await emit("verifying", "Collecting independent vendor evidence", vendor);
     const { verdict, attestation } = await ports.verification.verify(vendor);
     verificationSpendCents += verdict.totalCostCents;
+    if (verdict.evidenceMode === "live_zero") verificationMode = "live_zero";
 
     if (verdict.status !== "eligible" || !attestation) {
       await emit(
@@ -111,23 +154,6 @@ export async function runProcurementLoop(
       );
       blacklistedVendorIds.push(vendor.id);
       await emit("blacklisted", "Candidate removed from this procurement run", vendor);
-
-      const probeRequest = makePurchaseRequest(vendor, stockout, {
-        id: "missing",
-        evidenceHash: verdict.evidenceHash,
-      });
-      const probe = await ports.procurement.submit(probeRequest);
-      if (probe.status !== 403) {
-        throw new Error(`Policy probe must be denied, received ${probe.status}`);
-      }
-      const prevented = vendor.quote.unitPriceCents * stockout.requestedQty;
-      atRiskPoValuePreventedCents += prevented;
-      await emit(
-        "policy_probe_denied",
-        `Independent policy probe denied before the procurement API (${probe.requestId})`,
-        vendor,
-        { enforcementPoint: probe.enforcementPoint, preventedValueCents: prevented },
-      );
       continue;
     }
 
@@ -161,6 +187,9 @@ export async function runProcurementLoop(
       blacklistedVendorIds,
       atRiskPoValuePreventedCents,
       verificationSpendCents,
+      verificationMode,
+      deniedRequestId,
+      deniedEnforcementPoint,
     };
   }
 
@@ -169,23 +198,30 @@ export async function runProcurementLoop(
     blacklistedVendorIds,
     atRiskPoValuePreventedCents,
     verificationSpendCents,
+    verificationMode,
+    deniedRequestId,
+    deniedEnforcementPoint,
   };
 }
 
 function makePurchaseRequest(
   vendor: VendorCandidate,
   stockout: StockoutRiskEvent,
-  attestation: Pick<VendorAttestation, "id" | "evidenceHash">,
+  attestation?: Pick<VendorAttestation, "id" | "evidenceHash" | "nonce">,
 ): PurchaseOrderRequest {
   return {
     vendorId: vendor.id,
+    vendorDomain: vendor.domain,
     sku: stockout.sku,
     quantity: stockout.requestedQty,
     quoteId: vendor.quote.id,
+    payeeName: vendor.quote.payeeName,
+    payeeAccountRef: vendor.quote.payeeAccountRef,
     unitPriceCents: vendor.quote.unitPriceCents,
     currency: vendor.quote.currency,
-    attestationId: attestation.id,
-    evidenceHash: attestation.evidenceHash,
+    attestationId: attestation?.id ?? "unattested",
+    evidenceHash: attestation?.evidenceHash ?? "unattested",
+    authorizationNonce: attestation?.nonce ?? "unattested",
     idempotencyKey: `${stockout.eventId}:${vendor.id}`,
   };
 }

@@ -1,137 +1,87 @@
-# Aegis — Infrastructure (end to end)
+# StockShield Infrastructure
 
-> How the whole system is wired at runtime: the topology, every deployable unit, the
-> exact request paths (including how the Pomerium `403` physically happens), the
-> Zero.xyz paid-call plumbing, secrets, and local-vs-Akash deployment. The binding
-> design shape is `docs/architecture.md`; this doc is the operational detail behind it.
+## Local Topology
 
-## 1. Topology (what runs where)
-
-```
-                          PUBLIC EDGE                          |          INTERNAL NETWORK (not publicly routable)
-                                                               |
-  ┌──────────────┐         ┌────────────────────┐             |   ┌──────────────────┐
-  │  Judge/Demo  │──HTTP──▶│  Dashboard (Next.js)│             |   │ services/agent   │
-  │   browser    │         │   apps/dashboard    │─────────────────▶│  (Claude Agent   │
-  └──────────────┘         │   :3000  (public)   │◀──SSE trail──────│   SDK loop)      │
-                           └────────────────────┘             |   │  :4000           │
-                                                               |   └───┬───────┬──────┘
-  ┌──────────────┐                                             |       │       │
-  │  Nexla       │──webhook: stockout_risk────────────────────────────▶│       │ verify(vendor)
-  │  FlexFlow    │   (fallback: services/inventory poller)     |       │       ▼
-  └──────────────┘                                             |       │   ┌──────────────────┐
-                                                               |       │   │ services/verify  │──x402──▶ Zero.xyz
-                    ┌───────────────────────────┐             |       │   │  :4100            │  (enrichment,
-  ┌──────────────┐  │   POMERIUM  (proxy)       │             |       │   │  mints attestation│   scrape, news,
-  │ services/    │  │   :8443  identity-aware   │             |       │   └────────┬─────────┘   StablePhone/Email)
-  │ agent        │──┼─▶ POST /po ──┐            │             |       │            │ writes
-  └──────────────┘  │   policy: attested?       │             |       │            ▼
-     (the ONLY      │   ├─ yes → forward ───────┼─────────────────────┼──▶ ┌──────────────────┐   ┌──────────┐
-      way to reach  │   └─ no  → 403 (blocked)  │             |       └───▶│ services/        │──▶│  SQLite  │
-      procurement)  └───────────────────────────┘             |            │ procurement :4200│   │  data/   │
-                          ▲ external authz check               |            │ (payment/PO API) │   │  *.db    │
-                          └─── reads attestation store ────────────────────│  StableEmail PO  │   └──────────┘
-                                                               |            └──────────────────┘
+```text
+browser :3000
+  -> Next.js same-origin proxy
+  -> control plane :4000
+       -> always-on critical-inventory monitor
+       -> evidence collector (fixture or Zero adapter)
+       -> procurement origin :4001 (development mode only)
+       -> SQLite decision state
 ```
 
-**The single most important infra fact:** `services/procurement` (the thing that "moves
-money") **has no public route and no direct internal route from the agent.** Its only
-ingress is **through Pomerium.** So the agent cannot bypass the gate even if its reasoning
-is compromised or prompt-injected — there is physically no network path to the payment API
-except the proxy. Defense in depth at the network layer, not just in code.
+`npm run dev` runs the three processes. `docker compose up --build` runs the same topology
+with the procurement service exposed only to the container network. The monitor checks the
+spares pool every two seconds by default and emits the same contract as the Nexla ingress.
+Local mode uses a signed attestation guard and is visibly labeled **development**, not
+Pomerium.
 
-## 2. Deployable units
+## Prize Topology
 
-| Service | Tech | Port | Reachable by | Responsibility |
-|---|---|---|---|---|
-| `apps/dashboard` | Next.js/React | 3000 (public) | anyone | Storefront + ops dashboard; live decision trail (SSE/websocket from the agent) + "$ fraud blocked / revenue saved" counter. |
-| `services/agent` | Node/TS + Claude Agent SDK | 4000 (internal) | Nexla webhook, dashboard | The plan→act→observe→self-correct loop. Calls `verify`, calls `POST /po` **through Pomerium**, handles the `403` and self-corrects, streams decision events. |
-| `services/verify` | Node/TS + Zero SDK/CLI | 4100 (internal) | agent | `verify(vendor) → verdict`. Runs the paid Zero checks, aggregates a verdict, **mints a signed attestation** on PASS. |
-| `services/procurement` | Node/TS | 4200 (**internal only, behind Pomerium**) | **Pomerium only** | The payment/PO endpoint. On an authorized call: send PO via StableEmail, refill inventory. Never exposed directly. |
-| `services/inventory` | Node/TS + Nexla FlexFlow | 4300 (internal) | storefront/db | Streams stock levels; emits `stockout_risk` on threshold breach. FlexFlow primary; local poller fallback. |
-| **Pomerium** | Pomerium proxy | 8443 (public edge) | agent → procurement | Identity-aware reverse proxy; authenticates the caller and enforces the **attested-vendors-only** policy; unverified → `403`. |
-| **SQLite** | file in `data/` | — | agent, verify, procurement, inventory | `products/inventory`, `vendors`, `blacklist`, `attestations`, `decisions`. (`data/` is git-ignored.) |
+```text
+Nexla FlexFlow -> POST /api/events/stockout -> control plane
+                                                |
+                                                +-> Zero evidence adapter -> paid providers
+                                                |
+                                                +-> Pomerium public route
+                                                      |
+                                                      +-> private procurement origin
+```
 
-## 3. Critical path — a Pomerium-gated PO request, step by step
+The protected request carries two independent artifacts:
 
-This is the crux: how the `403` happens at the wire level.
+1. A Pomerium service-account credential. The initial general-agent identity is authenticated
+   but denied; an eligible vendor maps to a vendor-scoped identity allowed on its exact path.
+2. A signed StockShield attestation. The origin verifies its signature, expiry, and complete
+   PO object binding.
 
-1. Agent decides to order from a vendor → `POST https://pomerium:8443/po` with body
-   `{ vendorId, sku, qty }` and its own **caller identity** (service-account JWT / mTLS —
-   proves *"this is the agent"*).
-2. **Pomerium terminates the request first.** It authenticates the caller, then evaluates
-   its policy (PPL). The authorization decision depends on whether the **target vendor is
-   attested**.
-3. To make the decision vendor-specific, Pomerium runs an **external authorization** check
-   that confirms a valid, unexpired `verified` attestation exists for `vendorId`:
-   - **No attestation (fraud vendor)** → deny → **Pomerium returns `403`; the request never
-     reaches `services/procurement`.** The payment code does not run.
-   - **Valid attestation (legit vendor)** → Pomerium forwards to `procurement:4200` →
-     PO sent + inventory refilled → `200`.
-4. The agent observes the `403`, reasons about the denial, keeps the vendor blacklisted, and
-   retries with the verified vendor. (The on-stage self-correction beat.)
+Pomerium does not read SQLite or inspect an arbitrary PO body. StockShield does not authorize
+on a custom header's presence. The origin verifies Pomerium's signed assertion, including
+issuer, audience, expiry, and subject-to-path equality.
 
-**Implementation options (pick by time budget):**
-- **(A) Attestation-as-JWT — recommended.** `verify` mints a signed JWT per verified vendor
-  `{vendorId, status:"verified", exp}`. The agent attaches that vendor's token to the `/po`
-  call; a Pomerium policy requires a valid attestation claim matching the requested
-  `vendorId`. The token *is* the proof — no shared DB read at gate time.
-- **(B) External-authz sidecar.** Pomerium forwards to a tiny `/authz` service that queries
-  the SQLite `attestations` table live. More "correct," slightly more wiring.
-- **Fallback (if Pomerium eats the clock).** A thin forward-auth reverse proxy
-  (Caddy/nginx `auth_request`, or a ~30-line Node proxy) enforcing the identical
-  attested-only invariant. The *invariant* is what's judged — but wire real Pomerium if at
-  all possible, since it is a prize target.
+## Ports
 
-## 4. Zero.xyz plumbing (the paid loop)
+| Component | Local port | Prize exposure |
+|---|---:|---|
+| Dashboard | 3000 | public |
+| Control plane | 4000 | public webhook/API or private behind dashboard |
+| Procurement origin | 4001 | private; Pomerium only |
+| Zero adapter | owner-defined, example 4100 | private |
 
-- **Wallet/config:** `~/.zero/config.json` holds the funded wallet + a **hard spend
-  ceiling**. Lives on the host, git-ignored (`.zero/`), mounted read-only into `verify`.
-- **One paid check (x402):** call a Zero tool → provider returns **HTTP 402 + payment
-  spec** → the Zero layer signs a **gasless USDC micropayment on Base (EIP-3009)** → retry
-  with proof → receive data. Sub-2-second settlement, fractions of a cent. `verify` wraps
-  each as `check() → { signal, evidence, costUSD }`.
-- **The four checks (all real, ~cents total):** enrichment (Apollo/PDL — footprint),
-  scrape+WHOIS (Firecrawl — domain age), news (serp — adverse media), StablePhone (AI call —
-  live number?). Aggregate → `verdict`.
-- **PO email:** a StableEmail Zero call from `procurement` after authorization.
-- **Infra invariant:** every check must produce a **real wallet debit** (receipt captured so
-  the dashboard shows the wallet ticking down). No mocked verification vendor — hard rule.
+The dashboard uses a same-origin Next.js proxy and `CONTROL_PLANE_INTERNAL_URL`, so one build
+works locally, in Docker, and on Akash.
 
-## 5. Trigger plumbing (Nexla)
+`POST /api/demo/consume` is the deterministic demo input: it represents a failed node
+consuming one spare. It does not start procurement. The independent monitor starts the loop
+only when the critical threshold is reached, the loop is idle, and no inbound order exists.
 
-- **Primary:** a Nexla **FlexFlow** (Kafka-backed, GA) reads the inventory feed; a threshold
-  rule POSTs `POST /events { type:"stockout_risk", sku, currentQty, threshold }` to the agent.
-- **Fallback:** `services/inventory` polls the SQLite inventory table and POSTs the identical
-  event. Nexla is **not** on the critical path; the poller keeps the demo intact.
+## Data
 
-## 6. Data & secrets
+SQLite stores the current demo state and decision events. Procurement idempotency and nonce
+tracking are currently process-local because the demo uses one origin instance. Do not scale
+the procurement origin horizontally without moving those maps to a transactional shared
+store.
 
-- **Data:** one SQLite file under `data/` (git-ignored). Tables: `products/inventory`,
-  `vendors`, `blacklist`, `attestations`, `decisions`. Deliberately trivial — it's a demo.
-- **Secrets:** each service reads creds from its own `.env` (git-ignored + the pre-commit
-  hook refuses staged `.env*`). Keys: Zero wallet (`.zero/`), attestation signing key (env),
-  Pomerium identity/session secrets, Nexla API token, Anthropic API key. **Nothing sensitive
-  is ever committed** — enforced below the agent (`CLAUDE.md §Enforcement`).
+Fixture vendors use `.example` domains and synthetic payee references. They are never passed
+off as real organizations.
 
-## 7. Deployment: local-first, Akash as bonus
+## Secrets
 
-- **Local dev + demo fallback:** `docker compose up` brings up all five services + Pomerium
-  + the SQLite volume on one internal Docker network. Only `dashboard:3000` and
-  `pomerium:8443` are published; `procurement` and the rest are internal-only. **The entire
-  demo runs on the presenter's laptop** — the reliable path.
-- **Akash (P2, coverage):** translate the compose file into an **Akash SDL**
-  (`deploy/akash/deploy.yaml`), bid → deploy → public URI for the dashboard + Pomerium
-  ingress. Honest: hosting a container is a weak Akash-prize case, so this is *coverage
-  only* and **never the critical path**.
-- **Trust boundaries:** public edge = dashboard + Pomerium; everything else on the internal
-  network with no external route; procurement reachable *only* via Pomerium. That boundary
-  is the product.
+`.env.local` is ignored and created from `config/example.env`. Required prize secrets include
+the Zero adapter token, attestation signing secret, Pomerium route/JWKS configuration, the
+general agent token, and the eligible vendor service-account token.
 
-## 8. Live vs. staged (infra honesty)
+The pre-commit hook rejects runtime environment files and recognizable private keys. Never
+place service-account tokens, wallet keys, complete Pomerium assertions, or email recipient
+PII in decision-event metadata.
 
-- **Genuinely live (unfakeable):** the Zero paid calls (real USDC settlement) and the
-  Pomerium `403`.
-- **Deliberately staged (deterministic):** the storefront, the two planted vendors, the
-  SQLite data, and the stockout trigger — so the demo can't flake while the two things judges
-  care about stay real.
+## Deployment
+
+The root `Dockerfile` builds one immutable image used by all three Node services. The local
+compose file is the reliable development fallback. The Akash template is under
+`deploy/akash/`; it is coverage only and deliberately stays out of the critical Zero +
+Pomerium demo path.
+
+Integration-specific setup and proof requirements live under `docs/integrations/`.

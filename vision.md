@@ -1,11 +1,17 @@
-<!-- PLACEHOLDER VISION — NOT YET USER-APPROVED.
-  The starter-pack has a hard gate: nothing lands in vision.md without the user's
-  explicit line-by-line approval. A proposed vision is drafted in docs/PRD.md
-  (§1 and §4). Review it, edit it into your own words, and only then replace this
-  placeholder. This file is intentionally left editable (not chmod 444) until then.
-  TODO: user vision pending — approve verbatim, then run scripts/bootstrap.sh to lock it. -->
-
 # Vision
 
-_Pending user approval. See the proposed north star in `docs/PRD.md` (§1 "The one-liner"
-and §4 "The solution"). Nothing is written here until you approve the exact wording._
+StockShield keeps critical infrastructure supplied without making the model its own spending
+authority.
+
+An always-on monitor may detect a depleted spares pool and wake an agent without a human
+starting the workflow. The agent may compare vendors, buy current evidence, and replan. It may
+not commit a purchase order until independent evidence has minted a vendor-scoped,
+quote-scoped, payee-bound, amount-limited, expiring capability enforced outside the model
+runtime.
+
+The demo succeeds when a judge can see both sides of that promise: an authenticated but
+unauthorized plan is rejected before reaching the procurement origin, and a verified vendor
+request succeeds through the same protected route with a complete audit trail.
+
+StockShield is a vendor-risk control and PO authorization system. It does not claim to prove
+criminal fraud, settle supplier payment, or physically receive inventory.

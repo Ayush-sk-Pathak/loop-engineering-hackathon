@@ -1,24 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { DecisionPhase, DemoState } from "@stockshield/contracts";
+import { SCHEMA_VERSION, type DecisionPhase, type DemoState } from "@stockshield/contracts";
 import {
+  Activity,
   Ban,
   Check,
   CircleDollarSign,
+  MemoryStick,
   PackageCheck,
-  Play,
   RefreshCw,
+  ServerCrash,
   ShieldCheck,
-  ShoppingBag,
   TriangleAlert,
   WalletCards,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_CONTROL_PLANE_URL ?? "http://127.0.0.1:4000";
+const API = "/api/control";
 
 const phaseIcon: Partial<Record<DecisionPhase, React.ReactNode>> = {
-  policy_probe_denied: <Ban size={15} />,
+  authorization_denied: <Ban size={15} />,
+  replanned: <RefreshCw size={15} />,
   ineligible: <TriangleAlert size={15} />,
   attested: <ShieldCheck size={15} />,
   ordered: <Check size={15} />,
@@ -59,7 +61,15 @@ export function OperationsDashboard() {
   }
 
   const isRunning = state.runStatus === "running";
-  const rejected = state.vendors.find((vendor) => state.blacklistedVendorIds.includes(vendor.id));
+  const isAtRisk = state.inventory.currentQty <= state.inventory.threshold && state.inventory.inboundQty === 0;
+  const lastCheckSeconds = state.monitor.lastCheckAt
+    ? Math.max(0, Math.floor((Date.now() - Date.parse(state.monitor.lastCheckAt)) / 1_000))
+    : null;
+  const denialLabel = state.metrics.deniedRequestId
+    ? state.metrics.deniedEnforcementPoint === "pomerium"
+      ? "Pomerium denied"
+      : "Local guard denied"
+    : "Awaiting attempt";
 
   return (
     <main>
@@ -71,26 +81,51 @@ export function OperationsDashboard() {
         <div className="actions">
           <span className={`mode ${state.metrics.verificationMode}`}>{state.metrics.verificationMode === "fixture" ? "Fixture evidence" : "Live Zero"}</span>
           <button className="iconButton" onClick={() => command("/api/demo/reset")} title="Reset demo" aria-label="Reset demo"><RefreshCw size={17} /></button>
-          <button className="primaryButton" onClick={() => command("/api/demo/run")} disabled={isRunning}>
-            <Play size={16} fill="currentColor" />{isRunning ? "Loop running" : "Trigger stockout"}
+          <button
+            className="primaryButton"
+            onClick={() => command("/api/demo/consume")}
+            disabled={isRunning || state.inventory.currentQty === 0 || state.inventory.inboundQty > 0}
+          >
+            <ServerCrash size={16} />{isRunning ? "Agent responding" : "Simulate node failure"}
           </button>
         </div>
       </header>
 
+      <div className={`monitorStrip ${state.monitor.active ? "active" : ""}`}>
+        <Activity size={15} />
+        <strong>{state.monitor.active ? "Inventory monitor active" : "Inventory monitor disabled"}</strong>
+        <span>{state.monitor.watchedSkus.length} critical SKU watched</span>
+        <span>{lastCheckSeconds === null ? "Awaiting first check" : `Checked ${lastCheckSeconds}s ago`}</span>
+      </div>
+
       {connectionError && <div className="connectionBanner">Control plane connection interrupted. Retrying.</div>}
 
       <section className="metricBand" aria-label="Procurement metrics">
+        <Metric
+          icon={<Activity />}
+          label={state.inventory.inboundQty > 0 ? "Recovery state" : "Outage exposure"}
+          value={state.inventory.inboundQty > 0 ? "Inbound secured" : isAtRisk ? `${money(state.inventory.downtimeCostCentsPerMinute)}/min` : "Protected"}
+          detail={isAtRisk ? "Illustrative incident rate" : `${state.inventory.currentQty} spares on hand`}
+          tone={isAtRisk ? "red" : "green"}
+        />
         <Metric icon={<Ban />} label="At-risk PO value prevented" value={money(state.metrics.atRiskPoValuePreventedCents)} tone="red" />
         <Metric icon={<WalletCards />} label="Verification spend" value={money(state.metrics.verificationSpendCents)} detail={state.metrics.verificationMode === "fixture" ? "No live charge in dev" : "Settled through Zero"} tone="gold" />
-        <Metric icon={<PackageCheck />} label="Inbound scheduled" value={`${state.metrics.inboundQuantity} units`} detail="On-hand inventory unchanged" tone="green" />
-        <Metric icon={<ShieldCheck />} label="Policy state" value={rejected ? "Denial proven" : "Awaiting probe"} detail="Pomerium required for prize demo" tone="blue" />
+        <Metric
+          icon={<ShieldCheck />}
+          label="Authorization state"
+          value={denialLabel}
+          detail={state.metrics.deniedRequestId
+            ? `Request ${state.metrics.deniedRequestId.slice(0, 12)}`
+            : `${state.metrics.authorizationMode} mode`}
+          tone="blue"
+        />
       </section>
 
       <div className="workspace">
         <section className="inventoryPanel">
-          <div className="sectionHeading"><div><span>Storefront inventory</span><h1>{state.inventory.name}</h1></div><ShoppingBag size={20} /></div>
+          <div className="sectionHeading"><div><span>Critical spares pool</span><h1>{state.inventory.name}</h1></div><MemoryStick size={20} /></div>
           <div className="productVisual">
-            <img src="/product.png" alt="A silver laptop representing the demo product" />
+            <MemoryStick size={112} strokeWidth={1.1} aria-label="ECC memory module" />
             <span className="sku">{state.inventory.sku}</span>
           </div>
           <div className="stockRow">
@@ -105,7 +140,7 @@ export function OperationsDashboard() {
         <section className="tracePanel">
           <div className="sectionHeading"><div><span>Autonomous decision trace</span><h2>{state.runStatus === "idle" ? "Ready" : state.runStatus}</h2></div><span className={`pulse ${isRunning ? "active" : ""}`} /></div>
           <div className="timeline" aria-live="polite">
-            {state.events.length === 0 && <div className="emptyState"><CircleDollarSign size={28} /><strong>No active procurement run</strong><span>Trigger a stockout to start the evidence and authorization loop.</span></div>}
+            {state.events.length === 0 && <div className="emptyState"><Activity size={28} /><strong>Watching critical inventory</strong><span>Node failures consume spares. The monitor starts procurement when stock reaches the threshold.</span></div>}
             {[...state.events].reverse().map((event) => (
               <article className={`timelineItem phase-${event.phase}`} key={event.id}>
                 <div className="timelineIcon">{phaseIcon[event.phase] ?? <span />}</div>
@@ -130,12 +165,17 @@ export function OperationsDashboard() {
           </div>
           <div className="controlProof">
             <ShieldCheck size={18} />
-            <div><strong>Hard authorization boundary</strong><span>The prize demo must show Pomerium&apos;s request ID and authorize log, not an application-generated 403.</span></div>
+            <div>
+              <strong>{state.metrics.authorizationMode === "pomerium" ? "Pomerium authorization boundary" : "Local development guard"}</strong>
+              <span>{state.metrics.authorizationMode === "pomerium"
+                ? "Pair the request ID with Pomerium's authorize log to prove the origin was never reached."
+                : "This mode proves object binding locally, but it is not evidence of a live Pomerium denial."}</span>
+            </div>
           </div>
         </section>
       </div>
 
-      <footer><span>Schema v1.0</span><span>SQLite decision trail</span><span>Updated {new Date(state.updatedAt).toLocaleTimeString()}</span></footer>
+      <footer><span>Schema v{SCHEMA_VERSION}</span><span>SQLite decision trail</span><span>Updated {new Date(state.updatedAt).toLocaleTimeString()}</span></footer>
     </main>
   );
 }

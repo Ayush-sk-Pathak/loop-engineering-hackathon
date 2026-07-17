@@ -1,142 +1,150 @@
-# Aegis 🛡️ — the autonomous procurement agent that can't be scammed
+# StockShield
 
-> **Loop Engineering Hackathon · 2026-07-17.** An autonomous stockout-rescue procurement
-> agent that verifies every supplier with real, paid checks *before* it is allowed to
-> spend a cent — so it **cannot be scammed**.
+Autonomous emergency procurement for critical infrastructure, enforced outside the model.
 
-> **The pitch:** *Everyone here gave an AI agent a wallet today. We built the reason you can.*
+> An agent may be wrong, but it cannot be unauthorized.
 
-![Aegis architecture — an agent that verifies suppliers with real paid Zero.xyz checks, then a Pomerium gate blocks any payment to an unverified vendor](docs/assets/architecture.svg)
+StockShield watches a critical-spares pool, detects a shortage without a human pressing
+“run,” evaluates candidate vendors, purchases current evidence through Zero.xyz, and requests
+a purchase order through a Pomerium-protected route. Verification produces a vendor-scoped,
+quote-scoped, payee-bound, amount-limited, expiring capability. The procurement origin
+verifies that capability independently.
 
----
+![StockShield architecture](docs/assets/architecture.svg)
 
-## The problem
+## Why This Exists
 
-Procurement fraud and vendor impersonation cost businesses billions (FBI IC3 pegs Business
-Email Compromise near **~$2.9B/yr**; vendor-impersonation / "our bank details changed" scams
-are its largest slice). The moment of **maximum vulnerability is a stockout emergency** —
-revenue is bleeding every second an item is out of stock, so a rushed buyer (human *or* an
-autonomous agent) skips due diligence and wires money to the first vendor that answers.
+When a datacenter has no replacement memory left, every minute of delay can prolong an
+incident. Emergency buying is useful only if speed does not let untrusted vendor input become
+spending authority. The same model that reads that input should not be the final authority on
+whether company spend is committed.
 
-> *"Stockouts lose revenue every second — but rushing the fix is how you wire $40k to a fake supplier."*
+StockShield separates those responsibilities:
 
-## The solution — a procurement **trust loop**
+1. The local inventory monitor or Nexla FlexFlow emits the same versioned `stockout_risk`
+   event when critical spares reach their threshold.
+2. The agent ranks the disclosed synthetic candidates and attempts its lowest-cost plan.
+3. Pomerium denies that plan because the agent has no vendor-scoped capability.
+4. The agent observes the denial and buys independent evidence through Zero.
+5. A deterministic policy returns `eligible`, `ineligible`, or `insufficient_evidence`.
+6. Only an eligible result receives a signed capability bound to the vendor, domain, SKU,
+   payee, quote, price, quantity, evidence hash, expiry, and one-time nonce.
+7. The protected origin accepts the PO and records inbound stock as scheduled. It does not
+   claim that goods have arrived or that supplier payment has settled.
 
-An agent whose loop has fraud defense built into every step, and whose ability to spend is
-**physically gated** on verification passing. It maps 1:1 to the hackathon theme
-(plan → act → observe → self-correct):
+The stage metric is **at-risk PO value prevented**, not “fraud dollars blocked.” The fixture
+candidate is described as high-risk or ineligible, not proven fraudulent.
 
-1. **Observe / trigger** — a hot SKU crosses its safety threshold → `stockout_risk` (Nexla).
-2. **Plan** — rescue the SKU; verify every candidate before any money moves.
-3. **Act – source** — produce 2 backup vendors (1 legit, 1 planted fraud: typosquatted
-   domain, ~2-week-old registration, no footprint).
-4. **Act – verify (paid)** — the agent **spends real USDC via Zero.xyz** on: business
-   enrichment, domain-age scrape, adverse-media news, and an **AI phone call** to the vendor.
-5. **Observe + self-correct** — the fraud vendor fails → the agent **blacklists it, logs why,
-   and re-sources.** It never proceeds on a rejected vendor.
-6. **Act – gate & order** — the PO goes through **Pomerium**, which authorizes it **only if
-   the vendor holds a valid verification attestation.** Unverified → **`403`.** Verified →
-   PO placed (StableEmail), inventory refills.
+| Judging criterion | Visible proof |
+|---|---|
+| Idea | Critical infrastructure recovery under emergency buying pressure |
+| Technical implementation | Signed object capability, payee/amount binding, replay defense |
+| Tool use | Zero receipts and Pomerium authorize logs, with Nexla event ID as coverage |
+| Presentation | Failure -> autonomous wake-up -> denial -> replan -> accepted PO |
+| Autonomy | The monitor starts the loop; no manual action occurs after the threshold crossing |
 
-**Defense in depth (the core bet):** the agent's LLM reasoning is the *soft* layer; Pomerium
-is the *hard* layer. **Even if the agent's reasoning is wrong or prompt-injected, the payment
-API physically rejects an unverified vendor.** That property is a live, provable demo beat.
+## Start Developing
 
-## Sponsor tools (only genuine fits)
-
-| Tool | Role | Prize |
-|---|---|---|
-| **Zero.xyz** ⭐ | Agent **wallet** + the **paid verification loop** (enrichment, domain-age scrape, adverse-media, AI call) + PO email (StableEmail); pays per-call in USDC on Base (x402). | Primary — $2,000 |
-| **Pomerium** ⭐ | Identity-aware gate on the payment/PO API; policy = *attested-vendors-only*; unverified → `403` at the proxy. | Secondary — $1,000 |
-| **Nexla** | FlexFlow (GA) real-time inventory stream → the stockout trigger. | Coverage |
-| **Akash** | Hosts the containers (honest: coverage, not the critical path). | Coverage |
-| **Claude** | Agent brain (Claude Agent SDK — reasoning + tool-calling). | — |
-
-> Deliberately **not** used: **Fillmore** (recruiting-only — can't draft POs), and any
-> credit-bureau / registry / fraud-score "lookup" (verified absent from Zero's catalog).
-> We assemble the fraud verdict from Zero tools that genuinely exist and settle real money —
-> **no mocked verification vendor.** See [`docs/STRATEGY-LEDGER.md`](docs/STRATEGY-LEDGER.md).
-
-## Architecture / Infrastructure
-
-`services/procurement` (the thing that moves money) **has no route except through Pomerium** —
-so the agent cannot bypass the gate even if compromised. That network boundary *is* the product.
-
-<details>
-<summary>Text version of the topology (fallback)</summary>
-
-```
-                          PUBLIC EDGE                          |          INTERNAL NETWORK (not publicly routable)
-                                                               |
-  ┌──────────────┐         ┌────────────────────┐             |   ┌──────────────────┐
-  │  Judge/Demo  │──HTTP──▶│  Dashboard (Next.js)│             |   │ services/agent   │
-  │   browser    │         │   apps/dashboard    │─────────────────▶│  (Claude Agent   │
-  └──────────────┘         │   :3000  (public)   │◀──SSE trail──────│   SDK loop)      │
-                           └────────────────────┘             |   │  :4000           │
-                                                               |   └───┬───────┬──────┘
-  ┌──────────────┐                                             |       │       │
-  │  Nexla       │──webhook: stockout_risk────────────────────────────▶│       │ verify(vendor)
-  │  FlexFlow    │   (fallback: services/inventory poller)     |       │       ▼
-  └──────────────┘                                             |       │   ┌──────────────────┐
-                                                               |       │   │ services/verify  │──x402──▶ Zero.xyz
-                    ┌───────────────────────────┐             |       │   │  :4100            │  (enrichment,
-  ┌──────────────┐  │   POMERIUM  (proxy)       │             |       │   │  mints attestation│   scrape, news,
-  │ services/    │  │   :8443  identity-aware   │             |       │   └────────┬─────────┘   StablePhone/Email)
-  │ agent        │──┼─▶ POST /po ──┐            │             |       │            │ writes
-  └──────────────┘  │   policy: attested?       │             |       │            ▼
-     (the ONLY      │   ├─ yes → forward ───────┼─────────────────────┼──▶ ┌──────────────────┐   ┌──────────┐
-      way to reach  │   └─ no  → 403 (blocked)  │             |       └───▶│ services/        │──▶│  SQLite  │
-      procurement)  └───────────────────────────┘             |            │ procurement :4200│   │  data/   │
-                          ▲ external authz check               |            │ (payment/PO API) │   │  *.db    │
-                          └─── reads attestation store ────────────────────│  StableEmail PO  │   └──────────┘
-                                                               |            └──────────────────┘
-```
-
-</details>
-
-**The five interface seams** (freeze first, then build against mocks in parallel):
-`stockout_risk` → `verify(vendor)→verdict` → `attestation` → `POST /po → 200|403` → `decision_event`.
-
-**Full detail:** [`docs/infrastructure.md`](docs/infrastructure.md) — topology, the
-Pomerium `403` request path step by step, the Zero x402 paid-call plumbing, secrets, and
-local-vs-Akash deployment.
-
-## Repo layout
-
-```
-apps/dashboard/          storefront + ops dashboard (decision trail, $ counter)
-services/agent/          the plan→act→observe→self-correct loop (Claude Agent SDK)
-services/verify/         Zero.xyz paid checks → verdict + attestation
-services/procurement/    payment/PO API — reachable ONLY through Pomerium
-services/inventory/      Nexla FlexFlow trigger (+ local poller fallback)
-packages/contracts/      shared TS types for the 5 seams + mocks
-deploy/akash/            Docker Compose → Akash SDL
-docs/                    PRD, architecture, infrastructure, strategy ledger, status, roadmap
-```
-
-## Quickstart (local — the reliable demo path)
+Requirements: Node.js 22.10+ and npm 10+.
 
 ```bash
-# prerequisites: Docker, a funded Zero wallet at ~/.zero/config.json, an Anthropic API key
-cp .env.example .env          # fill in ANTHROPIC_API_KEY, NEXLA_TOKEN, ATTESTATION_SIGNING_KEY, ...
-docker compose up --build     # dashboard :3000, Pomerium :8443; internal services not exposed
-# open http://localhost:3000 → drop the hot item's stock to 0 → watch the loop run
+git clone https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git
+cd loop-engineering-hackathon
+npm run setup
+npm run doctor
+npm run dev
 ```
 
-> Only the **Zero paid calls** and the **Pomerium `403`** are truly live; the storefront,
-> the two planted vendors, and the trigger are deterministic so the demo can't flake.
+Open [http://localhost:3000](http://localhost:3000). The control plane listens on port
+`4000`; the procurement origin listens on `127.0.0.1:4001` in local mode.
 
-## The team (4 owners)
+Click **Simulate node failure** three times. The monitor detects the threshold crossing and
+starts the loop on its next check. The operator does not click a separate run control.
 
-1. **Agent Core** — the loop + `403` recovery. 2. **Zero Verification** — wallet + real paid
-checks + attestation. 3. **Pomerium + Procurement API + Akash** — the hard backstop + hosting.
-4. **Dashboard + Nexla + Demo** — storefront, decision trail, $ counter, the recording.
-See [`docs/PRD.md §10`](docs/PRD.md).
+In another terminal:
 
-## Docs map
+```bash
+npm run demo       # consume spares and print the monitor-started loop
+npm run check      # typecheck + security/loop tests
+npm run build      # check + production dashboard build
+```
 
-- [`docs/PRD.md`](docs/PRD.md) — the full plan (hackathon, requirements, demo script, team).
-- [`docs/architecture.md`](docs/architecture.md) — the binding design blueprint.
-- [`docs/infrastructure.md`](docs/infrastructure.md) — this system, end to end.
-- [`docs/STRATEGY-LEDGER.md`](docs/STRATEGY-LEDGER.md) — settled decisions + rejected options.
-- [`START-HERE.md`](START-HERE.md) — session reading order · [`CLAUDE.md`](CLAUDE.md) — the constitution.
+The default is intentionally deterministic:
+
+- `VERIFICATION_MODE=fixture`: zero live charges and visibly labeled fixture evidence.
+- `AUTH_MODE=development`: signed object binding at the origin, not a Pomerium prize proof.
+
+Use `npm run doctor:prize` before recording. It fails until the live Zero service lock,
+adapter, Pomerium route, authenticated denied identity, and verified-vendor identity are
+configured.
+
+## Docker
+
+The local development topology can also run in containers:
+
+```bash
+npm run setup
+docker compose up --build
+```
+
+This compose file deliberately uses the local authorization guard. Prize mode requires the
+Pomerium route described in [docs/integrations/POMERIUM.md](docs/integrations/POMERIUM.md);
+do not present a compose-generated origin `403` as Pomerium evidence.
+
+## Implemented Boundaries
+
+- Shared schema v1.1 contracts for stockout, evidence, attestation, PO, and decision events.
+- Deterministic vendor-risk policy with missing-evidence and hard-failure outcomes.
+- Signed attestation verification and complete PO object binding.
+- Authorization before idempotency, request fingerprint checking, and nonce replay defense.
+- Local SQLite state and decision trail.
+- Always-on critical-inventory monitor plus deterministic node-failure input.
+- Real Nexla-compatible webhook ingress at `POST /api/events/stockout`.
+- HTTP adapter seam for live paid Zero evidence; paid signals without receipt IDs are refused.
+- Pomerium signed-assertion verification with vendor subject-to-path binding.
+- One-screen responsive operations dashboard that distinguishes fixture/local/live modes.
+
+## Live Proof Requirements
+
+Sponsor names in the architecture are targets until their proof requirements are met:
+
+| Integration | Required proof |
+|---|---|
+| Zero.xyz | Exact pinned service IDs, quoted prices, wallet delta, and receipt ID from one settled call per service |
+| Pomerium | `403` request ID plus `authorize` log with `allow:false`; rejected request absent from origin logs |
+| Nexla | Nexla event ID transformed into schema v1.1 and delivered to `/api/events/stockout` |
+| StableEmail | Zero receipt plus returned email message ID and received message |
+| Akash | Public deployment URL and active lease; hosting is not part of the critical demo path |
+
+The service catalog lock begins at [config/zero-services.json](config/zero-services.json).
+It must not be marked verified from a marketing page alone.
+
+## Repository Map
+
+```text
+apps/dashboard/          Next.js operations surface
+packages/contracts/      authoritative seam definitions
+packages/security/       attestation signing, verification, and request binding
+services/agent/          bounded observe/act/replan loop
+services/control-plane/  inventory monitor, orchestration, Nexla ingress, SQLite state
+services/procurement/    protected PO origin and replay controls
+services/verification/   evidence adapters and deterministic policy
+config/                  safe environment template and Zero service lock
+docs/integrations/       Zero, Pomerium, Nexla, and Akash runbooks
+```
+
+## Team Workflow
+
+The four owners can work independently after `npm run setup` because the contracts are
+already frozen. Ownership, branch steps, and integration rules are in
+[CONTRIBUTING.md](CONTRIBUTING.md). The current sprint state is in
+[docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md); the exact recording sequence is in
+[docs/DEMO.md](docs/DEMO.md).
+
+## Current Limits
+
+The repository includes fixture evidence and adapter seams, not completed live Zero,
+StableEmail, external Nexla FlexFlow configuration, or Akash deployment. Pomerium verification
+code exists, but the live route and service accounts must be configured externally. Claude
+Agent SDK integration is also pending; the current loop is a deterministic port-driven core
+that keeps authorization outside model output.

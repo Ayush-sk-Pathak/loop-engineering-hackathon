@@ -24,7 +24,10 @@ export class DemoStore {
         occurred_at TEXT NOT NULL
       );
     `);
-    if (!this.read()) this.reset();
+    const current = this.read();
+    if (!current || !current.monitor || current.inventory.sku !== "DDR5-ECC-64GB") {
+      this.reset();
+    }
   }
 
   reset(): DemoState {
@@ -32,11 +35,18 @@ export class DemoStore {
     const state: DemoState = {
       runStatus: "idle",
       inventory: {
-        sku: "LAPTOP-14",
-        name: "Aperture Pro 14",
-        currentQty: 4,
-        threshold: 3,
+        sku: "DDR5-ECC-64GB",
+        name: "64 GB DDR5 ECC Memory Module",
+        currentQty: 5,
+        threshold: 2,
         inboundQty: 0,
+        critical: true,
+        downtimeCostCentsPerMinute: 18_000,
+      },
+      monitor: {
+        active: process.env.MONITOR_ENABLED !== "0",
+        watchedSkus: ["DDR5-ECC-64GB"],
+        lastCheckAt: null,
       },
       events: [],
       vendors: DEMO_VENDORS,
@@ -46,6 +56,7 @@ export class DemoStore {
         verificationSpendCents: 0,
         inboundQuantity: 0,
         verificationMode: "fixture",
+        authorizationMode: process.env.AUTH_MODE === "pomerium" ? "pomerium" : "development",
       },
       updatedAt: new Date().toISOString(),
     };
@@ -60,11 +71,35 @@ export class DemoStore {
     return row ? (JSON.parse(row.payload) as DemoState) : undefined;
   }
 
-  start(): DemoState {
+  start(currentQty = 0): DemoState {
     return this.update((state) => ({
       ...state,
       runStatus: "running",
-      inventory: { ...state.inventory, currentQty: 0 },
+      inventory: { ...state.inventory, currentQty },
+    }));
+  }
+
+  consumeUnit(): DemoState {
+    return this.update((state) => ({
+      ...state,
+      inventory: {
+        ...state.inventory,
+        currentQty: Math.max(0, state.inventory.currentQty - 1),
+      },
+    }));
+  }
+
+  setMonitorActive(active: boolean): DemoState {
+    return this.update((state) => ({
+      ...state,
+      monitor: { ...state.monitor, active },
+    }));
+  }
+
+  markMonitorCheck(at = new Date().toISOString()): DemoState {
+    return this.update((state) => ({
+      ...state,
+      monitor: { ...state.monitor, lastCheckAt: at },
     }));
   }
 
@@ -79,6 +114,9 @@ export class DemoStore {
     blacklistedVendorIds: string[];
     atRiskPoValuePreventedCents: number;
     verificationSpendCents: number;
+    verificationMode: DemoState["metrics"]["verificationMode"];
+    deniedRequestId?: string;
+    deniedEnforcementPoint?: DemoState["metrics"]["deniedEnforcementPoint"];
     order?: PurchaseOrder;
   }): DemoState {
     return this.update((state) => ({
@@ -94,7 +132,10 @@ export class DemoStore {
         ...state.metrics,
         atRiskPoValuePreventedCents: input.atRiskPoValuePreventedCents,
         verificationSpendCents: input.verificationSpendCents,
+        verificationMode: input.verificationMode,
         inboundQuantity: input.order?.quantity ?? 0,
+        deniedRequestId: input.deniedRequestId,
+        deniedEnforcementPoint: input.deniedEnforcementPoint,
       },
     }));
   }

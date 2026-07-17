@@ -1,0 +1,70 @@
+---
+version: "2.0"
+
+services:
+  dashboard:
+    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    command: ["npm", "run", "start:web"]
+    env:
+      - CONTROL_PLANE_INTERNAL_URL=http://control:4000
+    expose:
+      - port: 3000
+        as: 80
+        to:
+          - global: true
+
+  control:
+    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    command: ["npm", "run", "start:control"]
+    env:
+      - CONTROL_PLANE_HOST=0.0.0.0
+      - PROCUREMENT_URL=http://procurement:4001
+      - AUTH_MODE=development
+      - VERIFICATION_MODE=fixture
+    expose:
+      - port: 4000
+        to:
+          - service: dashboard
+
+  procurement:
+    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    command: ["npm", "run", "start:procurement"]
+    env:
+      - PROCUREMENT_HOST=0.0.0.0
+      - AUTH_MODE=development
+    expose:
+      - port: 4001
+        to:
+          - service: control
+
+profiles:
+  compute:
+    dashboard:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 512Mi }
+        storage: { size: 1Gi }
+    control:
+      resources:
+        cpu: { units: 0.25 }
+        memory: { size: 256Mi }
+        storage: { size: 1Gi }
+    procurement:
+      resources:
+        cpu: { units: 0.25 }
+        memory: { size: 256Mi }
+        storage: { size: 512Mi }
+  placement:
+    akash:
+      pricing:
+        dashboard: { denom: uact, amount: 10000 }
+        control: { denom: uact, amount: 10000 }
+        procurement: { denom: uact, amount: 10000 }
+
+deployment:
+  dashboard:
+    akash: { profile: dashboard, count: 1 }
+  control:
+    akash: { profile: control, count: 1 }
+  procurement:
+    akash: { profile: procurement, count: 1 }

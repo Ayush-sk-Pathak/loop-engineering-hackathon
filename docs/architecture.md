@@ -6,7 +6,8 @@
 
 ## Thesis
 
-StockShield is a procurement control plane for stockout emergencies. An autonomous agent
+StockShield is a procurement control plane for critical-infrastructure stockout emergencies.
+An autonomous monitor wakes the agent when the spares pool crosses its threshold. The agent
 may source and evaluate suppliers, but it cannot commit a purchase order until paid evidence
 has produced a vendor-scoped, quote-scoped, amount-limited, expiring capability.
 
@@ -17,8 +18,9 @@ and binds its subject to the vendor in the URL. SQLite records decisions and rep
 
 ## Trust Boundaries
 
-1. **Nexla event boundary.** FlexFlow transforms storefront inventory events into the
-   versioned `stockout_risk` contract. Local webhook mode exists only for development.
+1. **Inventory event boundary.** The in-process monitor and Nexla FlexFlow emit the same
+   versioned `stockout_risk` contract. `source` makes the active path explicit; a local
+   monitor event is never presented as Nexla proof.
 2. **Evidence boundary.** Every signal names its provider, service ID, mode, cost, timestamp,
    and receipt. A fixture signal is visibly labeled and cannot be represented as live Zero.
 3. **Decision boundary.** `vendor-risk-v1` is deterministic. Claude may summarize reasons,
@@ -29,8 +31,10 @@ and binds its subject to the vendor in the URL. SQLite records decisions and rep
    account. The verification service releases only the corresponding credential reference.
    Rejected vendors receive no capability.
 6. **Origin boundary.** `POST /po/:vendorId` verifies `X-Pomerium-Jwt-Assertion`, including
-   signature, issuer, audience, expiry, and `sub == vendor:<vendorId>`. It also enforces quote,
-   amount, evidence, and idempotency bindings. The origin is not publicly reachable.
+   signature, issuer, audience, expiry, and `sub == vendor:<vendorId>`. In both modes it also
+   verifies StockShield's signed attestation and binds vendor, domain, SKU, payee, account
+   reference, quote, unit price, quantity, amount, evidence, expiry, and nonce. Authorization
+   happens before idempotency lookup. The origin is not publicly reachable in prize mode.
 
 Pomerium does not inspect arbitrary JSON bodies or read our SQLite database. A single shared
 agent identity is insufficient because both vendor choices would look identical to the proxy.
@@ -50,13 +54,17 @@ port without changing the contracts.
 ## Runtime Flow
 
 ```text
-storefront sale
-  -> Nexla FlexFlow transforms stock data
+critical spare consumed by a node failure
+  -> local monitor detects the threshold crossing
+     (prize coverage: Nexla FlexFlow transforms the inventory event)
   -> stockout_risk event
   -> agent ranks two disclosed synthetic candidates
+  -> cheapest plan attempts PO with authenticated general-agent identity
+  -> Pomerium 403; origin is not reached
+  -> agent observes the control and replans
   -> verification buys independent evidence through Zero
   -> deterministic policy
-       ineligible -> blacklist -> autonomous policy probe -> Pomerium 403 -> continue
+       ineligible -> blacklist -> continue
        eligible   -> signed attestation -> release vendor-scoped credential
   -> POST /po/:vendorId through Pomerium
   -> origin verifies Pomerium assertion + object bindings + nonce
@@ -64,9 +72,9 @@ storefront sale
   -> dashboard shows evidence spend, denial proof, PO ID, and decision events
 ```
 
-The denied request is a labeled **policy probe**, not a fake attempt to wire money after the
-agent already knows a vendor is ineligible. It proves defense in depth without making the
-agent behave irrationally.
+The denied request occurs before evidence is acquired. The agent learns the environment's
+authorization requirement from the real response and changes its plan. It is not forced to
+order from a candidate after already classifying that candidate as ineligible.
 
 ## Frozen Seams
 
@@ -76,8 +84,8 @@ The TypeScript definitions are authoritative. Summary:
    requested quantity, source, and timestamp.
 2. `VerificationVerdict`: `eligible | ineligible | insufficient_evidence`, risk score,
    reasons, evidence signals, evidence mode, cost, evidence hash, policy version, and expiry.
-3. `VendorAttestation`: vendor, quote, evidence, amount, currency, nonce, policy, expiry,
-   and signature bindings.
+3. `VendorAttestation`: vendor/domain, SKU, payee/account reference, quote/unit price,
+   quantity/amount ceilings, evidence, currency, nonce, policy, expiry, and signature.
 4. `POST /po/:vendorId`: `PurchaseOrderRequest` plus a vendor-scoped credential; returns
    `201 | 403`. Accepted orders schedule inbound stock; they do not claim physical refill.
 5. `DecisionEvent`: correlation ID, phase, vendor, detail, timestamp, and safe metadata.
@@ -87,8 +95,8 @@ The TypeScript definitions are authoritative. Summary:
 | Property | Local development | Prize demo |
 |---|---|---|
 | Evidence | Disclosed `.example` fixtures, `$0` | Pinned live Zero services and receipts |
-| Trigger | Local event | Nexla webhook -> FlexFlow -> agent webhook |
-| Authorization | HMAC development capability | Pomerium Zero service account + PPL |
+| Trigger | Always-on local monitor | Nexla webhook -> FlexFlow -> agent webhook |
+| Authorization | Signed attestation at origin | Pomerium service account + PPL + signed attestation at origin |
 | Email | Recorded/queued | StableEmail paid through Zero |
 | Hosting | Local npm processes | Akash if the core is already green |
 
@@ -100,6 +108,8 @@ the submitted Zero demo.
 - No capability, no PO. Missing credentials must be denied.
 - A credential for vendor A cannot authorize vendor B.
 - A capability cannot exceed its quote, amount, currency, evidence hash, or expiry.
+- An authenticated identity cannot change the payee, account reference, SKU, or unit price.
+- Authorization is re-evaluated before idempotent replay and a nonce cannot create two POs.
 - A rejected or insufficient-evidence vendor never receives a capability.
 - The Pomerium route is the only network path to the production procurement origin.
 - The stage denial must include a Pomerium request ID and authorize log; an origin-generated

@@ -35,6 +35,10 @@ main { min-height: 100vh; }
 .primaryButton { gap: 7px; padding: 0 14px; background: #17191c; color: #fff; border-color: #17191c; font-weight: 700; }
 .primaryButton:disabled { cursor: wait; opacity: .55; }
 .connectionBanner { background: #fff1dd; border-bottom: 1px solid #e7be82; color: #81520e; padding: 8px 28px; font-size: 12px; }
+.monitorStrip { min-height: 36px; padding: 8px 28px; display: flex; align-items: center; gap: 10px; color: #656b71; background: #f0f2f3; border-bottom: 1px solid #dfe2e5; font-size: 11px; }
+.monitorStrip.active svg { color: #14704c; }
+.monitorStrip strong { color: #33383d; }
+.monitorStrip span { padding-left: 10px; border-left: 1px solid #cfd3d7; }
 
 .metricBand { background: #fff; border-bottom: 1px solid #dfe2e5; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 18px 28px; gap: 24px; }
 .metric { min-width: 0; gap: 10px; }
@@ -56,7 +60,7 @@ main { min-height: 100vh; }
 .sectionHeading span { color: #7a7f85; font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .sectionHeading h1, .sectionHeading h2 { margin: 0; color: #202327; font-size: 16px; line-height: 1.25; letter-spacing: 0; text-transform: capitalize; }
 .productVisual { position: relative; aspect-ratio: 4 / 3; display: grid; place-items: center; background: #f8f9fa; overflow: hidden; }
-.productVisual img { width: 88%; height: 88%; object-fit: contain; mix-blend-mode: multiply; }
+.productVisual > svg { width: 44%; height: 44%; color: #3d454b; }
 .sku { position: absolute; left: 12px; bottom: 10px; padding: 4px 7px; background: rgba(255,255,255,.9); border: 1px solid #d9dcdf; border-radius: 3px; font: 700 10px ui-monospace, monospace; }
 .stockRow { display: grid; grid-template-columns: repeat(3, 1fr); padding: 16px; gap: 10px; border-top: 1px solid #e9ebed; }
 .stockRow > div { display: flex; flex-direction: column; }
@@ -73,7 +77,8 @@ main { min-height: 100vh; }
 .timeline { height: 536px; overflow-y: auto; padding: 8px 16px 16px; }
 .timelineItem { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 12px 0; border-bottom: 1px solid #eceef0; }
 .timelineIcon { margin-top: 1px; width: 24px; height: 24px; display: grid; place-items: center; color: #697077; background: #f1f2f3; border-radius: 4px; }
-.phase-policy_probe_denied .timelineIcon, .phase-ineligible .timelineIcon { color: #a62525; background: #fde8e7; }
+.phase-authorization_denied .timelineIcon, .phase-ineligible .timelineIcon { color: #a62525; background: #fde8e7; }
+.phase-replanned .timelineIcon { color: #86600e; background: #fff2ce; }
 .phase-attested .timelineIcon, .phase-ordered .timelineIcon, .phase-inbound_scheduled .timelineIcon { color: #14704c; background: #ddf4e9; }
 .eventMeta { justify-content: space-between; gap: 10px; }
 .eventMeta strong { font-size: 11px; text-transform: uppercase; }
@@ -114,6 +119,8 @@ footer { padding: 0 28px 18px; display: flex; gap: 18px; color: #8b9095; font-si
   .brand > div span, .mode { display: none; }
   .primaryButton { padding: 0 10px; }
   .metricBand { padding: 14px 16px; gap: 16px 10px; }
+  .monitorStrip { padding: 8px 16px; flex-wrap: wrap; gap: 6px 9px; }
+  .monitorStrip span { padding-left: 0; border-left: 0; }
   .metric strong { font-size: 15px; }
   .metric small { display: none; }
   .workspace { padding: 14px 16px; grid-template-columns: 1fr; }

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.1",
+  "type": "stockout_risk",
+  "eventId": "nexla-event-001",
+  "sku": "DDR5-ECC-64GB",
+  "currentQty": 0,
+  "threshold": 2,
+  "requestedQty": 20,
+  "occurredAt": "2026-07-17T19:30:00.000Z",
+  "source": "nexla"
+}

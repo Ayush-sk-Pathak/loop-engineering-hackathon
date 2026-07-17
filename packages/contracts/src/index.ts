@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = "1.0" as const;
+export const SCHEMA_VERSION = "1.1" as const;
 export const VERIFICATION_POLICY_VERSION = "vendor-risk-v1" as const;
 
 export type Currency = "USD";
@@ -11,6 +11,8 @@ export type VerificationStatus =
 export interface VendorQuote {
   id: string;
   sku: string;
+  payeeName: string;
+  payeeAccountRef: string;
   unitPriceCents: number;
   currency: Currency;
   availableQty: number;
@@ -36,7 +38,7 @@ export interface StockoutRiskEvent {
   threshold: number;
   requestedQty: number;
   occurredAt: string;
-  source: "nexla" | "local";
+  source: "nexla" | "local" | "monitor";
 }
 
 export type EvidenceKind =
@@ -45,7 +47,7 @@ export type EvidenceKind =
   | "web_presence"
   | "news_presence"
   | "contact_reachable"
-  | "bank_entity_match"
+  | "payee_identity_match"
   | "typosquat_detected";
 
 export interface EvidenceSource {
@@ -83,10 +85,16 @@ export interface VerificationVerdict {
 export interface VendorAttestation {
   id: string;
   vendorId: string;
+  vendorDomain: string;
   verified: true;
   quoteId: string;
+  sku: string;
+  payeeName: string;
+  payeeAccountRef: string;
   evidenceHash: string;
   policyVersion: typeof VERIFICATION_POLICY_VERSION;
+  unitPriceCents: number;
+  maxQuantity: number;
   maxAmountCents: number;
   currency: Currency;
   nonce: string;
@@ -97,13 +105,17 @@ export interface VendorAttestation {
 
 export interface PurchaseOrderRequest {
   vendorId: string;
+  vendorDomain: string;
   sku: string;
   quantity: number;
   quoteId: string;
+  payeeName: string;
+  payeeAccountRef: string;
   unitPriceCents: number;
   currency: Currency;
   attestationId: string;
   evidenceHash: string;
+  authorizationNonce: string;
   idempotencyKey: string;
 }
 
@@ -123,10 +135,12 @@ export type DecisionPhase =
   | "observed"
   | "planned"
   | "sourced"
+  | "authorization_attempted"
+  | "authorization_denied"
+  | "replanned"
   | "verifying"
   | "ineligible"
   | "blacklisted"
-  | "policy_probe_denied"
   | "attested"
   | "ordered"
   | "inbound_scheduled"
@@ -145,8 +159,12 @@ export interface DecisionEvent {
 }
 
 export type ProcurementCredential =
-  | { kind: "development"; token: string }
-  | { kind: "pomerium"; serviceAccountToken: string };
+  | { kind: "development"; attestation: VendorAttestation }
+  | {
+      kind: "pomerium";
+      serviceAccountToken: string;
+      attestation: VendorAttestation;
+    };
 
 export interface ProcurementResult {
   status: number;
@@ -161,6 +179,9 @@ export interface DemoMetrics {
   verificationSpendCents: number;
   inboundQuantity: number;
   verificationMode: EvidenceMode;
+  authorizationMode: "development" | "pomerium";
+  deniedRequestId?: string;
+  deniedEnforcementPoint?: ProcurementResult["enforcementPoint"];
 }
 
 export interface DemoState {
@@ -171,6 +192,13 @@ export interface DemoState {
     currentQty: number;
     threshold: number;
     inboundQty: number;
+    critical: boolean;
+    downtimeCostCentsPerMinute: number;
+  };
+  monitor: {
+    active: boolean;
+    watchedSkus: string[];
+    lastCheckAt: string | null;
   };
   events: DecisionEvent[];
   vendors: VendorCandidate[];

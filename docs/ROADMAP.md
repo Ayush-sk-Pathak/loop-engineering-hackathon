@@ -1,50 +1,39 @@
-# Aegis — Roadmap (forward source of truth)
+# StockShield Roadmap
 
-> The **future** — the forward mirror of `CURRENT_STATE.md` (the past).
->
-> **Sync rule:** when `CURRENT_STATE.md` logs an item done, tick its box here **in
-> the same commit**. `[ ]` = open, `[x]` = done **with the commit hash and ISO date
-> in parens**. Keep items terse — detail lives in CURRENT_STATE. Never delete
-> shipped items; the checked trail is the history of the plan.
->
-> Companions: `vision.md` (why) · `docs/architecture.md` (how) · `docs/PRD.md` (the
-> full plan) · `docs/STRATEGY-LEDGER.md` (settled decisions).
+## Foundation
 
-## Where we are (2026-07-17)
+- [x] Freeze schema v1.1 shared contracts (2026-07-17)
+- [x] Implement deterministic vendor-risk policy and disclosed fixtures (2026-07-17)
+- [x] Implement signed attestation and complete PO object binding (2026-07-17)
+- [x] Enforce authorization before idempotency and nonce replay protection (2026-07-17)
+- [x] Implement bounded autonomous denial/replan/order loop (2026-07-17)
+- [x] Implement SQLite state and one-screen operations dashboard (2026-07-17)
+- [x] Add one-command setup, local/prize doctor, Docker build, and owner workflow (2026-07-17)
+- [x] Add real Nexla-compatible webhook ingress (2026-07-17)
+- [x] Add autonomous critical-inventory monitor and no-run-button demo path (2026-07-17)
 
-Scaffolded; concept locked. The build is a ~5.5-hour sprint against the timeline below.
-This roadmap mirrors `docs/PRD.md §10` (team split) and §11 (timeline).
+## Prize-Critical Integration
 
-## Phase 0 — Foundation (all four, first 45 min)
+- [ ] Owner 2: settle one live Zero call per candidate service and fill the service lock
+- [ ] Owner 2: implement the Zero evidence adapter with real receipt IDs
+- [ ] Owner 3: create Pomerium general-agent and verified-vendor service accounts
+- [ ] Owner 3: configure exact-route PPL and capture `403`/`201` authorize logs
+- [ ] Owners 1+3: run the complete live Zero -> Pomerium vertical slice
+- [ ] Owner 4: connect Nexla FlexFlow and prove the event ID end to end
 
-- [x] Scaffold the doc system + enforcement (`/starter-pack`, 2026-07-17)
-- [x] Fill `docs/architecture.md` with the real blueprint (2026-07-17)
-- [x] Write `docs/PRD.md` (2026-07-17)
-- [ ] **RE-VERIFY `zero.xyz/browse`** — confirm Apollo/PDL, Firecrawl, serp, StablePhone/StableEmail are live and settle from our wallet (blocks Owner 2)
-- [ ] Freeze the five interface signatures (`architecture.md §Data flow`); commit shared types/mocks
-- [ ] Repo skeleton: `apps/dashboard`, `services/{agent,verify,procurement,inventory}`, `deploy/akash`, shared `packages/contracts`
+## Optional After Core Proof
 
-## Phase 1 — Parallel build against mocks (all four, ~2.5 h)
+- [ ] Implement the approved demand-audit and protected-purge branch from the design spec
+- [ ] Add Claude Agent SDK planner/explainer without moving authorization into model output
+- [ ] Replace the illustrative downtime rate with a cited operator-specific input
+- [ ] Add StableEmail adapter and received-message proof
+- [ ] Add StablePhone only if call latency and consent are controlled
+- [ ] Publish immutable image and deploy the coverage topology to Akash
 
-- [ ] Owner 1 — Agent Core loop: intake → source → verify → self-correct (blacklist+retry) → order
-- [ ] Owner 2 — Zero verify module: real paid calls (enrichment, scrape+WHOIS, news, AI call) → verdict + attestation
-- [ ] Owner 3 — Procurement API + Pomerium policy (attested-only) + attestation store
-- [ ] Owner 4 — Storefront + inventory gauge + decision-trail panel + Nexla FlexFlow trigger
+## Submission
 
-## Phase 2 — Integration (all four, ~1 h)
-
-- [ ] Wire real seams (drop mocks): trigger → agent → verify → attestation → Pomerium → PO → dashboard
-- [ ] Plant the two demo vendors (1 legit, 1 fraud) and tune so the fraud vendor fails every check
-- [ ] Prove the invariants: fraud PO returns `403` at Pomerium; counterfactual "reasoning bypassed → still denied"
-- [ ] Deploy to Akash (or local fallback if setup stalls)
-
-## Phase 3 — Demo + submission (all four, last ~45 min)
-
-- [ ] Rehearse the 3-minute script (`docs/PRD.md §9`) twice, timed
-- [ ] Record the 3-min demo video
-- [ ] README with architecture diagram + tool mapping; push public repo
-- [ ] Submit on Devpost with all required fields
-
-## Product notes (capture-only)
-
-<!-- observations / dogfood points land here immediately, unprocessed -->
+- [ ] Run `npm run doctor:prize`, `npm run build`, and the timed demo twice
+- [ ] Record the continuous three-minute demo
+- [ ] Add live request IDs, receipts, and deployment URLs to the runbooks
+- [ ] Push the green demo-stable revision to `main`
+- [ ] Complete the public repository and Devpost submission

@@ -13,10 +13,10 @@ import { runProcurementLoop } from "./index.ts";
 test("loop blacklists the lookalike, proves denial, and orders from the eligible vendor", async () => {
   const events: DecisionEvent[] = [];
   const event: StockoutRiskEvent = {
-    schemaVersion: "1.0",
+    schemaVersion: "1.1",
     type: "stockout_risk",
     eventId: "stockout-1",
-    sku: "LAPTOP-14",
+    sku: "DDR5-ECC-64GB",
     currentQty: 0,
     threshold: 3,
     requestedQty: 20,
@@ -31,7 +31,7 @@ test("loop blacklists the lookalike, proves denial, and orders from the eligible
     },
     credentials: {
       async forAttestation(_attestation: VendorAttestation): Promise<ProcurementCredential> {
-        return { kind: "development", token: "valid" };
+        return { kind: "development", attestation: _attestation };
       },
     },
     procurement: {
@@ -59,6 +59,7 @@ test("loop blacklists the lookalike, proves denial, and orders from the eligible
   assert.deepEqual(result.blacklistedVendorIds, ["vendor-lookalike"]);
   assert.equal(result.orderedVendorId, "vendor-northstar");
   assert.equal(result.atRiskPoValuePreventedCents, 240_000);
-  assert.ok(events.some((item) => item.phase === "policy_probe_denied"));
+  assert.ok(events.some((item) => item.phase === "authorization_denied"));
+  assert.ok(events.some((item) => item.phase === "replanned"));
   assert.ok(events.some((item) => item.phase === "inbound_scheduled"));
 });

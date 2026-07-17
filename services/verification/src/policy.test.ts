@@ -17,4 +17,5 @@ test("consistent vendor receives a quote-bound attestation", () => {
   assert.equal(result.verdict.status, "eligible");
   assert.equal(result.attestation?.vendorId, vendor.id);
   assert.equal(result.attestation?.quoteId, vendor.quote.id);
+  assert.equal(result.attestation?.payeeAccountRef, vendor.quote.payeeAccountRef);
 });

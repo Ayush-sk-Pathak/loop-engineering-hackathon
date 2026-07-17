@@ -1,0 +1,7 @@
+.git
+.next
+apps/dashboard/.next
+node_modules
+data
+.env*
+npm-debug.log*
