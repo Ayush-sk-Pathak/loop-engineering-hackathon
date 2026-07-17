@@ -17,6 +17,26 @@ spares and apparel dye, run through the same loop behind one dashboard selector.
 
 ![Continuim architecture](docs/assets/architecture.svg)
 
+## Live Proof Artifacts (settled 2026-07-17)
+
+Every sponsor claim below is backed by a recorded, verifiable artifact — never a mock:
+
+- **Zero.xyz — real paid evidence, settled on a funded wallet** (`config/zero-services.json`):
+  company enrichment `cap_fHxedyuNDjC6grLLINJYM` (receipt `run_HzNTkaRe4v4Hgbd4zuH8y`),
+  RDAP domain-age `cap_PYHZbk2tn2qaZty-h5qNC` (receipt `run_VKcZYwoHgXgWyCC_OdQLg`),
+  web scrape `cap_gimcJl-eOG0JdEAyZkDjG` (receipt `run_93ZYeks9toPjfxOWxp_La`).
+- **Pomerium — live enforcement**: self-hosted data plane connected to cluster
+  `dynamic-monitor-6165.pomerium.app`; JWKS serving real ES256 keys; every request
+  Envoy-intercepted with request IDs (e.g. `1d37d8f1-09fa-4d4f-abed-f6647d835d42`) —
+  unauthenticated requests fail closed. Full runbook: `docs/integrations/POMERIUM.md`.
+- **End-to-end autonomy, driven from the browser**: a spare-consumption click on the
+  Continuum dashboard triggered the monitor with no run button; the agent executed the
+  full 14-phase loop (denial → paid verification → attestation → `PO-475EA6D2`,
+  20 units inbound) — read back through the website's own proxy.
+- **Fail-closed honesty**: fixture/live modes are always labeled in the UI; the evidence
+  adapter refuses to fabricate `live_zero` data without a real session (HTTP 503);
+  `npm run doctor:prize` gates every live claim. Test suite: 39/39.
+
 ## Why This Exists
 
 When a datacenter has no replacement memory left, every minute of delay prolongs an
