@@ -454,3 +454,22 @@ scratch code and is not the default runtime. **Open reconciliations:** two Bedro
 (this `bedrock.ts` on main vs lane D's held
 `claude.ts`) — reconcile at W3 D-merge; contracts change landed without all-owner ack
 (retroactive ack requested on the board).
+**E2 merged + live-verified; live-mode operational caveat; E3 assigned (post-E2 follow-up).**
+E2 merged to `main` (`4db78dc merge(E)`); PM + the human verified the canonical Continuum UI
+end-to-end on `:3200` (main checkout) against the `:4000` backend — a real monitor-triggered
+run flowed through 14 decision phases to `PO-26DAE48E`, read back through the Continuum proxy
+(source: board directive `20c762e5`, main `4db78dc`). **Live-mode caveat:** sponsor keys placed
+in the human-owned env file do **not** take effect until the control-plane **process is
+restarted** in the target mode. A read-only `/health` probe on canonical `:4000` showed
+`verificationMode=fixture, authorizationMode=development` even after keys were added, and PM
+confirmed canonical is deliberately held at fixture because `VERIFICATION_MODE=live_zero` fails
+closed at boot without Zero config (board pin `94a2db0b`); modes flip per-sponsor at each proof
+session. Continuum's `LIVE · <scenarioId>` badge therefore honestly reads fixture/development
+until the backend is relaunched live — E2's read-path is mode-agnostic and needs no change to
+surface `live_zero`/`pomerium` once it is. **Ports:** `:3200` = canonical Continuum UI (PM-held
+while the token is held); lane-E testing moved to `:3201` (own stack `:4600`/`:4601` freed).
+**Held:** Continuum write-path buttons (run/reset/scenario/consume) intentionally not wired —
+pending explicit human/PM decision + token (they trigger real runs on the canonical stack).
+**Next (assigned):** E3 — wire Continuum incidents + learning pages to the real `/api/state`
+learning ledger (incident records, proven-vendor history, `recalled_history`); read-path only,
+same honesty contract as E2 (board directive `8023537d`).
