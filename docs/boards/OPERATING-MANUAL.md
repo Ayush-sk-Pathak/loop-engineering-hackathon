@@ -112,6 +112,24 @@ StableEmail, Pomerium, `scripts/doctor.ts`, `config/example.env` (post lines to 
 **NOT in scope:** `server.ts`/`runtime.ts`/store (event-ID plumbing already exists),
 `packages/contracts`, `scenarios.ts` values, Pomerium/Zero config, `scripts/doctor.ts`.
 
+### E — Continuum frontend integration (branch `feat/continuum-integration`, worktree `.claude/worktrees/E`, ports: frontend 3200, stack 4600/4601)
+
+**Owns:** `Continuum/**`. Added 2026-07-17 after the teammate's frontend upload + rename
+(decision 0016). **Phase 1 is investigation only — no wiring until PM accepts the
+recommendation** (the human's explicit call).
+
+| Item | Done criterion |
+|---|---|
+| E1 (now) Investigate: map every Continuum page/route to the backend surface it needs (control-plane `/api/state`, `/api/demo/*`, `/api/events/stockout` via the `/api/control/[...path]` proxy pattern in `apps/dashboard`); catalog what data each page renders vs what the API provides; note hardcoded/mock data; get `npm install && next build` working inside `Continuum/` (build health = evidence) | Written report in the worktree (`Continuum/INTEGRATION-NOTES.md`) + board `done` with commit |
+| E2 (now, part of the same report) RECOMMEND with evidence: replace `apps/dashboard` vs supplement (keep proven §14 demo screen as fallback) — assess wiring effort per page, demo risk (the §14 demo beats: mode badges, decision trail, spend, denial, PO, learning chips), and what Continuum is missing for the demo script | `decision-request` to P summarizing the recommendation; PM + human decide |
+| E3 (gated on accepted recommendation) Wire per the accepted scope | defined after E2 |
+
+**NOT in scope (phase 1):** ANY edit outside `Continuum/**` except the notes file; no
+`apps/dashboard` changes (C owns it); no proxy-route or control-plane edits — integration
+needs land via PM after E2 is accepted. Rename context: repo is now Continuim
+(`@continuim/*`); product spelling per decision 0016 is "Continuim" (the folder says
+"Continuum" — flagged to the human, treat folder name as-is for paths).
+
 ### D — Agent core / LLM (branch `feat/agent-explainer`, worktree `.claude/worktrees/D`, ports 4500/4501)
 
 **Owns:** `services/agent/**`, new `services/control-plane/src/claude.ts`;
