@@ -38,3 +38,15 @@ A/B/C and pure-software ideas) are in `docs/STRATEGY-LEDGER.md` decisions 2–5 
 
 **Not yet built.** No application code exists. Next session starts at `docs/ROADMAP.md`
 Phase 0 → freeze the five interface signatures, then parallel build.
+
+### 2026-07-17 — Infrastructure doc + judge-facing README
+
+**Added.** `docs/infrastructure.md` — the end-to-end runtime infra: topology diagram, the
+five deployable units + ports/trust-boundaries, the Pomerium-gated `POST /po` request path
+step by step (how the `403` physically happens), the Zero.xyz x402 paid-call plumbing, the
+Nexla trigger, secrets handling, and local-vs-Akash deployment (local-first; Akash is P2
+coverage). Also added a public **`README.md`** (judge-facing): problem, the trust-loop, the
+tool mapping, the embedded topology diagram (linking to the full infra doc), repo layout,
+local quickstart, and the team split. `.gitignore` extended (user) to cover `data/`,
+`coverage/`, `*.tsbuildinfo`. Key infra invariant documented: `services/procurement` is
+reachable **only** through Pomerium — no route exists for the agent to bypass the gate.

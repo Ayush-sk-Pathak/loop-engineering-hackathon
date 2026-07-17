@@ -12,6 +12,11 @@ build/
 .next/
 out/
 *.log
+*.tsbuildinfo
+
+# local runtime state
+data/
+coverage/
 
 # zero.xyz wallet/config — never commit keys
 .zero/
