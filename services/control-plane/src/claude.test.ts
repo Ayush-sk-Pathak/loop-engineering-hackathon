@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { PlannerContext } from "@stockshield/agent";
+import type { PlannerContext } from "@continuim/agent";
 import {
   createClaudePlanner,
   createPlannerFromEnv,

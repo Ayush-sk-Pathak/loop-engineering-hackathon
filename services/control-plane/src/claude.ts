@@ -1,4 +1,4 @@
-import type { PlannerAdvice, PlannerContext, PlannerPort } from "@stockshield/agent";
+import type { PlannerAdvice, PlannerContext, PlannerPort } from "@continuim/agent";
 
 /**
  * Injected transport seam. Real transports call AWS Bedrock (Converse) or the
@@ -136,7 +136,7 @@ export function resolvePlannerTransport(
 }
 
 const PLANNER_SYSTEM =
-  "You are an advisory procurement analyst for StockShield. A deterministic policy " +
+  "You are an advisory procurement analyst for Continuim. A deterministic policy " +
   "decides vendor eligibility, authorizes purchases, and mints credentials — you never " +
   "do any of those. You only (a) suggest a preferred order for the candidates you are " +
   "given and (b) explain, in one or two sentences, the evidence a human should weigh. " +
