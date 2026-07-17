@@ -120,3 +120,15 @@ was fully merged/absorbed.
 
 **Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean;
 `npm run build` (check + Next production build) green.
+
+### 2026-07-17 — Lane C (Nexla/dashboard/demo): C1 local ingress rehearsal
+
+**C1 — verified.** POSTed `config/nexla-stockout.example.json` to `/api/events/stockout`
+on the isolated lane-C worktree stack (control `:4400`, procurement `:4401`,
+`MONITOR_ENABLED=0`, `AUTH_MODE=development`, `VERIFICATION_MODE=fixture`). Measured result:
+`202 {"accepted":true,"eventId":"nexla-event-001"}`; the run drained to `complete` with a
+14-phase decision trail; **every decision event carried `correlationId: "nexla-event-001"`**
+(= posted `eventId`, `services/agent/src/index.ts:67`); order `PO-45CA6A84`, 20 units
+scheduled. Evidence recorded in `docs/integrations/NEXLA.md` (this commit). This is the
+local ingress path only — **not** Nexla-integration proof; the live FlexFlow flow (ROADMAP
+"prove the event ID end to end") is still open and key-gated.
