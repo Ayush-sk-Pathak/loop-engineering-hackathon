@@ -285,3 +285,16 @@ Wave-new files swept `@stockshield` → `@continuim` (`services/zero-adapter/*`,
 `npm run check` green 29/29 under the new scope. Lanes A–D continue on pre-rename
 worktrees; the rename is absorbed at each lane's next merge (lazy rebase per the human's
 call). `Continuum/` frontend role: under tab-E investigation before any dashboard decision.
+
+### 2026-07-17 — Lane B / B4: Akash prep — local image build + SDL marker procedure
+
+**Verified.** `docker build .` succeeds in worktree `.claude/worktrees/B` → image
+`stockshield:local` (`sha256:78e9506390b3`, 987 MB). The in-container `npm run build`
+(tsc + `node:test` + Next production build) passed. The single-stage image ships
+devDependencies (987 MB) — fine for coverage, not on the demo critical path.
+
+**Documented.** `docs/integrations/AKASH.md` carries the concrete procedure: local
+build (B4), GHCR publish with an immutable tag, prefer the pushed `@sha256` digest, and
+a `sed` marker-replace for both `REPLACE_OWNER`/`REPLACE_SHA` across the three
+`deploy/akash/deploy.example.yaml` image lines. Akash publish/lease stays B8 (gated on
+`doctor:prize` ∧ `build` ∧ `docker compose up --build`).
