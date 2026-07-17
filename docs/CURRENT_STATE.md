@@ -285,3 +285,36 @@ Wave-new files swept `@stockshield` → `@continuim` (`services/zero-adapter/*`,
 `npm run check` green 29/29 under the new scope. Lanes A–D continue on pre-rename
 worktrees; the rename is absorbed at each lane's next merge (lazy rebase per the human's
 call). `Continuum/` frontend role: under tab-E investigation before any dashboard decision.
+### 2026-07-17 — Agent planner/explainer (D1–D3), on `feat/agent-explainer` (unmerged)
+
+**Built (multi-tab wave, lane D).** Optional LLM planner/explainer behind a port, off by
+default, explainer-only per decisions 0008/0014:
+
+- **D1** `services/agent/src/index.ts` — optional `planner?: PlannerPort` on `LoopPorts`
+  (no-op when absent). May rank candidates and explain evidence, but the deterministic
+  policy ranking is authoritative: control flow always uses the policy order; a
+  disagreement is logged via a `planned` decision-event `metadata` (`policyOverride`,
+  `plannerRationale`, `plannerPreferredVendorId`, `policySelectedVendorId`); a throwing
+  planner degrades to no advice. Output never feeds verify/authorize inputs, never
+  adjudicates, never mints capability.
+- **D2** `services/control-plane/src/claude.ts` — injectable `ClaudeTransport` with a
+  lazy-loaded AWS Bedrock Converse transport (cross-region inference profile
+  `us.anthropic.claude-haiku-4-5-20251001-v1:0`; a bare id throws on-demand-throughput on
+  Bedrock, decision 0014) and an `ANTHROPIC_API_KEY` fetch fallback. `PLANNER_MODE=off`
+  default → no planner; an enabled-but-unconfigured mode fails closed (decision 0010). Adds
+  the lane's sole permitted dependency `@aws-sdk/client-bedrock-runtime` (lockfile merges
+  alone).
+- **D3** `services/control-plane/src/runtime.ts` — wires `createPlannerFromEnv()` into the
+  loop ports; inert (undefined) unless `PLANNER_MODE` is set, so the demo path is
+  byte-identical to the no-planner run.
+
+**Verified.** `npm run check` green — 22 tests pass (15 pre-existing + 3 planner-port + 4
+adapter); typecheck clean. New tests: `services/agent/src/planner.test.ts` (policy-wins-
+on-disagreement, disagreement-logged, failure-isolation);
+`services/control-plane/src/claude.test.ts` (JSON parse, prose tolerance, off-by-default,
+fail-closed).
+
+**Envelope / not done.** Unmerged — D merges nothing until PM declares core proof green
+(decision 0012). No live model call yet (D4, keys-gated: needs AWS Bedrock creds or
+`ANTHROPIC_API_KEY`). `config/example.env` needs the new keys added by the PM (posted to
+the board). The ROADMAP "Add … planner/explainer" box stays open until this branch merges.

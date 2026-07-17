@@ -10,6 +10,7 @@ import { SCHEMA_VERSION } from "@continuim/contracts";
 import { runProcurementLoop } from "@continuim/agent";
 import { encodeVendorAttestation } from "@continuim/security";
 import { createEvidenceCollector, evaluateEvidence } from "@continuim/verification";
+import { createPlannerFromEnv } from "./claude.ts";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
@@ -65,6 +66,8 @@ export async function runStockout(
           store.appendEvent(event);
         },
       },
+      // Optional advisory planner/explainer; undefined (inert) unless PLANNER_MODE is set.
+      planner: createPlannerFromEnv(),
     }, Number(process.env.DEMO_STEP_DELAY_MS ?? 350), store.history());
 
     store.complete({ ...result, order: acceptedOrder });
