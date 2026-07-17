@@ -1,0 +1,31 @@
+# {{PROJECT_NAME}} — Lessons Learned (root causes, not symptoms)
+
+> A **prevention doc, not a bug changelog.** Each lesson is a named disease — the
+> class of mistake — with the rule that now prevents the whole class. Read the
+> relevant diseases **before** repeating any past class of work. Raw incident
+> evidence lives in `logs/errors.jsonl` (append-only; schema in `logs/README.md`);
+> when a disease repeats there, promote it to a named entry here and cross-link the
+> `docs/STRATEGY-LEDGER.md` decision it produced.
+
+## The meta-lesson: read, don't guess
+
+1. When something fails and the data is available (logs, DB rows, file contents,
+   DOM), read the data before forming a hypothesis.
+2. Reproduce with real inputs before declaring a fix.
+3. A fix isn't done until something (a test, a check) fails if the disease returns.
+4. Record what **didn't** work alongside what did — dead-ends re-tried are the most
+   expensive kind of drift.
+
+## The failure-modes to design against (the diseases)
+
+<!-- Numbered, named principles. Each:
+**N. <Name the disease as a rule>.** <what goes wrong and why>
+   *Prevention:* <the standing rule / check that stops the class>
+-->
+
+*(none yet — first entries get promoted from `logs/errors.jsonl`)*
+
+## Incident index (evidence → where fixed → guarded by)
+
+| # | Principle | Concrete incident | Fix location | Test |
+|---|-----------|-------------------|--------------|------|

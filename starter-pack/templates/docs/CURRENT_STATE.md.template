@@ -1,0 +1,24 @@
+# {{PROJECT_NAME}} — Current State (session handoff log)
+
+> The **past** — an **append-only** record so a future session (human or AI) can
+> reconstruct the full picture: what was built, when, and why.
+>
+> **Rules (binding for this file):**
+> - **Append-only.** Newest entries at the bottom; never rewrite history.
+> - **Every claim has a source** — a commit hash, a file path, or a measured result.
+> - **Absolute ISO dates** (`YYYY-MM-DD`), never "recently" or "last week".
+>
+> Companions: `docs/PROJECT_STATUS.md` (snapshot) · `docs/ROADMAP.md` (future — tick
+> its box in the same commit as the entry here) · `docs/STRATEGY-LEDGER.md`
+> (decisions) · `docs/lessons_learned.md` (prevention).
+
+## Changelog (append-only, newest at bottom)
+
+### {{DATE}} — Project scaffolded
+
+**Setup.** Doc system + anti-drift mechanisms laid down by `/starter-pack`:
+constitution (`CLAUDE.md`), approval-locked `vision.md`, this log, `docs/ROADMAP.md`,
+`docs/architecture.md`, `docs/STRATEGY-LEDGER.md` (+ SessionStart injection hook),
+`docs/lessons_learned.md`, `logs/DECISIONS.jsonl` + `logs/errors.jsonl`, and the
+enforcement layer (`scripts/bootstrap.sh`: chmod 444 + pre-commit on
+vision/CLAUDE/architecture).

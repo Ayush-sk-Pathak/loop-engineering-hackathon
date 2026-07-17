@@ -1,0 +1,32 @@
+# {{PROJECT_NAME}} — Architecture (blueprint of record)
+
+> The **design** — the immutable blueprint of record. `CLAUDE.md` is this document's
+> distilled, binding form. Protected below the agent (chmod 444 + pre-commit);
+> deliberate, user-approved changes use `chmod u+w` + `git commit --no-verify`,
+> then re-run `scripts/bootstrap.sh`. Superseded designs are never deleted — mark
+> them `Status: Superseded by <doc>` and keep them.
+
+**Thesis.** <!-- one paragraph: the core architectural bet — what shape this system
+takes and why that shape serves the vision. -->
+
+## Components
+
+<!-- The parts and their single responsibilities. One bullet or short section each,
+     with planned file/module paths. -->
+
+## Data flow
+
+<!-- The end-to-end path, as a numbered flow or ASCII diagram:
+     input → transform → store → output. Name the seams (the interfaces that must
+     stay stable). -->
+
+## Workflow / phases
+
+<!-- How work moves through the system at runtime (Phase 1 — Intake, Phase 2 — ...),
+     or how the build is staged if that's more useful now. -->
+
+## Invariants
+
+<!-- Cross-cutting rules that must hold everywhere. For each: how it is ENFORCED
+     (a test, a lint boundary, a hook) — a stated invariant drifts; an enforced one
+     can't. If an invariant matters, something should fail when it's violated. -->

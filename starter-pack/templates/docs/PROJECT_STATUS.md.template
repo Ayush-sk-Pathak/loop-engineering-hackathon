@@ -1,0 +1,19 @@
+# {{PROJECT_NAME}} — Project Status
+
+> **Read this first (30-second orientation).** A stable, low-churn snapshot for fast
+> orientation — NOT the history (that's `CURRENT_STATE.md`) and NOT the future
+> (that's `ROADMAP.md`). **Rules:** update only when a summary-level fact changes
+> (counts, limits, phase, stack); keep it **≤25 bullets and ~500 words**; updating
+> this never replaces a CURRENT_STATE entry.
+
+**What it is.** {{PROJECT_ONE_LINER}}
+
+**Phase.** Scaffolded {{DATE}} — pre-build.
+
+## Key facts
+
+- **Stack —** {{STACK}}
+- **Branch model —** {{BRANCH_MODEL}}
+- <!-- add summary-level facts as they become true: counts, limits, deployed URLs,
+     model choices, coverage numbers. Bold lead-in per bullet; inline code refs to
+     source files; parenthetical ISO dates on specific facts. -->

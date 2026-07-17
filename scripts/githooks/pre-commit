@@ -1,0 +1,29 @@
+#!/bin/sh
+# Constitution: enforcement lives below the harness (CLAUDE.md).
+#   1) vision.md is immutable — user-authored north star, changed only by the
+#      user. The deliberate human override is `git commit --no-verify`.
+#   2) Protected paths — the Constitution (CLAUDE.md) and the architecture of
+#      record change only deliberately; same override.
+#   3) Secrets never land in git: refuse any staged .env* file.
+# Installed by scripts/bootstrap.sh (core.hooksPath).
+
+staged="$(git diff --cached --name-only)"
+
+if printf '%s\n' "$staged" | grep -qx 'vision.md'; then
+    echo "pre-commit: REJECT — vision.md is immutable (user-authored north star)." >&2
+    echo "If you are the user changing your vision deliberately: git commit --no-verify" >&2
+    exit 1
+fi
+
+if printf '%s\n' "$staged" | grep -Eq '^(CLAUDE\.md$|docs/architecture\.md$)'; then
+    echo "pre-commit: REJECT — staged change to a protected path (CLAUDE.md, docs/architecture.md)." >&2
+    echo "Deliberate, user-approved change: git commit --no-verify" >&2
+    exit 1
+fi
+
+if printf '%s\n' "$staged" | grep -Eq '(^|/)\.env(\.|$)'; then
+    echo "pre-commit: REJECT — staged .env* file; secrets are env-only, never committed." >&2
+    exit 1
+fi
+
+exit 0

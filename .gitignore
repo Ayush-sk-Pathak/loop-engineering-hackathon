@@ -1,0 +1,23 @@
+# secrets — env-only, never committed (also enforced by scripts/githooks/pre-commit)
+.env*
+!.env.example
+
+# claude local overrides
+.claude/settings.local.json
+
+# node / build
+node_modules/
+dist/
+build/
+.next/
+out/
+*.log
+
+# zero.xyz wallet/config — never commit keys
+.zero/
+zero.config.json
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

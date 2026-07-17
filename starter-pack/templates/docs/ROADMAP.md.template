@@ -1,0 +1,30 @@
+# {{PROJECT_NAME}} — Roadmap (forward source of truth)
+
+> The **future** — the forward mirror of `CURRENT_STATE.md` (the past).
+>
+> **Sync rule:** when `CURRENT_STATE.md` logs an item done, tick its box here **in
+> the same commit**. `[ ]` = open, `[x]` = done **with the commit hash and ISO date
+> in parens**. Keep items terse — detail lives in CURRENT_STATE. Never delete
+> shipped items (the checked trail is the history of the plan); prune a section
+> only when it becomes noise.
+>
+> Companions: `vision.md` (why) · `docs/architecture.md` (how) ·
+> `docs/STRATEGY-LEDGER.md` (settled decisions — check before re-opening a path).
+
+## Where we are ({{DATE}})
+
+Scaffolded; first milestone not yet defined.
+
+## Phase 0 — Foundation
+
+- [x] Scaffold the doc system + enforcement (`/starter-pack`, {{DATE}})
+- [ ] Fill `docs/architecture.md` with the real blueprint
+- [ ] Define the first milestone below
+
+## Phase 1 — <name it>
+
+- [ ] <first real work item>
+
+## Product notes (capture-only)
+
+<!-- user observations/dogfood points land here immediately, unprocessed -->

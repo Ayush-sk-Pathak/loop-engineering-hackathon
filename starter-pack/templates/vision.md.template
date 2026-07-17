@@ -1,0 +1,17 @@
+<!-- IMMUTABLE VISION DOCUMENT — user-authored {{DATE}}.
+  This file is {{PROJECT_NAME}}'s north star. It is written in the user's own words
+  and is changed ONLY with the user's explicit line-by-line approval — never by an
+  agent, never as work ships, only when the product INTENT itself changes.
+  (Enforcement: filesystem read-only 444 + the git pre-commit hook in
+  scripts/githooks/ — see CLAUDE.md §Enforcement lives below the harness.) -->
+
+# Vision
+
+{{VISION_TEXT}}
+
+<!-- Approved extensions are appended below as dated sections — never interleaved
+     into the text above. Each extension also requires explicit line-by-line user
+     approval before it is written.
+
+## Extension — <title> (added YYYY-MM-DD)
+-->

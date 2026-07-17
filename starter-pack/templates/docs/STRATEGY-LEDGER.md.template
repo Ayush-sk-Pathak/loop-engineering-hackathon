@@ -1,0 +1,41 @@
+# STRATEGY LEDGER — load-bearing decisions & invariants
+
+**Read this before any strategic or direction-setting work.** It carries the standing
+decisions and invariants that `vision.md` (intent) and `CLAUDE.md` (the laws) do
+**not** already hold — the ones a long or fresh session would otherwise re-litigate
+or silently contradict. It is injected into every session by the SessionStart hook
+(`.claude/settings.json`). **Do not reverse any of these without logging an explicit
+supersede to `logs/DECISIONS.jsonl`.**
+
+## Current front ({{DATE}}) — where we are right now
+
+<!-- ONE short paragraph, kept current: what we're doing right now and the immediate
+     next step. This is the first thing every session reads. -->
+Project scaffolded {{DATE}}. Immediate next step: fill `docs/architecture.md` and
+define the first ROADMAP milestone.
+
+## The load-bearing decisions (do not silently reverse)
+
+<!-- Numbered. Add an entry whenever a call is settled that a fresh session might
+     re-open or silently contradict (the re-litigation test). Each entry carries:
+       - the decision (bold thesis) + the WHY (the reasoning that would otherwise
+         be re-derived),
+       - **Rejected, do not re-propose:** the alternatives that were considered and
+         killed — drift is very often the quiet re-proposal of a rejected path,
+       - a pointer: the DECISIONS.jsonl id and/or commit hash. -->
+
+1. **Adopted the starter-pack doc system ({{DATE}}).** Docs are split by what
+   drifts: intent (`vision.md`) / laws (`CLAUDE.md`) / decisions (this ledger) /
+   past (`CURRENT_STATE`) / future (`ROADMAP`) / design (`architecture`) / evidence
+   (`logs/*.jsonl`); the immutable layer is enforced below the agent. **Rejected,
+   do not re-propose:** relying on a vision doc alone (it grounds intent, not
+   decisions), or on instructions without enforcement. DECISIONS `0001`.
+
+## Standing directives & envelope
+
+<!-- What we ALWAYS do (working rules that aren't laws), and — first-class content —
+     what the system CANNOT do yet: one plain, honest sentence per gap. The envelope
+     line is what stops a fresh session from confidently over-claiming capability. -->
+
+- **Envelope ({{DATE}}):** nothing is built yet — the repo contains only the doc
+  system. <!-- keep this line honest as the system grows -->
