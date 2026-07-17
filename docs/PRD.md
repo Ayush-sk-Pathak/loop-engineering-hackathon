@@ -183,8 +183,8 @@ procurement authority enforced outside the agent.
 **Tagline:** *The rescue is the hero. The trust layer is the tool that makes it safe.
 An agent may be wrong, but it cannot be unauthorized.*
 
-The public product name is **Continuim** (DECISIONS `0006`; ProcureLoop rename
-rejected again in `0013`/`0015`). The security thesis is **policy-enforced agentic
+The public product name is **Continuim** (DECISIONS `0016`, renaming StockShield from
+`0006`; the ProcureLoop rename stays rejected per `0013`/`0015`). The security thesis is **policy-enforced agentic
 procurement**: the agent may research and replan but cannot commit a PO without
 constrained authority.
 

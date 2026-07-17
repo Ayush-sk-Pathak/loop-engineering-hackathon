@@ -142,3 +142,22 @@ labels → risk/at-risk-spend labels. Kedar's remote branch deleted after merge
 
 **Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean after
 workspace reinstall.
+
+---
+
+## 2026-07-17 — Diagram upgrade + cohesion pass (this commit)
+
+**Diagrams.** `docs/assets/architecture.svg` rebuilt as a three-layer diagram matching
+decision 0015 — Hero Runway / Secondary Guardrail / Learning bands, numbered demo beats
+(1 stockout → 2 unattested attempt → 3 403 replan → 4 paid evidence → 5–6 verdict +
+capability → 7 201), learning feedback arrow labeled "gate still required", and the
+scenario + sponsor footer. Render verified via Quick Look rasterization.
+`docs/architecture.md` gains two GitHub-rendered mermaid diagrams (three-layer flowchart
++ runtime sequence) alongside the existing text flow.
+
+**Cohesion.** Post-rename sweep: remaining StockShield/ProcureLoop mentions are only
+historical records in the ledger, PRD decision log, and this file (intentional). PRD
+naming citation corrected to DECISIONS 0016. Mockup title, dashboard metadata, and all
+package scopes confirmed Continuim.
+
+**Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean.

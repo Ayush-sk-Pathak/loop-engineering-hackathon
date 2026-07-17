@@ -51,7 +51,55 @@ agent identity is insufficient because both vendor choices would look identical 
 The local control plane is integration scaffolding, not a fifth owner. Each owner replaces a
 port without changing the contracts.
 
+## Three Layers
+
+![Continuim architecture](assets/architecture.svg)
+
+```mermaid
+flowchart TB
+    subgraph L1["Layer 1 · Hero Runway — the autonomous rescue"]
+        POOL[Critical supply pool] --> MON["Always-on monitor (2s) / Nexla FlexFlow"]
+        MON -->|stockout_risk v1.1| AGENT["Agent loop — plan · act · observe · replan"]
+        PO["Recovery PO — 201 · inbound scheduled"]
+    end
+    subgraph L2["Layer 2 · Secondary Guardrail — trust before spend"]
+        ZERO["Zero.xyz paid evidence"] --> POLICY["Deterministic policy v1.1"]
+        POLICY -->|eligible| CAP["Signed capability"]
+        CAP --> POM["Pomerium gate — vendor-scoped identity"]
+    end
+    subgraph L3["Layer 3 · Learning — never bypasses the gate"]
+        LEDGER["Incident ledger (append-only)"] --> RECALL["Proven-vendor recall"]
+    end
+    AGENT -.->|unattested attempt| POM
+    POM -.->|403 · replan| AGENT
+    AGENT -->|buys evidence| ZERO
+    POM -->|201| PO
+    PO --> LEDGER
+    RECALL -->|informs next ranking| AGENT
+```
+
 ## Runtime Flow
+
+```mermaid
+sequenceDiagram
+    participant Mon as Monitor / Nexla
+    participant Agent
+    participant Pom as Pomerium
+    participant Zero as Zero.xyz ($)
+    participant Policy as Policy v1.1
+    participant Origin as PO origin
+    Mon->>Agent: stockout_risk (threshold crossed, no human action)
+    Agent->>Pom: POST /po — cheapest plan, general identity
+    Pom-->>Agent: 403 — no vendor-scoped capability
+    Agent->>Zero: buy current evidence (enrichment · domain age · news)
+    Zero-->>Policy: signals + receipts
+    Policy-->>Agent: lookalike ineligible → blacklisted
+    Policy-->>Agent: eligible → signed capability (payee · quote · amount · nonce)
+    Agent->>Pom: POST /po/:vendorId — vendor identity + capability
+    Pom->>Origin: signed assertion forwarded
+    Origin-->>Agent: 201 — PO accepted, inbound scheduled
+    Origin->>Origin: incident recorded (learning layer)
+```
 
 ```text
 critical spare consumed by a node failure
