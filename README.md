@@ -6,6 +6,8 @@
 
 > **The pitch:** *Everyone here gave an AI agent a wallet today. We built the reason you can.*
 
+![Aegis architecture — an agent that verifies suppliers with real paid Zero.xyz checks, then a Pomerium gate blocks any payment to an unverified vendor](docs/assets/architecture.svg)
+
 ---
 
 ## The problem
@@ -60,6 +62,9 @@ API physically rejects an unverified vendor.** That property is a live, provable
 `services/procurement` (the thing that moves money) **has no route except through Pomerium** —
 so the agent cannot bypass the gate even if compromised. That network boundary *is* the product.
 
+<details>
+<summary>Text version of the topology (fallback)</summary>
+
 ```
                           PUBLIC EDGE                          |          INTERNAL NETWORK (not publicly routable)
                                                                |
@@ -86,6 +91,8 @@ so the agent cannot bypass the gate even if compromised. That network boundary *
                           └─── reads attestation store ────────────────────│  StableEmail PO  │   └──────────┘
                                                                |            └──────────────────┘
 ```
+
+</details>
 
 **The five interface seams** (freeze first, then build against mocks in parallel):
 `stockout_risk` → `verify(vendor)→verdict` → `attestation` → `POST /po → 200|403` → `decision_event`.
