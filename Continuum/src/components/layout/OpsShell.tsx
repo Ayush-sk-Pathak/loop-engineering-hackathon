@@ -11,7 +11,9 @@ const NAV = [
   { href: "/inventory", label: "Inventory", icon: "inventory", group: "Operations" },
   { href: "/procurement", label: "Procurement", icon: "procurement", group: "Operations" },
   { href: "/suppliers", label: "Vendors", icon: "vendors", group: "Operations" },
+  { href: "/incidents", label: "Incidents", icon: "alert", group: "Operations" },
   { href: "/continuum", label: "Continuum", icon: "shield", group: "Installed app" },
+  { href: "/learning", label: "Learning", icon: "learning", group: "Installed app" },
   { href: "/reports", label: "Reports", icon: "reports", group: "Manage" },
   { href: "/settings", label: "Settings", icon: "settings", group: "Manage" },
 ];
@@ -25,6 +27,8 @@ function Icon({ name, className = "size-4" }: { name: string; className?: string
     shield: <><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z" /><path d="M8 12h3l2-4 2 8 2-4h2" /></>,
     reports: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>,
     settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1L14.9 2h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z" /></>,
+    alert: <><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></>,
+    learning: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.5 1 2.5h6c0-1 .4-1.9 1-2.5A6 6 0 0 0 12 3Z" /></>,
     search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
   };
   return (
