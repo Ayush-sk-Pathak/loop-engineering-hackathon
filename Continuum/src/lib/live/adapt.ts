@@ -35,6 +35,7 @@ const PHASE_LABEL: Record<DecisionPhase, string> = {
   authorization_denied: "Authorization denied",
   replanned: "Replanned",
   verifying: "Verifying",
+  explained: "Explained",
   ineligible: "Ineligible",
   blacklisted: "Blacklisted",
   attested: "Attested",
@@ -52,6 +53,7 @@ const PHASE_TONE: Record<DecisionPhase, Tone> = {
   authorization_denied: "bad",
   replanned: "warn",
   verifying: "warn",
+  explained: "info",
   ineligible: "bad",
   blacklisted: "bad",
   attested: "ok",
@@ -59,6 +61,21 @@ const PHASE_TONE: Record<DecisionPhase, Tone> = {
   inbound_scheduled: "ok",
   failed: "bad",
 };
+
+// Fallback-safe lookups: the control-plane's DecisionPhase set grows over time
+// (e.g. "explained" was added mid-wave). Unknown phases degrade to a title-cased
+// label and neutral tone instead of rendering `undefined`.
+function titleCasePhase(p: string): string {
+  return p.charAt(0).toUpperCase() + p.slice(1).replace(/_/g, " ");
+}
+
+function phaseLabel(p: DecisionPhase): string {
+  return PHASE_LABEL[p] ?? titleCasePhase(p);
+}
+
+function phaseTone(p: DecisionPhase): Tone {
+  return PHASE_TONE[p] ?? "neutral";
+}
 
 function timeOf(iso: string): string {
   const ms = Date.parse(iso);
@@ -163,9 +180,9 @@ function adaptActivity(state: DemoState): ActivityItem[] {
     .reverse()
     .map((e) => ({
       time: timeOf(e.occurredAt),
-      source: PHASE_LABEL[e.phase],
+      source: phaseLabel(e.phase),
       message: e.detail,
-      tone: PHASE_TONE[e.phase],
+      tone: phaseTone(e.phase),
     }));
 }
 
@@ -208,5 +225,96 @@ export function adaptWorkspace(state: DemoState, base: Workspace): Workspace {
     suppliers: state.vendors.map((v) => adaptSupplier(state, v)),
     purchases: adaptPurchases(state),
     activity: adaptActivity(state),
+  };
+}
+
+// ---- Learning ledger + incidents (E3) ------------------------------------
+// The control-plane exposes the learning ledger as a SUMMARY only
+// (learning.incidentCount / lastResolutionMs / provenVendorIds) plus the live
+// event stream (recalled_history, explained, …). Per-incident IncidentRecord[]
+// history is NOT served over HTTP, so these helpers surface the current incident
+// + the aggregate + proven-vendor history + reasoning feed — all real fields.
+
+export interface ProvenVendor {
+  id: string;
+  name: string;
+  domain: string;
+}
+
+// Vendors that closed a prior incident (learning.provenVendorIds), resolved to
+// their current name/domain where the candidate is still present in the run.
+export function provenVendorList(state: DemoState): ProvenVendor[] {
+  return state.learning.provenVendorIds.map((id) => {
+    const v = state.vendors.find((c) => c.id === id);
+    return { id, name: v ? v.tradingName || v.legalName : id, domain: v?.domain ?? "—" };
+  });
+}
+
+export interface LearningEvent {
+  id: string;
+  time: string;
+  label: string;
+  detail: string;
+  tone: Tone;
+}
+
+// The decisions worth surfacing on the learning page: warm-path recalls, the
+// agent's own explanations, and the resulting attestation/order. Detail strings
+// are rendered verbatim — never parsed into structure.
+const LEARNING_PHASES = new Set<DecisionPhase>([
+  "recalled_history",
+  "explained",
+  "attested",
+  "ordered",
+]);
+
+export function learningFeed(state: DemoState): LearningEvent[] {
+  return state.events
+    .filter((e) => LEARNING_PHASES.has(e.phase))
+    .slice(-20)
+    .reverse()
+    .map((e) => ({
+      id: e.id,
+      time: timeOf(e.occurredAt),
+      label: phaseLabel(e.phase),
+      detail: e.detail,
+      tone: phaseTone(e.phase),
+    }));
+}
+
+export interface LiveIncident {
+  scenarioId: string;
+  title: string;
+  sku: string;
+  itemName: string;
+  onHand: number;
+  threshold: number;
+  runStatus: string;
+  deniedRequestId?: string;
+  deniedPoint?: string;
+  orderId?: string;
+  orderVendor?: string;
+  atRiskPreventedCents: number;
+  verificationSpendCents: number;
+  inboundQty: number;
+}
+
+// The one incident the control-plane currently holds in /api/state.
+export function currentIncident(state: DemoState): LiveIncident {
+  return {
+    scenarioId: state.scenario.id,
+    title: state.scenario.trigger,
+    sku: state.inventory.sku,
+    itemName: state.inventory.name,
+    onHand: state.inventory.currentQty,
+    threshold: state.inventory.threshold,
+    runStatus: state.runStatus,
+    deniedRequestId: state.metrics.deniedRequestId,
+    deniedPoint: state.metrics.deniedEnforcementPoint,
+    orderId: state.order?.id,
+    orderVendor: state.order ? vendorNameOf(state, state.order.vendorId) : undefined,
+    atRiskPreventedCents: state.metrics.atRiskPoValuePreventedCents,
+    verificationSpendCents: state.metrics.verificationSpendCents,
+    inboundQty: state.inventory.inboundQty,
   };
 }

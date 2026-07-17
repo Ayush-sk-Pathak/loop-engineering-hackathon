@@ -473,3 +473,26 @@ pending explicit human/PM decision + token (they trigger real runs on the canoni
 **Next (assigned):** E3 — wire Continuum incidents + learning pages to the real `/api/state`
 learning ledger (incident records, proven-vendor history, `recalled_history`); read-path only,
 same honesty contract as E2 (board directive `8023537d`).
+
+**E3 — Continuum incidents + learning pages wired to the live learning ledger (read-path).**
+Replaced the `/incidents` and `/learning` redirect stubs with real pages that render the
+control-plane learning ledger live through the `useContinuum()` seam (mock fallback when the
+control-plane is unreachable, clearly labelled). `/learning`: incidents-resolved / last-resolution
+/ proven-vendor tiles, a proven-vendor history list (name + domain, resolved from
+`learning.provenVendorIds` → `vendors[]`), and a recall & reasoning feed (`recalled_history` /
+`explained` / `attested` / `ordered` events, detail strings rendered verbatim). `/incidents`: the
+live incident (scenario, SKU on-hand vs threshold, 403 + `deniedRequestId`, recovered PO + inbound)
+plus the aggregate count; the page honestly notes per-incident `IncidentRecord[]` history is **not**
+exposed by `/api/state` (SQLite-only) rather than fabricating a history table. New helpers in
+`Continuum/src/lib/live/adapt.ts` (`provenVendorList`, `learningFeed`, `currentIncident`); synced the
+local `DemoState` mirror + phase maps with the control-plane's new `explained` `DecisionPhase`
+(contracts, main `6c8dd8c`) and made phase lookups fallback-safe (unknown future phases degrade to a
+title-cased label instead of `undefined`). `OpsShell` nav gains Incidents + Learning links. Files:
+`Continuum/src/app/{incidents,learning}/page.tsx`, `Continuum/src/lib/live/{adapt,contracts}.ts`,
+`Continuum/src/components/layout/OpsShell.tsx`. Verified against an isolated 4600/4601 fixture/dev
+stack: two `/api/demo/run`s (soft reset between) produced `learning.incidentCount=2`, proven
+`vendor-northstar`, a real `recalled_history` event, order `PO-509FE8CF`; a headless-browser load of
+`http://127.0.0.1:3201/learning` (proxy → :4600) rendered the live ledger — `LIVE · datacenter`
+badge, "Northstar Supply" proven, 2 incidents resolved / 339ms tiles, the recall event — screenshot
+captured. `next build` green (14 routes; `/learning`, `/incidents` now real pages). Read-only — no
+write buttons.
