@@ -317,3 +317,76 @@ webhook destination with `X-Continuim-Webhook-Secret`) plus an activate-and-capt
 step (Nexla flow ID + event ID → matching `correlationId` in the Continuim trail). Design/plan
 only — no Nexla account is provisioned; exact console labels + ingest URL are captured live
 when C5 runs (key- and token-gated).
+
+### 2026-07-17 — Lane B / B4: Akash prep — local image build + SDL marker procedure
+
+**Verified.** `docker build .` succeeds in worktree `.claude/worktrees/B` → image
+`stockshield:local` (`sha256:78e9506390b3`, 987 MB). The in-container `npm run build`
+(tsc + `node:test` + Next production build) passed. The single-stage image ships
+devDependencies (987 MB) — fine for coverage, not on the demo critical path.
+
+**Documented.** `docs/integrations/AKASH.md` carries the concrete procedure: local
+build (B4), GHCR publish with an immutable tag, prefer the pushed `@sha256` digest, and
+a `sed` marker-replace for both `REPLACE_OWNER`/`REPLACE_SHA` across the three
+`deploy/akash/deploy.example.yaml` image lines. Akash publish/lease stays B8 (gated on
+`doctor:prize` ∧ `build` ∧ `docker compose up --build`).
+
+### 2026-07-17 — Lane B / B2: prize-mode compose topology (config valid; up-health deferred)
+
+**Verified.** `docker compose config` VALID (exit 0). procurement stays `expose`-only
+(no published host port); control-plane `4000`, dashboard `3000` published as before.
+
+**Documented.** Added a commented prize-mode `pomerium` proxy block to `compose.yaml`:
+the Pomerium Zero self-hosted data plane runs in the same network and reaches
+`procurement:4001` directly — **no separate tunnel/connector needed**. The default dev
+`up` is unchanged (block commented; `AUTH_MODE` stays `development`).
+
+**Deferred (not yet done).** `docker compose up --build` health binds `3000:3000` +
+`4000:4000`; port `4000` is held by an unrelated LiteLLM proxy (a worker cannot free it).
+token-request posted — PM to coordinate freeing `4000`, or approve an alternate-host-port
+run that verifies the same internal topology (container healthchecks curl `127.0.0.1`
+inside each container, so they do not depend on the host-port bind). B2 completes when
+up-health is green.
+
+### 2026-07-17 — Lane B rebased onto Continuim main + residual @stockshield sweep
+
+**Rebased.** `feat/pomerium-live` rebased onto reconciled `main` (StockShield→Continuim,
+decision 0016). B4 (now `8a57856`) + B2 (now `d2aa9da`) replayed with no conflicts;
+CURRENT_STATE union-merged cleanly. Post-rebase files carry main's Continuim naming + my
+B2 pomerium block + B3 post-201 hook (`server.ts` header `x-continuim-request-id`).
+
+**Swept (lane B files).** The rename sweep had missed files merged in the B3 window.
+Fixed: `services/procurement/src/email.ts` + `email.test.ts` imported now-dead
+`@stockshield/contracts` → `@continuim/contracts`; email subject "StockShield PO" →
+"Continuim PO"; `docs/integrations/AKASH.md` image/repo names `stockshield` → `continuim`
+(matches the Continuim deploy SDL). `grep -i stockshield` over lane B is now clean;
+`npm run check` 29/29 on the current tree (email.test.ts imports `@continuim/contracts`).
+
+**BLOCKER (lane A, flagged to PM).** A CLEAN `npm install` still fails repo-wide with 404
+`@stockshield/contracts@*` from `services/zero-adapter/**` (lane A, single-writer):
+`package.json` (name `@stockshield/zero-adapter` + `@stockshield/contracts` dep) and
+`adapter.ts`/`adapter.test.ts`/`transport.ts` imports. Until A sweeps zero-adapter, a
+clean-install certification is not possible; the current check green runs on an existing
+(dirty) node_modules. Evidence in `logs/errors.jsonl`.
+
+### 2026-07-17 — Lane B second rebase onto a304389 + clean verification + B2 up-health
+
+**Resolved.** The lane-A zero-adapter blocker above was fixed upstream by main's `8ae16d1`
+(lane C completed the `@continuim` sweep the reconciliation merge had left in a stale
+index). Second rebase of `feat/pomerium-live` onto `a304389` is clean — my redundant
+email.* import hunks auto-dropped, my unique changes kept (email subject "Continuim PO";
+AKASH.md continuim image names). Post-rebase shas: **B4 `19ebc58`, B2 `b02e6a9`,
+sweep `559f73d`**.
+
+**Verified (clean tree).** `npm install` clean (0 vulnerabilities, no 404);
+`npm run check` **29/29** (`tsc --noEmit` clean; full node:test suite incl. zero-adapter
++ email).
+
+**B2 up-health — DONE (PM option 2: alternate host ports 13000/14000, no token).**
+`docker compose -f compose.yaml -f <alt-ports override> -p continuim-b-alt up --build -d
+--wait` → exit 0; all three services **Healthy**. `procurement` stayed **expose-only**
+(`4001/tcp`, no host port — prize boundary holds); `control-plane` 14000→4000 healthy
+(`/health` = `{"ok":true,…authorizationMode:"development"…}`); `dashboard` 13000→3000
+HTTP 200. Canonical `3000/4000` never bound (4000 still the unrelated LiteLLM). The
+canonical `4000:4000` up-health stays a one-time pre-W2 PM step (human pre-authorized
+stopping LiteLLM). Override file is throwaway (scratchpad, uncommitted); stack torn down.
