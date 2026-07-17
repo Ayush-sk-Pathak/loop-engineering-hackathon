@@ -11,6 +11,7 @@ import { runProcurementLoop } from "@continuim/agent";
 import { encodeVendorAttestation } from "@continuim/security";
 import { createEvidenceCollector, evaluateEvidence } from "@continuim/verification";
 import { explainVerdictWithBedrock } from "./bedrock.ts";
+import { explainVerdictWithClaudeOAuth } from "./claude.ts";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
@@ -47,6 +48,7 @@ export async function runStockout(
             signals,
             process.env.ATTESTATION_SIGNING_SECRET ?? "local-attestation-only-change-me",
           );
+          let bedrockError: unknown;
           try {
             const explanation = await explainVerdictWithBedrock(vendor, result.verdict);
             if (explanation) {
@@ -68,6 +70,32 @@ export async function runStockout(
               });
             }
           } catch (error) {
+            bedrockError = error;
+          }
+          try {
+            const explanation = await explainVerdictWithClaudeOAuth(vendor, result.verdict);
+            if (explanation) {
+              store.appendEvent({
+                schemaVersion: SCHEMA_VERSION,
+                id: randomUUID(),
+                correlationId: stockout.eventId,
+                phase: "explained",
+                vendorId: vendor.id,
+                vendorName: vendor.tradingName,
+                detail: explanation.text,
+                occurredAt: new Date().toISOString(),
+                metadata: {
+                  provider: explanation.provider,
+                  modelId: explanation.modelId,
+                  region: explanation.region,
+                  authoritative: false,
+                  ...(bedrockError ? { fallbackFor: "amazon-bedrock" } : {}),
+                },
+              });
+            } else if (bedrockError) {
+              throw bedrockError;
+            }
+          } catch (error) {
             store.appendEvent({
               schemaVersion: SCHEMA_VERSION,
               id: randomUUID(),
@@ -75,10 +103,12 @@ export async function runStockout(
               phase: "explained",
               vendorId: vendor.id,
               vendorName: vendor.tradingName,
-              detail: `Bedrock explainer unavailable; deterministic policy verdict remains authoritative.`,
+              detail: `LLM explainer unavailable; deterministic policy verdict remains authoritative.`,
               occurredAt: new Date().toISOString(),
               metadata: {
-                provider: "amazon-bedrock",
+                provider: process.env.CLAUDE_EXPLAINER_ENABLED === "1"
+                  ? "amazon-bedrock+claude-code-oauth"
+                  : "amazon-bedrock",
                 authoritative: false,
                 error: error instanceof Error ? error.message : "unknown",
               },
