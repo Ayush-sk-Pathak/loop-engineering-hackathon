@@ -134,7 +134,7 @@ local ingress path only — **not** Nexla-integration proof; the live FlexFlow f
 "prove the event ID end to end") is still open and key-gated.
 ### 2026-07-17 — A1: Zero evidence adapter service (lane A, `feat/zero-live`)
 
-**Built.** New `services/zero-adapter` workspace (`@stockshield/zero-adapter`) — the small
+**Built.** New `services/zero-adapter` workspace (`@continuim/zero-adapter`) — the small
 HTTP adapter `services/verification/src/collector.ts` already POSTs to in `live_zero` mode.
 `src/transport.ts` defines the `ZeroTransport` seam and `createZeroTransport(env)`, which
 returns `null` unless a real Zero session (`ZERO_API_KEY`) is present. `src/adapter.ts`
@@ -232,3 +232,56 @@ service-account User ID == policy `user.is`, client `Authorization: Bearer Pomer
 
 **Not yet live.** Cluster/route/service-account creation + PPL application + `403`/`201`
 capture are B5/B6 (key-gated, token-serialized); confirm any renamed console labels then.
+---
+
+## 2026-07-17 — Rename to Continuim + kedar mockup merge (this commit)
+
+**Decision 0016 (supersede).** The public product is renamed **StockShield → Continuim**
+by explicit user direction. Global case-aware rename across 60 tracked files: all docs,
+package scope `@stockshield/*` → `@continuim/*` (imports + lockfile + node_modules
+symlinks reinstalled), dashboard UI strings, compose/deploy files, and the architecture
+SVG. `logs/*.jsonl` history untouched (append-only); ledger entry 16 records the
+supersede of the naming in 0006/0013.
+
+**Branch merge.** `origin/kedar/docs-and-mockup` (one commit, mockup redesign) merged
+into `main`; the redesign was built on the pre-rename mockup, so its reintroduced
+"Vendor Fraud Interceptor" branding, `Fillmore` PO step (violates 0004), and
+"Fraud score"/"Fraud blocked" labels (violate 0003/0008/0010) were surgically rebranded
+inside kedar's structure: product name → Continuim, Fillmore → StableEmail, fraud
+labels → risk/at-risk-spend labels. Kedar's remote branch deleted after merge
+(single-branch workflow).
+
+**Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean after
+workspace reinstall.
+
+---
+
+## 2026-07-17 — Diagram upgrade + cohesion pass (this commit)
+
+**Diagrams.** `docs/assets/architecture.svg` rebuilt as a three-layer diagram matching
+decision 0015 — Hero Runway / Secondary Guardrail / Learning bands, numbered demo beats
+(1 stockout → 2 unattested attempt → 3 403 replan → 4 paid evidence → 5–6 verdict +
+capability → 7 201), learning feedback arrow labeled "gate still required", and the
+scenario + sponsor footer. Render verified via Quick Look rasterization.
+`docs/architecture.md` gains two GitHub-rendered mermaid diagrams (three-layer flowchart
++ runtime sequence) alongside the existing text flow.
+
+**Cohesion.** Post-rename sweep: remaining StockShield/ProcureLoop mentions are only
+historical records in the ledger, PRD decision log, and this file (intentional). PRD
+naming citation corrected to DECISIONS 0016. Mockup title, dashboard metadata, and all
+package scopes confirmed Continuim.
+
+**Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean.
+
+### 2026-07-17 — PM: reconciled origin/main (Continuim rename + Continuum frontend) into the wave
+
+**Merged.** `origin/main` (`89d54bf`: decision 0016 rename StockShield→Continuim across
+104 files; `Continuum/` Next.js frontend upload; kedar mockup redesign) merged into the
+wave's `main` (was `1422abd`). One content conflict (`docs/integrations/NEXLA.md`) —
+resolved by keeping the wave's richer C1/C3 content and applying the rename to it, incl.
+the webhook header now being `X-Continuim-Webhook-Secret` (`services/control-plane/src/server.ts:100`).
+Wave-new files swept `@stockshield` → `@continuim` (`services/zero-adapter/*`,
+`services/procurement/src/email.*`). Verified: `npm install` relinked workspaces,
+`npm run check` green 29/29 under the new scope. Lanes A–D continue on pre-rename
+worktrees; the rename is absorbed at each lane's next merge (lazy rebase per the human's
+call). `Continuum/` frontend role: under tab-E investigation before any dashboard decision.

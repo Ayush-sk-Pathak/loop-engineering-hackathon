@@ -1,4 +1,4 @@
-# StockShield Architecture
+# Continuim Architecture
 
 > Blueprint of record. This file is protected by the pre-commit hook. Product rationale and
 > demo timing live in `docs/PRD.md`; implementation contracts live in
@@ -6,7 +6,7 @@
 
 ## Thesis
 
-StockShield is a procurement control plane for critical-infrastructure stockout emergencies.
+Continuim is a procurement control plane for critical-infrastructure stockout emergencies.
 An autonomous monitor wakes the agent when the spares pool crosses its threshold. The agent
 may source and evaluate suppliers, but it cannot commit a purchase order until paid evidence
 has produced a vendor-scoped, quote-scoped, amount-limited, expiring capability.
@@ -32,7 +32,7 @@ and binds its subject to the vendor in the URL. SQLite records decisions and rep
    Rejected vendors receive no capability.
 6. **Origin boundary.** `POST /po/:vendorId` verifies `X-Pomerium-Jwt-Assertion`, including
    signature, issuer, audience, expiry, and `sub == vendor:<vendorId>`. In both modes it also
-   verifies StockShield's signed attestation and binds vendor, domain, SKU, payee, account
+   verifies Continuim's signed attestation and binds vendor, domain, SKU, payee, account
    reference, quote, unit price, quantity, amount, evidence, expiry, and nonce. Authorization
    happens before idempotency lookup. The origin is not publicly reachable in prize mode.
 
@@ -51,7 +51,55 @@ agent identity is insufficient because both vendor choices would look identical 
 The local control plane is integration scaffolding, not a fifth owner. Each owner replaces a
 port without changing the contracts.
 
+## Three Layers
+
+![Continuim architecture](assets/architecture.svg)
+
+```mermaid
+flowchart TB
+    subgraph L1["Layer 1 · Hero Runway — the autonomous rescue"]
+        POOL[Critical supply pool] --> MON["Always-on monitor (2s) / Nexla FlexFlow"]
+        MON -->|stockout_risk v1.1| AGENT["Agent loop — plan · act · observe · replan"]
+        PO["Recovery PO — 201 · inbound scheduled"]
+    end
+    subgraph L2["Layer 2 · Secondary Guardrail — trust before spend"]
+        ZERO["Zero.xyz paid evidence"] --> POLICY["Deterministic policy v1.1"]
+        POLICY -->|eligible| CAP["Signed capability"]
+        CAP --> POM["Pomerium gate — vendor-scoped identity"]
+    end
+    subgraph L3["Layer 3 · Learning — never bypasses the gate"]
+        LEDGER["Incident ledger (append-only)"] --> RECALL["Proven-vendor recall"]
+    end
+    AGENT -.->|unattested attempt| POM
+    POM -.->|403 · replan| AGENT
+    AGENT -->|buys evidence| ZERO
+    POM -->|201| PO
+    PO --> LEDGER
+    RECALL -->|informs next ranking| AGENT
+```
+
 ## Runtime Flow
+
+```mermaid
+sequenceDiagram
+    participant Mon as Monitor / Nexla
+    participant Agent
+    participant Pom as Pomerium
+    participant Zero as Zero.xyz ($)
+    participant Policy as Policy v1.1
+    participant Origin as PO origin
+    Mon->>Agent: stockout_risk (threshold crossed, no human action)
+    Agent->>Pom: POST /po — cheapest plan, general identity
+    Pom-->>Agent: 403 — no vendor-scoped capability
+    Agent->>Zero: buy current evidence (enrichment · domain age · news)
+    Zero-->>Policy: signals + receipts
+    Policy-->>Agent: lookalike ineligible → blacklisted
+    Policy-->>Agent: eligible → signed capability (payee · quote · amount · nonce)
+    Agent->>Pom: POST /po/:vendorId — vendor identity + capability
+    Pom->>Origin: signed assertion forwarded
+    Origin-->>Agent: 201 — PO accepted, inbound scheduled
+    Origin->>Origin: incident recorded (learning layer)
+```
 
 ```text
 critical spare consumed by a node failure

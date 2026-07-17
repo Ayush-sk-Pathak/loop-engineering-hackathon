@@ -1,5 +1,5 @@
 {
-  "name": "@stockshield/dashboard",
+  "name": "@continuim/dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "next start --hostname 0.0.0.0 --port 3000"
   },
   "dependencies": {
-    "@stockshield/contracts": "*",
+    "@continuim/contracts": "*",
     "lucide-react": "^0.475.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

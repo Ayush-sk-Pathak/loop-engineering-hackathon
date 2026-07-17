@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { SCHEMA_VERSION, type DecisionPhase, type DemoState, type ScenarioId } from "@stockshield/contracts";
+import { SCHEMA_VERSION, type DecisionPhase, type DemoState, type ScenarioId } from "@continuim/contracts";
 import {
   Activity,
   Ban,
@@ -94,7 +94,7 @@ export function OperationsDashboard() {
       <header className="topbar">
         <div className="brand">
           <span className="brandMark"><ShieldCheck size={20} /></span>
-          <div><strong>StockShield</strong><span>Procurement control plane</span></div>
+          <div><strong>Continuim</strong><span>Procurement control plane</span></div>
         </div>
         <div className="actions">
           <select

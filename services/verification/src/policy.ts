@@ -5,9 +5,9 @@ import type {
   VendorAttestation,
   VendorCandidate,
   VerificationVerdict,
-} from "@stockshield/contracts";
-import { VERIFICATION_POLICY_VERSION } from "@stockshield/contracts";
-import { signVendorAttestation } from "@stockshield/security";
+} from "@continuim/contracts";
+import { VERIFICATION_POLICY_VERSION } from "@continuim/contracts";
+import { signVendorAttestation } from "@continuim/security";
 
 const REQUIRED_SIGNALS: EvidenceKind[] = [
   "company_identity_match",

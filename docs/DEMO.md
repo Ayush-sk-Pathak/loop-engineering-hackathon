@@ -34,7 +34,7 @@ continuous critical path where possible.
 
 **0:00-0:15 - Hook**
 
-“A datacenter incident has consumed its replacement memory. StockShield watches the spares
+“A datacenter incident has consumed its replacement memory. Continuim watches the spares
 pool, buys the recovery part, and keeps authorization outside the model.”
 
 **0:15-0:40 - Autonomous trigger**
@@ -90,7 +90,7 @@ second full loop on stage; the toggle plus one sentence is the whole beat.
 - “Inventory refilled.” It schedules inbound stock.
 - “$2,400 fraud blocked.” Use at-risk PO value prevented.
 - “Pomerium validates our custom signature.” It validates machine identity; the origin
-  validates StockShield's signed attestation and object bindings.
+  validates Continuim's signed attestation and object bindings.
 - “Zero has a credit bureau or supplier registry.” It does not in this design.
 - “Vendor sourcing is live.” The candidate set is synthetic and disclosed.
 - “The illustrative downtime rate is a measured loss.” It is scenario data unless replaced

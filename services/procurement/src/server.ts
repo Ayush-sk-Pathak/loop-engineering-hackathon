@@ -38,7 +38,7 @@ createServer(async (request, response) => {
       return;
     }
     const result = await createPurchaseOrder(request.headers, body, config);
-    response.setHeader("x-stockshield-request-id", result.requestId);
+    response.setHeader("x-continuim-request-id", result.requestId);
     response.writeHead(result.status).end(JSON.stringify(result));
     // Post-201 hook: fire-and-forget the PO receipt after the response is sent, so
     // email never blocks or breaks the HTTP result. No-op when EMAIL_MODE is off.

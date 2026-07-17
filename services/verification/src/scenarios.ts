@@ -1,4 +1,4 @@
-import type { ScenarioId, VendorCandidate } from "@stockshield/contracts";
+import type { ScenarioId, VendorCandidate } from "@continuim/contracts";
 import { DEMO_VENDORS } from "./fixtures.ts";
 
 export interface ScenarioProfile {

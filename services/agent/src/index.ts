@@ -8,8 +8,8 @@ import type {
   VendorAttestation,
   VendorCandidate,
   VerificationVerdict,
-} from "@stockshield/contracts";
-import { SCHEMA_VERSION } from "@stockshield/contracts";
+} from "@continuim/contracts";
+import { SCHEMA_VERSION } from "@continuim/contracts";
 
 export interface VerificationPort {
   verify(vendor: VendorCandidate): Promise<{

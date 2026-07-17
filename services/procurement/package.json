@@ -1,5 +1,5 @@
 {
-  "name": "@stockshield/procurement",
+  "name": "@continuim/procurement",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,8 +8,8 @@
     "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
-    "@stockshield/contracts": "*",
-    "@stockshield/security": "*",
+    "@continuim/contracts": "*",
+    "@continuim/security": "*",
     "jose": "^6.0.0"
   }
 }

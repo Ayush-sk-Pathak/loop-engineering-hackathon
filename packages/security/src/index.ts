@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   PurchaseOrderRequest,
   VendorAttestation,
-} from "@stockshield/contracts";
+} from "@continuim/contracts";
 
 export type UnsignedVendorAttestation = Omit<VendorAttestation, "signature">;
 

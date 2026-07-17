@@ -1,4 +1,4 @@
-# StockShield Product Scope
+# Continuim Product Scope
 
 **Event:** Loop Engineering Hackathon, 2026-07-17. **Submission:** 16:30.
 

@@ -1,4 +1,4 @@
-# StockShield Scenario Notes
+# Continuim Scenario Notes
 
 The datacenter and apparel profiles are implemented as disclosed synthetic demo inputs.
 Other cases are product-expansion hypotheses. Dollar outcomes remain illustrative until tied

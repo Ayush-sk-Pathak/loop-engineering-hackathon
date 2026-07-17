@@ -1,4 +1,4 @@
-# CLAUDE.md — the StockShield Constitution
+# CLAUDE.md — the Continuim Constitution
 
 > Standing instructions for every Claude Code session in this repository.
 >
@@ -6,7 +6,7 @@
 > `docs/PROJECT_STATUS.md` (30-second orientation) → `START-HERE.md`
 > (the full session reading order). The full plan lives in `docs/PRD.md`.
 
-**Project:** StockShield — a policy-enforced autonomous procurement agent that buys current vendor evidence before receiving a vendor-scoped capability to issue a purchase order.
+**Project:** Continuim — a policy-enforced autonomous procurement agent that buys current vendor evidence before receiving a vendor-scoped capability to issue a purchase order.
 
 **Stack:** TypeScript/Node (agent core + procurement API), Next.js/React (storefront + ops dashboard), Anthropic Claude via the Claude Agent SDK (planning/explanation), Zero.xyz (paid evidence + StableEmail), Pomerium (vendor-scoped machine-identity gate), Nexla FlexFlow (real-time inventory stream -> stockout trigger), SQLite (state + replay protection), Docker on Akash (hosting).
 

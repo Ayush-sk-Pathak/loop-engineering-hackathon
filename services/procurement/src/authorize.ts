@@ -1,10 +1,10 @@
 import type { IncomingHttpHeaders } from "node:http";
-import type { PurchaseOrderRequest } from "@stockshield/contracts";
+import type { PurchaseOrderRequest } from "@continuim/contracts";
 import {
   assertPurchaseBinding,
   decodeVendorAttestation,
   verifyVendorAttestation,
-} from "@stockshield/security";
+} from "@continuim/security";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 export type AuthMode = "development" | "pomerium";
@@ -34,7 +34,7 @@ export async function authorizePurchase(
 
   if (config.mode === "pomerium") await verifyPomeriumIdentity(headers, request, config);
 
-  const encodedAttestation = singleHeader(headers["x-stockshield-vendor-attestation"]);
+  const encodedAttestation = singleHeader(headers["x-continuim-vendor-attestation"]);
   if (!encodedAttestation) throw new Error("Missing signed vendor attestation");
   const attestation = decodeVendorAttestation(encodedAttestation);
   verifyVendorAttestation(attestation, config.attestationSecret);

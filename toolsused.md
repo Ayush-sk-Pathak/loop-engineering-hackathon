@@ -1,4 +1,4 @@
-# StockShield Tool Blueprint
+# Continuim Tool Blueprint
 
 This file distinguishes implemented seams from sponsor proof. The current recording gate is
 `npm run doctor:prize`.
@@ -25,7 +25,7 @@ registry, or fraud-score claim exists without a pinned live provider.
 Pomerium authenticates the caller; it does not inspect the PO body or decide vendor risk. The
 general-agent identity must be authenticated but denied. An eligible candidate maps to a
 vendor-scoped identity allowed only on its vendor path. The origin then verifies Pomerium's
-signed assertion and StockShield's signed attestation, including every purchase binding.
+signed assertion and Continuim's signed attestation, including every purchase binding.
 
 An Express-origin `403` validates local behavior but does not count for the Pomerium prize.
 

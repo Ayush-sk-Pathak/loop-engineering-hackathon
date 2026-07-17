@@ -1,4 +1,4 @@
-# StockShield Business Brief
+# Continuim Business Brief
 
 **One-liner:** Autonomous recovery for critical spares, with procurement authority enforced
 outside the agent.
@@ -13,7 +13,7 @@ spending authority.
 
 ## Product
 
-StockShield monitors inventory, starts recovery at a threshold, and lets an agent compare
+Continuim monitors inventory, starts recovery at a threshold, and lets an agent compare
 candidates and acquire current evidence. A deterministic policy can issue a narrowly scoped,
 expiring capability. Pomerium authenticates the vendor-scoped machine identity at the route;
 the private origin independently verifies the signed capability and exact PO bindings.

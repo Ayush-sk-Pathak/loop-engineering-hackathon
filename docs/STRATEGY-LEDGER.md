@@ -9,7 +9,7 @@ supersede to `logs/DECISIONS.jsonl`.**
 
 ## Current front (2026-07-17) — where we are right now
 
-StockShield's autonomous critical-spares slice and schema v1.1 are implemented, and the
+Continuim's autonomous critical-spares slice and schema v1.1 are implemented, and the
 horizontal scenario engine (datacenter + apparel profiles, one loop) is landing. The active
 front is the live Zero evidence adapter plus the Pomerium deny/allow path. Run
 `npm run doctor:prize` before recording. The hero is the autonomous emergency-procurement
@@ -69,7 +69,7 @@ core sponsor proof is green.
    MCP Studio on the day (EA risk); forcing an Akash GPU/compute angle we don't need.
    DECISIONS `0005`.
 
-6. **The public product is StockShield and the security thesis is policy-enforced agentic
+6. **The public product is Continuim and the security thesis is policy-enforced agentic
    procurement (2026-07-17).** The value is that an agent may research and replan but cannot
    commit a PO without constrained authority. **Rejected:** “cannot be scammed,” a general
    fraud detector, or merging customer checkout screening into this workflow. DECISIONS
@@ -79,7 +79,7 @@ core sponsor proof is green.
    binding (2026-07-17).** A shared agent token cannot distinguish vendors, and Pomerium does
    not read local SQLite. Prize mode requires a general agent identity for the denial and a
    separate eligible-vendor identity for the allow. The origin verifies Pomerium's assertion
-   and StockShield's signed attestation. **Rejected:** arbitrary attestation-header presence,
+   and Continuim's signed attestation. **Rejected:** arbitrary attestation-header presence,
    shared agent identity, and application 403s presented as proxy proof. DECISIONS `0007`.
 
 8. **Verification has three deterministic outcomes (2026-07-17).** Evidence supports
@@ -114,7 +114,7 @@ core sponsor proof is green.
     makes the autonomy safe — never the headline. The loop is scenario-agnostic: two locked
     profiles (datacenter compute spares, apparel dye — `PRODUCT_SCOPE.md §3a`) run through
     the identical engine behind one dashboard toggle. **Rejected, do not re-propose:**
-    renaming to ProcureLoop (StockShield stands, `0006`); Fillmore PO drafting (`0004`
+    renaming to ProcureLoop (Continuim stands, `0006`); Fillmore PO drafting (`0004`
     stands); a mocked verified-registry paid via Zero (`0003` stands); fraud-first framing.
     DECISIONS `0013`.
 
@@ -136,6 +136,14 @@ core sponsor proof is green.
     signed capability.** **Rejected, do not re-propose:** Fillmore auto-PO (`0004`), paid
     B2B registry lookup via Zero (`0003`), renaming to ProcureLoop (`0006`/`0013`).
     DECISIONS `0015`.
+
+16. **The public product name is Continuim (2026-07-17).** User-directed rename from
+    StockShield: global rename across docs, package scope (`@continuim/*`), UI strings,
+    mockups, and deploy files. Supersedes the naming in `0006` and the "name stands"
+    clause of `0013`; every other clause of those decisions (hero/subset hierarchy,
+    horizontal engine, security thesis) stands unchanged. **Rejected, do not re-propose:**
+    reverting to StockShield or ProcureLoop; a docs-only partial rename that leaves code
+    and docs disagreeing. DECISIONS `0016`.
 
 ## Standing directives & envelope
 

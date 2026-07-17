@@ -45,7 +45,7 @@ $25,500) that is well under 0.001% of governed value.
 
 ## Adapter Contract
 
-Set `ZERO_EVIDENCE_ADAPTER_URL` to Owner 2's small HTTP adapter. StockShield sends:
+Set `ZERO_EVIDENCE_ADAPTER_URL` to Owner 2's small HTTP adapter. Continuim sends:
 
 ```json
 {

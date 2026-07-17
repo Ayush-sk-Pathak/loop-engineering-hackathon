@@ -18,7 +18,7 @@ stages, source → transform → filter → destination:
 Nexla webhook source (one record per SKU observation: SKU, on-hand quantity, reorder point,
 site, observed-at timestamp). Nexla stamps each record with a run/record identifier — that
 identifier is what the transform carries through as `eventId`, so the *same* ID appears in
-the Nexla flow log and in the StockShield decision trail (this is the "prove the event ID
+the Nexla flow log and in the Continuim decision trail (this is the "prove the event ID
 end to end" claim).
 
 **2. Transform — attribute transform to schema v1.1.** Map the raw record onto the exact
@@ -45,7 +45,7 @@ efficiency gate (don't POST healthy-stock records), not the trust boundary.
 **4. Destination — webhook to the control plane.** POST the transformed record to
 `POST {CONTROL_PLANE_URL}/api/events/stockout` (canonical local: `http://127.0.0.1:4000`),
 content-type `application/json`, with header
-`X-StockShield-Webhook-Secret: {{ NEXLA_WEBHOOK_SECRET }}`. When the control plane has
+`X-Continuim-Webhook-Secret: {{ NEXLA_WEBHOOK_SECRET }}`. When the control plane has
 `NEXLA_WEBHOOK_SECRET` set, a missing/mismatched header is rejected `401`; when it is unset
 (local dev) the header is ignored. A successful ingest returns `202
 {"accepted":true,"eventId":"<the Nexla id>"}`; the control plane then runs autonomously and
@@ -72,13 +72,13 @@ Local ingress check:
 ```bash
 curl -i http://127.0.0.1:4000/api/events/stockout \
   -H 'content-type: application/json' \
-  -H "x-stockshield-webhook-secret: $NEXLA_WEBHOOK_SECRET" \
+  -H "x-continuim-webhook-secret: $NEXLA_WEBHOOK_SECRET" \
   --data @config/nexla-stockout.example.json
 ```
 
 The endpoint rejects an old schema, invalid quantities, non-Nexla source, bad secret, and a
 second event while a run is active. For the prize claim, show the Nexla flow/event ID and the
-same ID in the StockShield decision trail.
+same ID in the Continuim decision trail.
 
 ## Local ingress rehearsal (verified 2026-07-17)
 

@@ -4,7 +4,7 @@ import type {
   ProcurementResult,
   PurchaseOrder,
   PurchaseOrderRequest,
-} from "@stockshield/contracts";
+} from "@continuim/contracts";
 import { authorizePurchase, type AuthorizationConfig } from "./authorize.ts";
 
 interface StoredOrder {

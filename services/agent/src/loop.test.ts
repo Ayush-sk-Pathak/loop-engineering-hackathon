@@ -6,8 +6,8 @@ import type {
   PurchaseOrder,
   StockoutRiskEvent,
   VendorAttestation,
-} from "@stockshield/contracts";
-import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@stockshield/verification";
+} from "@continuim/contracts";
+import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@continuim/verification";
 import { runProcurementLoop } from "./index.ts";
 
 test("loop blacklists the lookalike, proves denial, and orders from the eligible vendor", async () => {

@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage } from "node:http";
-import type { StockoutRiskEvent } from "@stockshield/contracts";
-import { SCHEMA_VERSION } from "@stockshield/contracts";
-import { SCENARIOS } from "@stockshield/verification";
+import type { StockoutRiskEvent } from "@continuim/contracts";
+import { SCHEMA_VERSION } from "@continuim/contracts";
+import { SCENARIOS } from "@continuim/verification";
 import { DemoStore } from "./store.ts";
 import { runDemo, runStockout } from "./runtime.ts";
 import { startInventoryMonitor } from "./monitor.ts";
@@ -24,7 +24,7 @@ if (process.env.MONITOR_ENABLED !== "0") {
 createServer(async (request, response) => {
   response.setHeader("access-control-allow-origin", "*");
   response.setHeader("access-control-allow-methods", "GET, POST, OPTIONS");
-  response.setHeader("access-control-allow-headers", "content-type, x-stockshield-webhook-secret");
+  response.setHeader("access-control-allow-headers", "content-type, x-continuim-webhook-secret");
   response.setHeader("content-type", "application/json");
   if (request.method === "OPTIONS") {
     response.writeHead(204).end();
@@ -97,7 +97,7 @@ createServer(async (request, response) => {
       return;
     }
     const expectedSecret = process.env.NEXLA_WEBHOOK_SECRET;
-    if (expectedSecret && request.headers["x-stockshield-webhook-secret"] !== expectedSecret) {
+    if (expectedSecret && request.headers["x-continuim-webhook-secret"] !== expectedSecret) {
       response.writeHead(401).end(JSON.stringify({ error: "Invalid Nexla webhook secret" }));
       return;
     }

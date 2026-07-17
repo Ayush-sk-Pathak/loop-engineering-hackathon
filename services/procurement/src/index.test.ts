@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { PurchaseOrderRequest } from "@stockshield/contracts";
-import { encodeVendorAttestation, signVendorAttestation } from "@stockshield/security";
+import type { PurchaseOrderRequest } from "@continuim/contracts";
+import { encodeVendorAttestation, signVendorAttestation } from "@continuim/security";
 import { createPurchaseOrder, resetProcurementStateForTests } from "./index.ts";
 
 const secret = "test-secret";
@@ -40,7 +40,7 @@ const request: PurchaseOrderRequest = {
   idempotencyKey: "po-1",
 };
 const config = { mode: "development" as const, attestationSecret: secret };
-const headers = { "x-stockshield-vendor-attestation": encodeVendorAttestation(attestation) };
+const headers = { "x-continuim-vendor-attestation": encodeVendorAttestation(attestation) };
 
 test("authorization precedes idempotency and nonces cannot authorize a second order", async () => {
   resetProcurementStateForTests();

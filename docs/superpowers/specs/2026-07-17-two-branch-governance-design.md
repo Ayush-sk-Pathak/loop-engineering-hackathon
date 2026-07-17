@@ -1,10 +1,10 @@
-# Design: StockShield Two-Branch Governance Loop (Monitor → Freeze → Audit → Purge-or-Procure)
+# Design: Continuim Two-Branch Governance Loop (Monitor → Freeze → Audit → Purge-or-Procure)
 
 **Date:** 2026-07-17 · **Status:** Approved extension; deferred until the core sponsor proof is green · **Extends:** DECISIONS 0007/0008 · **Supersedes in part:** 0006's rejection of demand-side auditing (user-directed fusion) · **New record:** DECISIONS 0012
 
-## 1. What StockShield is (framing for ALL docs)
+## 1. What Continuim is (framing for ALL docs)
 
-> **StockShield is an autonomous governance agent that sits between inventory
+> **Continuim is an autonomous governance agent that sits between inventory
 > systems and fulfillment lines. The moment a critical item hits zero, it
 > freezes the fulfillment queue, runs a paid identity audit on the demand, and
 > self-corrects: purging fraudulent orders to restore stock for $0 — or, when
@@ -129,8 +129,8 @@ tick; `MONITOR_ENABLED` toggle. Emits the Nexla-compatible event.
 
 | File | Change |
 |---|---|
-| `README.md` | Retitle StockShield (fixes stale "Aegis"); lead with the §1 framing verbatim-adjacent; flywheel diagram; honest tool table |
-| `docs/PRD.md` | StockShield header; problem = dual loss (phantom stockout + fraud-driven procurement); §9 demo script replaced with §7 |
+| `README.md` | Retitle Continuim (fixes stale "Aegis"); lead with the §1 framing verbatim-adjacent; flywheel diagram; honest tool table |
+| `docs/PRD.md` | Continuim header; problem = dual loss (phantom stockout + fraud-driven procurement); §9 demo script replaced with §7 |
 | `docs/architecture.md` | Add monitor, fulfillment/orders model, demand-audit seam, purge capability, protected-actions API (protected file — unlock, edit, re-protect) |
 | `docs/infrastructure.md` | Watcher + purge path documented; Nexla swap-in noted |
 | `docs/STRATEGY-LEDGER.md` | Entry 9 from DECISIONS 0009; "Current front" updated |
@@ -180,5 +180,5 @@ broken branch.
 - `npm run dev` → click "Simulate hype drop" → **no further input**: freeze,
   audit, purge, restore, release, restock PO all complete; all tests green;
   `npm run typecheck` clean.
-- A cold reader of README/PRD describes StockShield as "an autonomous
+- A cold reader of README/PRD describes Continuim as "an autonomous
   governance agent between inventory and fulfillment", not "a fraud detector".

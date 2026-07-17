@@ -1,21 +1,21 @@
-# StockShield
+# Continuim
 
 Autonomous emergency procurement for critical supplies. When a shortage threatens
-operations, StockShield notices on its own, evaluates backup vendors, and prepares the
+operations, Continuim notices on its own, evaluates backup vendors, and prepares the
 recovery PO at machine speed. That rescue loop is the product. Its trust layer requires
 independent evidence and constrained authority before a PO can be committed.
 
 > The rescue is the hero. The trust layer is the tool that makes it safe.
 > An agent may be wrong, but it cannot be unauthorized.
 
-StockShield watches a critical-supply pool, detects a shortage without a human pressing
+Continuim watches a critical-supply pool, detects a shortage without a human pressing
 “run,” evaluates candidate vendors, purchases current evidence through Zero.xyz, and requests
 a purchase order through a Pomerium-protected route. Verification produces a vendor-scoped,
 quote-scoped, payee-bound, amount-limited, expiring capability. The procurement origin
 verifies that capability independently. Two disclosed scenario profiles, on-prem compute
 spares and apparel dye, run through the same loop behind one dashboard selector.
 
-![StockShield architecture](docs/assets/architecture.svg)
+![Continuim architecture](docs/assets/architecture.svg)
 
 ## Why This Exists
 
@@ -28,7 +28,7 @@ supplier. Emergency buying is useful only if speed does not let untrusted vendor
 become spending authority. The same model that reads that input should not be the final
 authority on whether company spend is committed.
 
-StockShield separates those responsibilities:
+Continuim separates those responsibilities:
 
 1. The local inventory monitor or Nexla FlexFlow emits the same versioned `stockout_risk`
    event when critical spares reach their threshold.

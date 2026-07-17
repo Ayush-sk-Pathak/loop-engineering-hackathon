@@ -1,4 +1,4 @@
-# StockShield Project Status
+# Continuim Project Status
 
 **Phase:** autonomous local vertical slice hardened; live sponsor integrations in progress.
 

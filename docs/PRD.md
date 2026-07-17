@@ -1,4 +1,4 @@
-# StockShield — Product Requirements Document
+# Continuim — Product Requirements Document
 
 > **The definitive product document.** Everything we have and everything we need, in one
 > place. Sources: `vision.md` (intent), `docs/architecture.md` (blueprint of record),
@@ -20,7 +20,7 @@ Use of Pomerium.
 
 ## 1. Executive Summary
 
-StockShield is an **autonomous emergency-procurement loop for critical-supply stockouts
+Continuim is an **autonomous emergency-procurement loop for critical-supply stockouts
 in any industry**. The hero story is the rescue: a shortage that threatens operations is
 detected by an always-on monitor and resolved — sourced, verified, ordered — at machine
 speed with no human in the trigger path. The vendor-risk / fraud-defense layer is the
@@ -38,7 +38,7 @@ Zero.xyz. A deterministic policy (`vendor-risk-v1`) returns `eligible`, `ineligi
 `insufficient_evidence`; only an eligible vendor receives a signed, quote-scoped,
 payee-bound, amount-limited, expiring, one-time-nonce capability. Pomerium enforces the
 vendor-scoped machine identity at the network boundary; the private procurement origin
-independently verifies Pomerium's signed assertion **and** StockShield's signed
+independently verifies Pomerium's signed assertion **and** Continuim's signed
 attestation with complete PO object binding. The accepted PO schedules inbound stock — it
 does not pay a supplier or claim physical refill. An append-only incident ledger (the
 Learning Layer) records every resolved run so later runs get faster without ever
@@ -120,7 +120,7 @@ Every minute a critical item sits at zero stock is an outage that bleeds revenue
 hands customers to a competitor — so the fix has to be fast, and it has to be
 autonomous, because a human in the loop is exactly the delay you can't afford. But speed
 is dangerous: the rushed reorder is precisely how a buyer wires $40k to a fake supplier
-(illustrative figure from `vision.md`, not a measured loss). StockShield resolves that
+(illustrative figure from `vision.md`, not a measured loss). Continuim resolves that
 tension: recovery at machine speed, with spending authority physically gated outside the
 agent's judgment.
 
@@ -166,7 +166,7 @@ to be paid Zero evidence while it is fixture-only.
 Delegating the workflow to an agent solves the speed problem but creates an
 authorization problem: **untrusted vendor data and model reasoning must not become final
 spending authority.** The same model that reads a vendor's (attacker-controllable) quote
-must not be the last word on whether company spend is committed. StockShield's answer is
+must not be the last word on whether company spend is committed. Continuim's answer is
 structural separation: the agent may research, rank, and replan freely; committing a PO
 requires a capability the agent cannot mint, carried over a route the agent cannot
 bypass.
@@ -183,14 +183,14 @@ procurement authority enforced outside the agent.
 **Tagline:** *The rescue is the hero. The trust layer is the tool that makes it safe.
 An agent may be wrong, but it cannot be unauthorized.*
 
-The public product name is **StockShield** (DECISIONS `0006`; ProcureLoop rename
-rejected again in `0013`/`0015`). The security thesis is **policy-enforced agentic
+The public product name is **Continuim** (DECISIONS `0016`, renaming StockShield from
+`0006`; the ProcureLoop rename stays rejected per `0013`/`0015`). The security thesis is **policy-enforced agentic
 procurement**: the agent may research and replan but cannot commit a PO without
 constrained authority.
 
 ### 4.2 The three-layer architecture (DECISIONS `0015`)
 
-StockShield is defined by three layers. The first is the product; the second is what
+Continuim is defined by three layers. The first is the product; the second is what
 makes it deployable; the third is what makes it compound.
 
 **Layer 1 — Hero Runway (autonomous monitoring + procurement loop). IMPLEMENTED.**
@@ -225,7 +225,7 @@ evidence; among eligible candidates it prefers vendors with proven fulfillment h
 evidence gate or the signed capability** — it may skip the probe and re-rank, but every
 PO still requires fresh eligible evidence and a valid signed attestation (§10).
 
-### 4.3 What StockShield is NOT
+### 4.3 What Continuim is NOT
 
 - **Not a general fraud detector.** Vendor-risk control and authorization are the trust
   subset inside the procurement loop, not a standalone screening product (DECISIONS
@@ -367,7 +367,7 @@ Planted vendors (`vendor-lookalike`, `vendor-pacificdye`) receive the failing si
 `payee_identity_match=false` (fail), `typosquat_detected=true` (fail). Consistent
 vendors receive the passing set with `domain_age_days` 1,840 (`vendor-northstar`) or
 2,200 (`vendor-meridian`). All fixture sources carry `mode: "fixture"`, `costCents: 0`,
-provider "StockShield fixture" — visibly labeled, never representable as live Zero.
+provider "Continuim fixture" — visibly labeled, never representable as live Zero.
 
 Adding a third industry is a new `ScenarioProfile` entry plus fixtures — no engine
 changes. Every new scenario needs its own evidence-adequacy review before it inherits
@@ -394,7 +394,7 @@ Blueprint of record: `docs/architecture.md` (protected file). Runtime topology:
 The dashboard uses a same-origin Next.js proxy plus `CONTROL_PLANE_INTERNAL_URL`, so one
 build works locally, in Docker (`compose.yaml`), and on Akash. `npm run dev` runs the
 three processes; `docker compose up --build` runs the same topology with procurement
-exposed only to the container network. State: SQLite at `SQLITE_PATH=data/stockshield.db`.
+exposed only to the container network. State: SQLite at `SQLITE_PATH=data/continuim.db`.
 
 ### 7.2 The five frozen seams (schema v1.1)
 
@@ -440,7 +440,7 @@ request ID/enforcement point).
    Rejected vendors receive no capability.
 6. **Origin boundary.** `POST /po/:vendorId` verifies `X-Pomerium-Jwt-Assertion`
    (signature, issuer, audience, expiry, `sub == vendor:<vendorId>`) **and** the signed
-   StockShield attestation with full object binding. Authorization happens before
+   Continuim attestation with full object binding. Authorization happens before
    idempotency lookup. The origin is not publicly reachable in prize mode.
 
 Pomerium does not inspect arbitrary JSON bodies or read our SQLite database. A single
@@ -456,7 +456,7 @@ to the proxy (DECISIONS `0007`).
    `MONITOR_INTERVAL_MS=2000`) detects `currentQty <= threshold` with no run in flight
    and no inbound order, and emits schema v1.1 `stockout_risk` with `source: "monitor"`.
    In the sponsor path, Nexla FlexFlow posts the same contract with a Nexla event ID to
-   `POST /api/events/stockout` (authenticated with `X-StockShield-Webhook-Secret` when
+   `POST /api/events/stockout` (authenticated with `X-Continuim-Webhook-Secret` when
    `NEXLA_WEBHOOK_SECRET` is set).
 3. The agent ranks the two disclosed synthetic candidates by fulfillment and price.
 4. It submits the cheapest plan (the lookalike, $120.00/unit) using the authenticated
@@ -514,7 +514,7 @@ origin then independently verifies:
 1. `X-Pomerium-Jwt-Assertion`: signature against `POMERIUM_JWKS_URL`, issuer
    (`POMERIUM_ISSUER`), audience (`POMERIUM_AUDIENCE`), expiry, and
    `sub == POMERIUM_SUBJECT_PREFIX + vendorId` (i.e. `vendor:` + URL path vendor).
-2. StockShield's signed `VendorAttestation` and the complete PO object binding (§8.3).
+2. Continuim's signed `VendorAttestation` and the complete PO object binding (§8.3).
 3. One-time nonce, request fingerprint, and only then the idempotency key.
 
 Neither layer substitutes for the other. Never authorize on an unsigned `vendorId`
@@ -894,7 +894,7 @@ Sequencing: P1 live Zero → Pomerium slice first, then C, then A/B/D.
 | LLM emits the PASS/BLACKLIST verdict | Reverses `0008`; the deterministic policy adjudicates | `0008`/`0014` |
 | "Fraud dollars blocked" / "inventory refills" wording | Violates committed invariants | `0014` |
 | Shared agent identity for all vendors; attestation-header-presence auth; app 403 as proxy proof | Breaks the identity model | `0007` |
-| ProcureLoop rename | StockShield stands | `0006`/`0013`/`0015` |
+| ProcureLoop rename | Continuim stands | `0006`/`0013`/`0015` |
 
 ---
 
@@ -922,7 +922,7 @@ Fixture and live modes must be visible in the dashboard. No fallback may silentl
 - The demo does not pay the supplier; a PO does not physically refill inventory
   (`inbound_scheduled` only).
 - Pomerium does not validate the custom attestation; it validates machine identity. The
-  StockShield origin validates the attestation.
+  Continuim origin validates the attestation.
 - Candidate sourcing is synthetic unless a real source is added and shown.
 - No credit-bureau, supplier-registry, fraud-score, or bank-account-ownership claim
   exists without a pinned live provider and captured receipt.
@@ -955,7 +955,7 @@ received PO email are open in separate tabs; record one continuous take.
 
 | Time | Beat | What is shown |
 |---|---|---|
-| 0:00–0:15 | **Hook** | "A datacenter incident has consumed its replacement memory. StockShield watches the spares pool, buys the recovery part, and keeps authorization outside the model." |
+| 0:00–0:15 | **Hook** | "A datacenter incident has consumed its replacement memory. Continuim watches the spares pool, buys the recovery part, and keeps authorization outside the model." |
 | 0:15–0:40 | **Autonomous trigger** | Click **Simulate node failure** until the final safe spare is consumed, then hands off. Monitor last-check time ticks; `stockout_risk` appears with no run action. Show the Nexla event ID if live; otherwise disclose the local monitor. State that vendors are disclosed synthetic candidates. |
 | 0:40–1:00 | **Load-bearing denial** | Agent submits the cheaper lookalike plan with the authenticated general-agent identity. Pomerium `403`: request ID + `allow:false` authorize log; no matching origin request. |
 | 1:00–1:40 | **Paid observation** | Agent replans and buys evidence through Zero: exact service names, prices, wallet delta, receipt IDs. Policy marks the lookalike **ineligible** from combined contradictions — not legal fraud from domain age alone. |
@@ -1102,7 +1102,7 @@ then `docs/STRATEGY-LEDGER.md`.
 | `0003` | Paid verification only on Zero tools that provably exist and settle; no mocked registry; verdict composed from enrichment + domain-age scrape + news + optional AI call. |
 | `0004` | Fillmore dropped (recruiting-only); PO email via StableEmail. |
 | `0005` | Tool roles fixed: Zero + Pomerium prize targets; Nexla via FlexFlow GA (not MCP Studio EA); Akash coverage only. *(Superseded in part by 0007.)* |
-| `0006` | Public name is StockShield; thesis is policy-enforced agentic procurement. Supersedes 0002's naming. |
+| `0006` | Public name is Continuim; thesis is policy-enforced agentic procurement. Supersedes 0002's naming. |
 | `0007` | Pomerium enforces vendor-scoped machine identity; origin enforces object binding; shared identities and app-403-as-proxy-proof rejected. Supersedes 0005 in part. |
 | `0008` | Deterministic three-outcome verification; hard failures = payee mismatch/typosquat; LLM explains, never adjudicates. Supersedes 0003 in part. |
 | `0009` | The self-correction 403 is a pre-verification authorization denial, not a forced post-blacklist purchase. |
@@ -1138,7 +1138,7 @@ then `docs/STRATEGY-LEDGER.md`.
 - **`evidenceMode`** — `fixture | live_zero`; a bundle containing any fixture signal is
   `fixture`. Visible in state, UI, and every verdict.
 - **Fixture** — disclosed synthetic evidence/vendors (`.example` domains, $0 cost,
-  "StockShield fixture" provider); never presentable as live Zero.
+  "Continuim fixture" provider); never presentable as live Zero.
 - **Hard failure** — `payee_identity_match = false` or `typosquat_detected = true`;
   immediately ineligible regardless of score.
 - **Hero Runway / Secondary Guardrail / Learning Layer** — the three product layers
