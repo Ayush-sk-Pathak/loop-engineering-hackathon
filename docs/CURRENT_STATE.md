@@ -336,3 +336,25 @@ Fixed: `services/procurement/src/email.ts` + `email.test.ts` imported now-dead
 `adapter.ts`/`adapter.test.ts`/`transport.ts` imports. Until A sweeps zero-adapter, a
 clean-install certification is not possible; the current check green runs on an existing
 (dirty) node_modules. Evidence in `logs/errors.jsonl`.
+
+### 2026-07-17 — Lane B second rebase onto a304389 + clean verification + B2 up-health
+
+**Resolved.** The lane-A zero-adapter blocker above was fixed upstream by main's `8ae16d1`
+(lane C completed the `@continuim` sweep the reconciliation merge had left in a stale
+index). Second rebase of `feat/pomerium-live` onto `a304389` is clean — my redundant
+email.* import hunks auto-dropped, my unique changes kept (email subject "Continuim PO";
+AKASH.md continuim image names). Post-rebase shas: **B4 `19ebc58`, B2 `b02e6a9`,
+sweep `559f73d`**.
+
+**Verified (clean tree).** `npm install` clean (0 vulnerabilities, no 404);
+`npm run check` **29/29** (`tsc --noEmit` clean; full node:test suite incl. zero-adapter
++ email).
+
+**B2 up-health — DONE (PM option 2: alternate host ports 13000/14000, no token).**
+`docker compose -f compose.yaml -f <alt-ports override> -p continuim-b-alt up --build -d
+--wait` → exit 0; all three services **Healthy**. `procurement` stayed **expose-only**
+(`4001/tcp`, no host port — prize boundary holds); `control-plane` 14000→4000 healthy
+(`/health` = `{"ok":true,…authorizationMode:"development"…}`); `dashboard` 13000→3000
+HTTP 200. Canonical `3000/4000` never bound (4000 still the unrelated LiteLLM). The
+canonical `4000:4000` up-health stays a one-time pre-W2 PM step (human pre-authorized
+stopping LiteLLM). Override file is throwaway (scratchpad, uncommitted); stack torn down.
