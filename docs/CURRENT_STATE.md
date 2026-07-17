@@ -120,3 +120,25 @@ was fully merged/absorbed.
 
 **Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean;
 `npm run build` (check + Next production build) green.
+
+---
+
+## 2026-07-17 — Rename to Continuim + kedar mockup merge (this commit)
+
+**Decision 0016 (supersede).** The public product is renamed **StockShield → Continuim**
+by explicit user direction. Global case-aware rename across 60 tracked files: all docs,
+package scope `@stockshield/*` → `@continuim/*` (imports + lockfile + node_modules
+symlinks reinstalled), dashboard UI strings, compose/deploy files, and the architecture
+SVG. `logs/*.jsonl` history untouched (append-only); ledger entry 16 records the
+supersede of the naming in 0006/0013.
+
+**Branch merge.** `origin/kedar/docs-and-mockup` (one commit, mockup redesign) merged
+into `main`; the redesign was built on the pre-rename mockup, so its reintroduced
+"Vendor Fraud Interceptor" branding, `Fillmore` PO step (violates 0004), and
+"Fraud score"/"Fraud blocked" labels (violate 0003/0008/0010) were surgically rebranded
+inside kedar's structure: product name → Continuim, Fillmore → StableEmail, fraud
+labels → risk/at-risk-spend labels. Kedar's remote branch deleted after merge
+(single-branch workflow).
+
+**Verified (this commit).** `npm test` 15/15 pass; `npm run typecheck` clean after
+workspace reinstall.

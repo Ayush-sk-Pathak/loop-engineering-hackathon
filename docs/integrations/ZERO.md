@@ -17,7 +17,7 @@ bundle works with the team's wallet today.
 
 ## Adapter Contract
 
-Set `ZERO_EVIDENCE_ADAPTER_URL` to Owner 2's small HTTP adapter. StockShield sends:
+Set `ZERO_EVIDENCE_ADAPTER_URL` to Owner 2's small HTTP adapter. Continuim sends:
 
 ```json
 {

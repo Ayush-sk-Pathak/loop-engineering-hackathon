@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./styles.css";
 
 export const metadata: Metadata = {
-  title: "StockShield Operations",
+  title: "Continuim Operations",
   description: "Policy-enforced autonomous procurement operations",
 };
 

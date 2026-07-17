@@ -12,7 +12,7 @@ The general agent and the verified vendor capability are separate machine identi
 - `vendor:vendor-northstar`: released only after evidence passes. It can call only the
   matching vendor path.
 
-Pomerium authenticates the machine identity. StockShield's signed attestation independently
+Pomerium authenticates the machine identity. Continuim's signed attestation independently
 binds the PO object. Neither layer substitutes for the other.
 
 ## Pomerium Zero Setup
@@ -26,7 +26,7 @@ binds the PO object. Neither layer substitutes for the other.
    `npm run doctor:prize`.
 
 The procurement origin verifies assertion signature, issuer, audience, expiry, and
-`sub == vendor:<vendorId>`. It then verifies the signed StockShield attestation and every PO
+`sub == vendor:<vendorId>`. It then verifies the signed Continuim attestation and every PO
 binding. Never authorize on an unsigned `vendorId` header.
 
 ## Required Network Boundary

@@ -2,7 +2,7 @@ import type {
   EvidenceKind,
   EvidenceSignal,
   VendorCandidate,
-} from "@stockshield/contracts";
+} from "@continuim/contracts";
 import { fixtureEvidence } from "./fixtures.ts";
 
 export interface EvidenceCollector {

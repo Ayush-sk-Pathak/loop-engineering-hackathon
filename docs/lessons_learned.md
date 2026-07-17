@@ -1,4 +1,4 @@
-# StockShield Lessons Learned
+# Continuim Lessons Learned
 
 > A **prevention doc, not a bug changelog.** Each lesson is a named disease — the
 > class of mistake — with the rule that now prevents the whole class. Read the

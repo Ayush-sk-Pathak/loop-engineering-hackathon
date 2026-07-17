@@ -1,7 +1,7 @@
 # Blueprint reconciliation — "get both"
 
 > Records how the external tool-blueprint (AWS Bedrock brain, x402/testnet, `--demo-mode`,
-> Python stack) reconciles with the committed StockShield architecture. Decision **0014**.
+> Python stack) reconciles with the committed Continuim architecture. Decision **0014**.
 > The rule: **adopt the blueprint's additive wins through the ports the PRD already defines;
 > reject the parts that reverse a load-bearing decision or discard the green TS slice.**
 > The deterministic core (`0007`, `0008`) and the honest-mode discipline (`0010`) are unchanged.

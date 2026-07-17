@@ -34,7 +34,7 @@ createServer(async (request, response) => {
       return;
     }
     const result = await createPurchaseOrder(request.headers, body, config);
-    response.setHeader("x-stockshield-request-id", result.requestId);
+    response.setHeader("x-continuim-request-id", result.requestId);
     response.writeHead(result.status).end(JSON.stringify(result));
   } catch (error) {
     response.writeHead(400).end(JSON.stringify({

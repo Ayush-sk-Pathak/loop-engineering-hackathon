@@ -1,4 +1,4 @@
-# StockShield — SYSTEM.md (exhaustive technical companion)
+# Continuim — SYSTEM.md (exhaustive technical companion)
 
 > **What this is:** the complete, code-derived description of the system as built.
 > Written 2026-07-17 from the working tree on branch `dev` (last commit `fc46f54`, plus
@@ -7,7 +7,7 @@
 > cited, not inferred. Companion docs: `docs/PRD.md` (the plan), `docs/architecture.md`
 > (blueprint of record), `docs/STRATEGY-LEDGER.md` (settled decisions).
 
-**One-paragraph summary.** StockShield is a policy-enforced autonomous procurement agent.
+**One-paragraph summary.** Continuim is a policy-enforced autonomous procurement agent.
 An always-on inventory monitor (or a Nexla webhook) detects a stockout risk on a critical
 SKU and starts a deterministic procurement loop. The loop picks the cheapest vendor, is
 *denied* (403) when it tries to buy without evidence, learns the constraint, buys
@@ -23,8 +23,8 @@ rendered live on a Next.js operations dashboard.
 
 1. [Repository map](#1-repository-map)
 2. [Monorepo mechanics](#2-monorepo-mechanics)
-3. [Shared contracts (`@stockshield/contracts`)](#3-shared-contracts)
-4. [The security package (`@stockshield/security`)](#4-the-security-package)
+3. [Shared contracts (`@continuim/contracts`)](#3-shared-contracts)
+4. [The security package (`@continuim/security`)](#4-the-security-package)
 5. [Services in depth](#5-services-in-depth)
 6. [End-to-end runtime walkthrough](#6-end-to-end-runtime-walkthrough)
 7. [Security mechanics](#7-security-mechanics)
@@ -45,8 +45,8 @@ Every top-level directory, what lives there, and why it exists.
 
 | Path | What lives there | Why |
 |---|---|---|
-| `packages/contracts/` | `@stockshield/contracts` — the single shared TypeScript type vocabulary (schema v1.1). No runtime logic beyond two constants. | Every service and the dashboard import the same frozen shapes, so wire formats cannot drift between owners. |
-| `packages/security/` | `@stockshield/security` — attestation signing/verification, encoding, and purchase-binding checks, plus its test. | The capability mechanics are one small, heavily-tested module shared by both the issuer (verification) and the enforcer (procurement). |
+| `packages/contracts/` | `@continuim/contracts` — the single shared TypeScript type vocabulary (schema v1.1). No runtime logic beyond two constants. | Every service and the dashboard import the same frozen shapes, so wire formats cannot drift between owners. |
+| `packages/security/` | `@continuim/security` — attestation signing/verification, encoding, and purchase-binding checks, plus its test. | The capability mechanics are one small, heavily-tested module shared by both the issuer (verification) and the enforcer (procurement). |
 | `services/verification/` | Evidence fixtures, the scenario profiles, the deterministic vendor-risk policy, and the evidence-collector seam (fixture vs live Zero adapter). | The "buy evidence, decide eligibility, mint capability" half of the trust loop. |
 | `services/agent/` | `runProcurementLoop` — the deterministic agent loop, written against four injected ports, plus its test. | The agent's behavior (deny → learn → verify → buy) is pure logic with no I/O, so it is unit-testable end to end. |
 | `services/control-plane/` | The orchestrator HTTP server (port 4000), the SQLite `DemoStore`, the inventory monitor, and the runtime that wires the agent loop's ports to real services. | The single writable source of demo state; everything the dashboard shows comes from here. |
@@ -58,7 +58,7 @@ Every top-level directory, what lives there, and why it exists.
 | `deploy/akash/` | `deploy.example.yaml` — Akash SDL v2.0 template for the three services. | Coverage-only hosting path (STRATEGY-LEDGER decision 5). |
 | `docs/` | The governed doc system (see `CLAUDE.md` table): PRD, architecture, ledger, status, current-state, roadmap, lessons, integration runbooks (`docs/integrations/*.md`), business/demo/scope docs, and this file. | Docs are split by what drifts; append-only vs replace-in-place rules per file. |
 | `logs/` | `DECISIONS.jsonl` (append-only decision records) and `errors.jsonl` (append-only incident evidence); schemas in `logs/README.md`. | The why-trail the strategy ledger cites. |
-| `data/` | `stockshield.db` (+ WAL/SHM) — the runtime SQLite database. Git-ignored, Docker-ignored. | Runtime state, not source. |
+| `data/` | `continuim.db` (+ WAL/SHM) — the runtime SQLite database. Git-ignored, Docker-ignored. | Runtime state, not source. |
 | `mockups/` | `client-integration.html` — a static mockup. | Design reference only; not served by anything. |
 | `starter-pack/` | The `/starter-pack` skill and templates that scaffolded the doc system. | Provenance of the governance layer; not part of the product. |
 | `.claude/` | `settings.json`: git read-only Bash permissions + a SessionStart hook that injects `docs/STRATEGY-LEDGER.md` into every Claude session. | Instructions request; the environment enforces. |
@@ -74,7 +74,7 @@ Root `package.json` declares npm workspaces `apps/*`, `packages/*`, `services/*`
 All packages are `"private": true`, `"type": "module"`, version `0.1.0`, and export raw
 TypeScript directly (`"exports": "./src/index.ts"`) — there is **no build step for the
 libraries**; everything is executed through `tsx` (services/scripts) or transpiled by
-Next.js (`transpilePackages: ["@stockshield/contracts"]` in
+Next.js (`transpilePackages: ["@continuim/contracts"]` in
 `apps/dashboard/next.config.mjs`). Node `>=22.10` is required (engines field +
 `scripts/bootstrap.sh` check); `.node-version` pins `22.22.0`. Node 22 also supplies
 `node:sqlite` (used natively — no better-sqlite3 dependency).
@@ -82,19 +82,19 @@ Next.js (`transpilePackages: ["@stockshield/contracts"]` in
 ### 2.2 Dependency graph
 
 ```
-@stockshield/contracts        (no deps — the vocabulary)
+@continuim/contracts        (no deps — the vocabulary)
    ▲          ▲         ▲            ▲            ▲          ▲
    │          │         │            │            │          │
-@stockshield/security   @stockshield/agent        │   @stockshield/dashboard
+@continuim/security   @continuim/agent        │   @continuim/dashboard
    ▲          ▲                      ▲            │   (next, react, react-dom,
    │          │                      │            │    lucide-react)
-@stockshield/verification            │            │
+@continuim/verification            │            │
    ▲   (contracts + security)        │            │
    │                                 │            │
-@stockshield/control-plane ──────────┴────────────┘
+@continuim/control-plane ──────────┴────────────┘
    (agent + contracts + security + verification)
 
-@stockshield/procurement  →  contracts + security + jose (JWT/JWKS)
+@continuim/procurement  →  contracts + security + jose (JWT/JWKS)
 ```
 
 Only two external runtime dependencies exist outside the dashboard: `jose` (procurement,
@@ -119,7 +119,7 @@ devDependencies: `typescript`, `tsx`, `concurrently`, `postcss`, `@types/*`.
 | `start:web` | `next start apps/dashboard --hostname 0.0.0.0 --port 3000`. |
 | `demo` | `tsx scripts/demo.ts` — scripted three-node-failure demo driver (§14.1). |
 | `doctor` | `tsx scripts/doctor.ts` — local readiness checks. |
-| `doctor:prize` | Same with `STOCKSHIELD_REQUIRE_PRIZE=1` — fails closed unless live-sponsor config exists (§14.4). |
+| `doctor:prize` | Same with `CONTINUIM_REQUIRE_PRIZE=1` — fails closed unless live-sponsor config exists (§14.4). |
 
 All dev/start/demo/doctor scripts use `--env-file-if-exists=.env.local`, so `.env.local`
 is the single local configuration surface.
@@ -180,7 +180,7 @@ webhook. *Consumed by:* `runStockout`, the agent loop.
 `company_identity_match`, `domain_age_days`, `web_presence`, `news_presence`,
 `contact_reachable`, `payee_identity_match`, `typosquat_detected`.
 
-**`EvidenceSource`** — provenance of one signal: `provider` (e.g. `"StockShield fixture"`
+**`EvidenceSource`** — provenance of one signal: `provider` (e.g. `"Continuim fixture"`
 or a real Zero provider), `serviceId`, `mode` (`"fixture" | "live_zero"`), `costCents`,
 `observedAt`, optional `receiptId` (mandatory for paid live signals — enforced by the
 collector, §10.3).
@@ -325,7 +325,7 @@ File: `packages/security/src/index.ts` (113 lines, stable). Exports:
   `verified === true`, `expiresAt > now`, and `issuedAt <= now + 30s` (future-issue
   guard). Throws typed-message errors on any failure.
 - **`encodeVendorAttestation` / `decodeVendorAttestation`** — base64url(JSON) transport
-  codec for the `x-stockshield-vendor-attestation` header; decode failures throw
+  codec for the `x-continuim-vendor-attestation` header; decode failures throw
   `"Malformed vendor attestation"`.
 - **`assertPurchaseBinding(attestation, request)`** — the object-capability check; every
   binding it enforces is listed in §7.2.
@@ -434,7 +434,7 @@ API.
 `DemoStore`; unless `MONITOR_ENABLED=0`, starts the inventory monitor
 (`MONITOR_INTERVAL_MS` default 2000, `MONITOR_REQUESTED_QTY` default 20). CORS is wide
 open (`access-control-allow-origin: *`; allowed headers include
-`x-stockshield-webhook-secret`). All request bodies are capped at 64 KiB. Endpoints:
+`x-continuim-webhook-secret`). All request bodies are capped at 64 KiB. Endpoints:
 
 | Method & path | Request | Responses |
 |---|---|---|
@@ -445,7 +445,7 @@ open (`access-control-allow-origin: *`; allowed headers include
 | `POST /api/demo/scenario` | `{ "id": "datacenter" \| "apparel" }` | 200 new state; 400 unknown id / bad JSON; 409 if a run is active. |
 | `POST /api/demo/run` | — | 202 `{ accepted: true }` (run fires async, `source: "local"`); 409 if already running. |
 | `POST /api/demo/consume` | — | 200 state with one unit consumed; 409 if running or `currentQty <= 0`. |
-| `POST /api/events/stockout` | `StockoutRiskEvent` JSON; header `x-stockshield-webhook-secret` when `NEXLA_WEBHOOK_SECRET` is set | 202 `{ accepted, eventId }`; 401 bad secret; 400 invalid event / non-`nexla` source / unknown SKU; 409 run active. Auto-switches scenario when the SKU maps to the other profile. |
+| `POST /api/events/stockout` | `StockoutRiskEvent` JSON; header `x-continuim-webhook-secret` when `NEXLA_WEBHOOK_SECRET` is set | 202 `{ accepted, eventId }`; 401 bad secret; 400 invalid event / non-`nexla` source / unknown SKU; 409 run active. Auto-switches scenario when the SKU maps to the other profile. |
 | anything else | — | 404 `{ error: "Not found" }`. |
 
 `isStockoutRiskEvent` (server.ts) validates schema version, type, non-empty ids/skus,
@@ -483,14 +483,14 @@ timestamp, and source membership.
   machine identity per decision 0007.
 - `submitPurchaseOrder(request, credential?)` — base URL: `POMERIUM_ROUTE_URL` in
   pomerium mode, else `PROCUREMENT_URL` (default `http://127.0.0.1:4001`). Headers:
-  attestation always rides in `x-stockshield-vendor-attestation` (base64url) when a
+  attestation always rides in `x-continuim-vendor-attestation` (base64url) when a
   credential exists; pomerium credentials add
   `authorization: Bearer Pomerium-<vendorToken>`; the **credential-less denial probe in
   pomerium mode** authenticates as the general agent via `POMERIUM_AGENT_TOKEN` (so the
   403 is a *policy* denial of an authenticated identity, not a missing-auth artifact).
   POSTs to `<base>/po/<vendorId>`; result's `enforcementPoint` is forced to
   `"pomerium"` in pomerium mode (the network path is the enforcer); `requestId` comes
-  from `x-request-id` / `x-stockshield-request-id` / body / fresh UUID, in that order.
+  from `x-request-id` / `x-continuim-request-id` / body / fresh UUID, in that order.
 
 **Trust boundary:** the control plane is the trusted orchestrator — it holds the signing
 secret and the vendor tokens. Its HTTP surface is demo-control only (no auth besides the
@@ -510,7 +510,7 @@ identity assertion.
 | Method & path | Behavior |
 |---|---|
 | `GET /health` | 200 `{ ok: true, authMode }`. |
-| `POST /po/:vendorId` | Parse (≤ 64 KiB) → `isPurchaseOrderRequest` shape check **and** `body.vendorId === decodeURIComponent(:vendorId)` (path/body agreement — the path is what a Pomerium policy scopes on) else 400 → `createPurchaseOrder` → respond with its status and JSON body; `x-stockshield-request-id` response header always set. Body-level errors → 400. |
+| `POST /po/:vendorId` | Parse (≤ 64 KiB) → `isPurchaseOrderRequest` shape check **and** `body.vendorId === decodeURIComponent(:vendorId)` (path/body agreement — the path is what a Pomerium policy scopes on) else 400 → `createPurchaseOrder` → respond with its status and JSON body; `x-continuim-request-id` response header always set. Body-level errors → 400. |
 | anything else | 404. |
 
 **`src/authorize.ts`** — exports `AuthMode`, `AuthorizationConfig`,
@@ -524,7 +524,7 @@ identity assertion.
    `"vendor:"`) — the proxy-authenticated identity must match the vendor path being
    bought from.
 3. In both modes, verifies the **object capability**: decode the
-   `x-stockshield-vendor-attestation` header, `verifyVendorAttestation` (HMAC +
+   `x-continuim-vendor-attestation` header, `verifyVendorAttestation` (HMAC +
    temporal), `assertPurchaseBinding` (all 13 bindings, §7.2).
 4. Returns `{ subject, enforcementPoint: mode, attestationId, nonce }`.
 
@@ -596,7 +596,7 @@ The default local path (fixture evidence, development guard, datacenter scenario
 exactly as the code executes it:
 
 1. **Boot.** `npm run dev` starts the three processes. The control plane opens/creates
-   `data/stockshield.db`, seeds an idle `DemoState` for the `datacenter` profile
+   `data/continuim.db`, seeds an idle `DemoState` for the `datacenter` profile
    (5 spares on hand, threshold 2), and starts the 2-second monitor.
 2. **Failure injection.** The operator (or `npm run demo`) POSTs `/api/demo/consume`
    three times: 5 → 4 → 3 → 2 on-hand. (Alternatively, Nexla POSTs the frozen v1.1 event
@@ -749,7 +749,7 @@ dev behavior (decision 0010).
 ## 8. SQLite schema and state lifecycle
 
 `services/control-plane/src/store.ts`; database path `SQLITE_PATH` (default
-`data/stockshield.db`, `:memory:` supported); `PRAGMA journal_mode = WAL`. The control
+`data/continuim.db`, `:memory:` supported); `PRAGMA journal_mode = WAL`. The control
 plane is the only writer. Three tables:
 
 | Table | Columns | Purpose |
@@ -784,7 +784,7 @@ Lifecycle methods:
 **What persists where:** demo state and the decision trail persist across process
 restarts (SQLite); decision events are cleared on `reset`; the incident ledger persists
 across both; procurement's orders/nonces do **not** persist (in-memory, §5.4). In Docker
-compose, the `stockshield-data` volume is mounted only on the control-plane service —
+compose, the `continuim-data` volume is mounted only on the control-plane service —
 the procurement container's `SQLITE_PATH` env is inert since procurement never opens
 SQLite.
 
@@ -903,12 +903,12 @@ every npm script via `--env-file-if-exists`).
 | `VERIFICATION_MODE` | `fixture` | collector, control-plane `/health`, doctor | `live_zero` activates the adapter path. |
 | `ATTESTATION_SIGNING_SECRET` | `local-attestation-only-change-me` | verification (sign), procurement (verify) | Shared HMAC secret; must match across services. |
 | `DEMO_STEP_DELAY_MS` | `350` | control-plane runtime | Pause after each decision event (demo pacing). |
-| `SQLITE_PATH` | `data/stockshield.db` | `DemoStore` | State DB path (`:memory:` allowed). |
+| `SQLITE_PATH` | `data/continuim.db` | `DemoStore` | State DB path (`:memory:` allowed). |
 | `SCENARIO` | `datacenter` | `DemoStore` | Cold-start scenario id. |
 | `MONITOR_ENABLED` | enabled (`"0"` disables) | control-plane server + store, doctor | Autonomous monitor gate. |
 | `MONITOR_INTERVAL_MS` | `2000` | control-plane server | Tick interval. |
 | `MONITOR_REQUESTED_QTY` | `20` | control-plane server | Units requested on trigger. |
-| `NEXLA_WEBHOOK_SECRET` | unset (open) | webhook endpoint | When set, `x-stockshield-webhook-secret` must match. |
+| `NEXLA_WEBHOOK_SECRET` | unset (open) | webhook endpoint | When set, `x-continuim-webhook-secret` must match. |
 | `ZERO_EVIDENCE_ADAPTER_URL` | — (required in live mode) | collector | Owner-supplied evidence adapter. |
 | `ZERO_EVIDENCE_ADAPTER_TOKEN` | unset | collector | Optional bearer token for the adapter. |
 | `ZERO_EVIDENCE_TIMEOUT_MS` | `45000` | collector | Adapter fetch timeout. |
@@ -917,7 +917,7 @@ every npm script via `--env-file-if-exists`).
 | `POMERIUM_SUBJECT_PREFIX` | `vendor:` | procurement, authorize | Expected subject prefix. |
 | `POMERIUM_AGENT_TOKEN` | — | control-plane runtime | General-agent identity for the authenticated-but-denied probe. |
 | `POMERIUM_VENDOR_TOKEN_<VENDOR_ID>` (e.g. `..._VENDOR_NORTHSTAR`) | — | control-plane runtime | Vendor-scoped service-account token, released only per-attestation. |
-| `STOCKSHIELD_REQUIRE_PRIZE` | unset | doctor | `1` = prize checks become required. |
+| `CONTINUIM_REQUIRE_PRIZE` | unset | doctor | `1` = prize checks become required. |
 
 ---
 
@@ -928,7 +928,7 @@ every npm script via `--env-file-if-exists`).
 > STRATEGY-LEDGER entry 15. Deliberately no line numbers here.
 
 **The decision (0015):** ProcureLoop's three-layer definition is absorbed into
-StockShield — Hero Runway (autonomous monitoring + procurement loop, implemented),
+Continuim — Hero Runway (autonomous monitoring + procurement loop, implemented),
 Secondary Guardrail (vendor-risk verification implemented; demand-audit/purge deferred
 per 0012), and a new **Learning Layer**: an append-only **incident ledger**. Every
 resolved run logs its anomaly profile, vendor, spend, and resolution speed; subsequent
@@ -1015,11 +1015,11 @@ tests + Next build — **the image cannot build if checks fail**), default CMD
 `start:control`. `.dockerignore` excludes `.git`, `.next`, `node_modules`, `data`,
 `.env*`.
 
-`compose.yaml` (project `stockshield`) runs the same image three times:
+`compose.yaml` (project `continuim`) runs the same image three times:
 - `procurement` — `start:procurement`, `expose 4001` (internal only, **not** published),
   health-checked via `fetch /health`.
 - `control-plane` — `start:control`, published `4000:4000`,
-  `PROCUREMENT_URL=http://procurement:4001`, volume `stockshield-data:/app/data` (the
+  `PROCUREMENT_URL=http://procurement:4001`, volume `continuim-data:/app/data` (the
   only persistent volume), depends on procurement healthy.
 - `dashboard` — `start:web`, published `3000:3000`,
   `CONTROL_PLANE_INTERNAL_URL=http://control-plane:4000`, depends on control-plane
@@ -1029,7 +1029,7 @@ All read `.env.local` via `env_file` with `AUTH_MODE=development` pinned.
 ### 14.3 Akash template
 
 `deploy/akash/deploy.example.yaml` (SDL v2.0): the same three services from an immutable
-`ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA` image. Only the dashboard is global
+`ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA` image. Only the dashboard is global
 (port 3000 as 80); `control` is exposed only to `dashboard`; `procurement` only to
 `control`. Compute: 0.5 CPU/512 Mi (dashboard), 0.25/256 Mi (control, procurement);
 pricing in `uact`. Coverage-only per decision 5; cut-line and runbook in
@@ -1041,7 +1041,7 @@ storage is declared — state resets with the lease.
 `scripts/doctor.ts` prints PASS/FAIL/INFO per check and exits 1 if any *required* check
 fails. **Local mode (`npm run doctor`)** requires: Node ≥ 22, `node_modules`,
 `.env.local`, `package-lock.json`, monitor enabled; the mode checks are informational.
-**Prize mode (`npm run doctor:prize`, i.e. `STOCKSHIELD_REQUIRE_PRIZE=1`)** additionally
+**Prize mode (`npm run doctor:prize`, i.e. `CONTINUIM_REQUIRE_PRIZE=1`)** additionally
 requires: `VERIFICATION_MODE=live_zero`; `AUTH_MODE=pomerium`; the Zero service lock
 live-verified (`config/zero-services.json` `verifiedAt` set and ≥ 3 services); and all
 seven prize variables set: `ZERO_EVIDENCE_ADAPTER_URL`, `POMERIUM_ROUTE_URL`,

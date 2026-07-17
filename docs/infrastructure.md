@@ -1,4 +1,4 @@
-# StockShield Infrastructure
+# Continuim Infrastructure
 
 ## Local Topology
 
@@ -34,10 +34,10 @@ The protected request carries two independent artifacts:
 
 1. A Pomerium service-account credential. The initial general-agent identity is authenticated
    but denied; an eligible vendor maps to a vendor-scoped identity allowed on its exact path.
-2. A signed StockShield attestation. The origin verifies its signature, expiry, and complete
+2. A signed Continuim attestation. The origin verifies its signature, expiry, and complete
    PO object binding.
 
-Pomerium does not read SQLite or inspect an arbitrary PO body. StockShield does not authorize
+Pomerium does not read SQLite or inspect an arbitrary PO body. Continuim does not authorize
 on a custom header's presence. The origin verifies Pomerium's signed assertion, including
 issuer, audience, expiry, and subject-to-path equality.
 

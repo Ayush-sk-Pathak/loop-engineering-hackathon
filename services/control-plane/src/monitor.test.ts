@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { DemoState, StockoutRiskEvent } from "@stockshield/contracts";
+import type { DemoState, StockoutRiskEvent } from "@continuim/contracts";
 import { checkInventoryOnce, type InventoryMonitorStore } from "./monitor.ts";
 
 function state(overrides: Partial<DemoState> = {}): DemoState {

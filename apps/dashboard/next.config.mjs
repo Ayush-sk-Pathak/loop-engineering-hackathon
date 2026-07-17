@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@stockshield/contracts"],
+  transpilePackages: ["@continuim/contracts"],
 };
 
 export default nextConfig;

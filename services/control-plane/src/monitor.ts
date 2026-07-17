@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { SCHEMA_VERSION, type DemoState, type StockoutRiskEvent } from "@stockshield/contracts";
+import { SCHEMA_VERSION, type DemoState, type StockoutRiskEvent } from "@continuim/contracts";
 
 export interface InventoryMonitorStore {
   read(): DemoState | undefined;

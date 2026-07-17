@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Vendor Fraud Interceptor — Client Integration</title>
+<title>Continuim — Client Integration</title>
 <style>
   :root{
     --ground:#E7EBF1; --app:#F6F8FB; --surface:#FFFFFF; --surface-2:#F1F4F9; --surface-3:#E9EEF5;
@@ -191,7 +191,7 @@
 </style>
 
 <div class="wrap">
-  <p class="caption">Product mockup · <b>Vendor Fraud Interceptor</b> installed inside a client's operations console — click the nav to explore</p>
+  <p class="caption">Product mockup · <b>Continuim</b> installed inside a client's operations console — click the nav to explore</p>
   <div class="app">
     <div class="topbar">
       <div class="host-logo"><span class="host-glyph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span> OpsHub</div>
@@ -240,9 +240,9 @@ const IC = {
 const DATA = {
   sock:{
     ws:"Northwind Textiles", industry:"Textile Manufacturing", host:"AWS",
-    kpis:[{l:"Active alerts",v:"1",h:"Navy dye stockout",c:"warnk"},{l:"Fraud blocked (YTD)",v:"$146K",h:"9 attempts stopped",c:"okk"},{l:"Vendors verified",v:"23",h:"2 blacklisted",c:""},{l:"Spend protected",v:"$1.2M",h:"this quarter",c:""}],
+    kpis:[{l:"Active alerts",v:"1",h:"Navy dye stockout",c:"warnk"},{l:"At-risk spend blocked (YTD)",v:"$146K",h:"9 attempts stopped",c:"okk"},{l:"Vendors verified",v:"23",h:"2 blacklisted",c:""},{l:"Spend protected",v:"$1.2M",h:"this quarter",c:""}],
     feed:[["09:41","bad","<b>Pomerium</b> denied payment to PacificDye Co. — vendor unverified"],["09:41","ok","<b>Agent</b> placed PO-4821 with Meridian Colorants ($18,240)"],["09:40","warn","<b>Nexla</b> flagged Navy Dye · Line 04 below safety threshold"],["08:12","ok","White Dye · Line 01 restock delivered"],["Yst","muted","Weekly vendor re-verification completed — 23 passed"]],
-    incident:{k:"Active incident",t:"<b>Navy Dye · Line 04</b> stockout — Fraud Interceptor engaged, fraudulent backup vendor blocked."},
+    incident:{k:"Active incident",t:"<b>Navy Dye · Line 04</b> stockout — Continuim engaged — recovery order placed, unverified backup vendor blocked."},
     inventory:[
       ["Navy Dye · Line 04","0 kg","120 kg","bad","Critical",1],
       ["White Dye · Line 01","210 kg","150 kg","warn","Low",0],
@@ -251,26 +251,26 @@ const DATA = {
       ["Elastane","880 kg","300 kg","ok","Healthy",0]],
     pos:[
       ["PO-4821","Meridian Colorants","Navy Dye 500 kg","$18,240","ok","Placed · now"],
-      ["PO-4820","PacificDye Co.","Navy Dye 500 kg","$12,400","bad","Blocked · fraud"],
+      ["PO-4820","PacificDye Co.","Navy Dye 500 kg","$12,400","bad","Blocked · policy"],
       ["PO-4795","Northstar Fibers","Cotton Yarn 8k","$9,100","muted","Delivered"],
       ["PO-4788","Meridian Colorants","Crimson Dye 300 kg","$6,540","muted","Delivered"]],
     vendors:[
       {name:"Meridian Colorants", note:"Authorized distributor · 6-yr history", verified:true,
-       sig:[["Domain age","6 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Fraud score","7 / 100","good"]], price:"$18,240", status:"verified"},
+       sig:[["Domain age","6 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Risk score","7 / 100","good"]], price:"$18,240", status:"verified"},
       {name:"PacificDye Co.", note:"Typosquat of ‘Pacific Dyes Inc.’", verified:false,
-       sig:[["Domain age","14 days","flag"],["Bank / entity","Shell (foreign)","flag"],["Provenance","Unverifiable","flag"],["Fraud score","91 / 100","flag"]], price:"$12,400", status:"blacklisted"},
+       sig:[["Domain age","14 days","flag"],["Bank / entity","Shell (foreign)","flag"],["Provenance","Unverifiable","flag"],["Risk score","91 / 100","flag"]], price:"$12,400", status:"blacklisted"},
       {name:"Northstar Fibers", note:"Yarn supplier · 4-yr history", verified:true,
-       sig:[["Domain age","4 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Fraud score","11 / 100","good"]], price:"—", status:"verified"}],
+       sig:[["Domain age","4 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Risk score","11 / 100","good"]], price:"—", status:"verified"}],
     reports:{total:"$146,000", rows:[["Navy Dye — PacificDye Co.",18000],["Elastane — QuickWeave Ltd",40000],["Cotton Yarn — FiberDirect",31000],["Crimson Dye — DyeMart",22000],["Zippers — FastenCo",35000]]},
     ceiling:"$25,000 / order",
     blocked:"$18,000", secondL:"Downtime avoided", second:"$54,000", secondH:"Line 04 kept running", time:"41 s",
     alert:"<b>Navy Dye · Sock Line 04</b> hit <b>0 kg</b>. Primary supplier logged a shipment delay — Line 04 halts in <b>18 h</b> at ~$3,000/hr.",
     item:"Navy Dye · Line 04",
-    trace:[["nexla","Nexla","inventory event: <b>NAVY_DYE_L04</b> below safety threshold (0 kg)","detect"],["agent","agent","planning emergency reorder — sourcing verified backup vendors","source"],["agent","agent","2 candidates: <b>Meridian Colorants</b>, <b>PacificDye Co.</b>",null],["zero","Zero","purchased verification x2 — <b>$0.04</b> from agent wallet","verify"],["verify","verify","Meridian &rarr; domain 6yr · bank match · fraud 7 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","PacificDye &rarr; domain 14d · shell bank · fraud 91 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","lowest price is PacificDye ($12,400) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=PacificDye &rarr; <b>403 DENIED</b> (vendor.verified=false)","deny"],["agent","agent","denial observed — blacklisting PacificDye, re-routing",null],["ok","agent","payment vendor=<b>Meridian</b> ($18,240) &rarr; Pomerium <b>200 OK</b>","resolve"],["fillmore","Fillmore","purchase order drafted &amp; sent to Meridian Colorants","pick"],["ok","agent","resolved — Line 04 supply restored, no fraud paid","done"]]
+    trace:[["nexla","Nexla","inventory event: <b>NAVY_DYE_L04</b> below safety threshold (0 kg)","detect"],["agent","agent","planning emergency reorder — sourcing verified backup vendors","source"],["agent","agent","2 candidates: <b>Meridian Colorants</b>, <b>PacificDye Co.</b>",null],["zero","Zero","purchased verification x2 — <b>$0.04</b> from agent wallet","verify"],["verify","verify","Meridian &rarr; domain 6yr · bank match · risk 7 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","PacificDye &rarr; domain 14d · shell bank · risk 91 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","lowest price is PacificDye ($12,400) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=PacificDye &rarr; <b>403 DENIED</b> (vendor.verified=false)","deny"],["agent","agent","denial observed — blacklisting PacificDye, re-routing",null],["ok","agent","payment vendor=<b>Meridian</b> ($18,240) &rarr; Pomerium <b>200 OK</b>","resolve"],["fillmore","StableEmail","purchase order drafted &amp; sent to Meridian Colorants","pick"],["ok","agent","resolved — Line 04 supply restored, no unverified vendor paid","done"]]
   },
   gpu:{
     ws:"Meridian Financial — Risk Infra", industry:"Regulated On-Prem Compute", host:"Akash",
-    kpis:[{l:"Active alerts",v:"1",h:"gpu-07 node failure",c:"warnk"},{l:"Fraud blocked (YTD)",v:"$420K",h:"4 attempts stopped",c:"okk"},{l:"Vendors verified",v:"11",h:"1 blacklisted",c:""},{l:"SLA uptime",v:"99.98%",h:"trailing 90 days",c:"okk"}],
+    kpis:[{l:"Active alerts",v:"1",h:"gpu-07 node failure",c:"warnk"},{l:"At-risk spend blocked (YTD)",v:"$420K",h:"4 attempts stopped",c:"okk"},{l:"Vendors verified",v:"11",h:"1 blacklisted",c:""},{l:"SLA uptime",v:"99.98%",h:"trailing 90 days",c:"okk"}],
     feed:[["11:03","bad","<b>Pomerium</b> denied payment to TitanServer-Parts — counterfeit risk"],["11:03","ok","<b>Agent</b> placed PO-2207 with AuthorizedGPU Distribution ($95,000)"],["11:02","ok","<b>Akash</b> burst deployment live — SLA held during procurement"],["11:01","warn","<b>Nexla</b> telemetry: node gpu-07 failed, cluster at 100%"],["Yst","muted","Monthly hardware provenance audit passed — 11 vendors"]],
     incident:{k:"Active incident",t:"<b>Node gpu-07</b> failure at 100% cluster load — burst held on a verified provider, counterfeit hardware broker blocked."},
     inventory:[
@@ -286,17 +286,17 @@ const DATA = {
       ["PO-2184","CloudBurst (Akash)","Burst compute 72h","$3,400","muted","Delivered"]],
     vendors:[
       {name:"AuthorizedGPU Distribution", note:"Manufacturer-traceable channel · 9-yr", verified:true,
-       sig:[["Domain age","9 yr","good"],["Bank / entity","Match","good"],["Part provenance","Mfr-traceable","good"],["Fraud score","5 / 100","good"]], price:"$95,000", status:"verified"},
+       sig:[["Domain age","9 yr","good"],["Bank / entity","Match","good"],["Part provenance","Mfr-traceable","good"],["Risk score","5 / 100","good"]], price:"$95,000", status:"verified"},
       {name:"TitanServer-Parts", note:"‘Immediate stock’ broker", verified:false,
-       sig:[["Domain age","21 days","flag"],["Bank / entity","Personal acct","flag"],["Part provenance","Unverifiable","flag"],["Fraud score","88 / 100","flag"]], price:"$61,500", status:"blacklisted"},
+       sig:[["Domain age","21 days","flag"],["Bank / entity","Personal acct","flag"],["Part provenance","Unverifiable","flag"],["Risk score","88 / 100","flag"]], price:"$61,500", status:"blacklisted"},
       {name:"CloudBurst (Akash)", note:"Verified burst-capacity provider", verified:true,
-       sig:[["Domain age","5 yr","good"],["Bank / entity","Match","good"],["Attestation","On-chain","good"],["Fraud score","6 / 100","good"]], price:"$3,400", status:"verified"}],
+       sig:[["Domain age","5 yr","good"],["Bank / entity","Match","good"],["Attestation","On-chain","good"],["Risk score","6 / 100","good"]], price:"$3,400", status:"verified"}],
     reports:{total:"$420,000", rows:[["H100 node — TitanServer-Parts",95000],["DIMM — GreyChip Traders",120000],["GPU — FastRack Supply",84000],["Switchgear — VoltBrokers",71000],["NVMe — DiskDirect",50000]]},
     ceiling:"$100,000 / order",
     blocked:"$95,000", secondL:"SLA status", second:"Maintained", secondH:"Burst held on verified provider", time:"38 s",
     alert:"<b>Node gpu-07</b> FAILED · on-prem risk cluster at <b>100% capacity</b>. No elastic scaling — regulatory SLA at risk within the hour.",
     item:"H100 node · rack B",
-    trace:[["nexla","Nexla","telemetry: node <b>gpu-07</b> FAILED · cluster 100% · SLA at risk","detect"],["agent","agent","dual-track: burst overflow + procure verified replacement","source"],["agent","agent","2 hardware candidates: <b>AuthorizedGPU</b>, <b>TitanServer-Parts</b>",null],["zero","Zero","purchased verification x2 — <b>$0.06</b> from agent wallet","verify"],["verify","verify","AuthorizedGPU &rarr; 9yr · mfr-traceable · fraud 5 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","TitanServer &rarr; 21d · provenance unverifiable · fraud 88 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","TitanServer is cheaper ($61,500) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=TitanServer &rarr; <b>403 DENIED</b> (counterfeit risk)","deny"],["akash","Akash","burst deployment live on verified provider — SLA held",null],["ok","agent","payment vendor=<b>AuthorizedGPU</b> ($95,000) &rarr; Pomerium <b>200 OK</b>","resolve"],["agent","agent","no counterfeit part admitted to regulated cluster","pick"],["ok","agent","resolved — genuine hardware inbound, compliance intact","done"]]
+    trace:[["nexla","Nexla","telemetry: node <b>gpu-07</b> FAILED · cluster 100% · SLA at risk","detect"],["agent","agent","dual-track: burst overflow + procure verified replacement","source"],["agent","agent","2 hardware candidates: <b>AuthorizedGPU</b>, <b>TitanServer-Parts</b>",null],["zero","Zero","purchased verification x2 — <b>$0.06</b> from agent wallet","verify"],["verify","verify","AuthorizedGPU &rarr; 9yr · mfr-traceable · risk 5 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","TitanServer &rarr; 21d · provenance unverifiable · risk 88 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","TitanServer is cheaper ($61,500) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=TitanServer &rarr; <b>403 DENIED</b> (counterfeit risk)","deny"],["akash","Akash","burst deployment live on verified provider — SLA held",null],["ok","agent","payment vendor=<b>AuthorizedGPU</b> ($95,000) &rarr; Pomerium <b>200 OK</b>","resolve"],["agent","agent","no counterfeit part admitted to regulated cluster","pick"],["ok","agent","resolved — genuine hardware inbound, compliance intact","done"]]
   }
 };
 
@@ -305,7 +305,7 @@ const NAV = [
   {id:"inventory",label:"Inventory",icon:IC.inventory,group:"Operations"},
   {id:"procurement",label:"Procurement",icon:IC.procurement,group:"Operations"},
   {id:"vendors",label:"Vendors",icon:IC.vendors,group:"Operations"},
-  {id:"interceptor",label:"Fraud Interceptor",icon:IC.shield,group:"Installed apps",badge:"Live"},
+  {id:"interceptor",label:"Continuim",icon:IC.shield,group:"Installed apps",badge:"Live"},
   {id:"reports",label:"Reports",icon:IC.reports,group:"Operations2"},
   {id:"settings",label:"Settings",icon:IC.settings,group:"Operations2"}
 ];
@@ -335,7 +335,7 @@ function head(title,sub,right){return '<div class="section-head"><div class="st"
 function pill(cls,txt){return '<span class="pill '+cls+'"><span class="dotp"></span>'+txt+'</span>';}
 function vendorCard(v,revealed){
   const cls=revealed?(v.verified?'reveal-ok':'reveal-bad'):'';
-  const pillTxt=revealed?(v.verified?'Verified':'Fraud flagged'):'Unchecked';
+  const pillTxt=revealed?(v.verified?'Verified':'Ineligible'):'Unchecked';
   const sig=v.sig.map(x=>'<div class="sig"><span class="l">'+x[0]+'</span><span class="v'+(revealed?' '+x[2]:'')+'">'+x[1]+'</span></div>').join('');
   return '<div class="vendor '+cls+'" data-verified="'+v.verified+'"><div class="vh"><span class="name">'+v.name+'</span><span class="vpill">'+pillTxt+'</span></div><div class="vnote">'+v.note+'</div><div class="vsig">'+sig+'</div><div class="vprice"><span class="pl">Quote</span><span class="p">'+v.price+'</span><span class="tag deny-tag">Payment denied</span><span class="tag pick-tag">Order placed</span></div></div>';
 }
@@ -347,16 +347,16 @@ function viewDashboard(){
   const feed=d.feed.map(f=>'<div class="feed-item"><span class="t">'+f[0]+'</span><span class="fdot" style="background:var(--'+(f[1]==='muted'?'faint':f[1])+')"></span><span class="m">'+f[2]+'</span></div>').join('');
   return head("Dashboard","Live overview of "+d.ws+" · "+d.industry,'<span class="status-live"><span class="pulse"></span> Interceptor active</span>')
     +'<div class="kpis">'+kpis+'</div>'
-    +'<div class="callout" style="margin-bottom:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">'+d.incident.k+'</span>'+d.incident.t+' <button class="btn ghost" style="margin-left:6px" data-go="interceptor">Open Fraud Interceptor</button></div></div>'
+    +'<div class="callout" style="margin-bottom:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">'+d.incident.k+'</span>'+d.incident.t+' <button class="btn ghost" style="margin-left:6px" data-go="interceptor">Open Continuim</button></div></div>'
     +'<div class="grid2"><div class="panel"><div class="panel-h">'+IC.activity+' Recent activity</div><div class="panel-b"><div class="feed">'+feed+'</div></div></div>'
-    +'<div class="panel"><div class="panel-h">'+IC.wallet+' This incident</div><div class="panel-b"><div class="metrics" style="grid-template-columns:1fr;margin-top:8px;gap:10px"><div class="metric hero"><div class="ml">Fraud blocked</div><div class="mv">'+d.blocked+'</div><div class="mh">payment denied at policy layer</div></div><div class="metric okm"><div class="ml">'+d.secondL+'</div><div class="mv">'+d.second+'</div><div class="mh">'+d.secondH+'</div></div></div></div></div></div>';
+    +'<div class="panel"><div class="panel-h">'+IC.wallet+' This incident</div><div class="panel-b"><div class="metrics" style="grid-template-columns:1fr;margin-top:8px;gap:10px"><div class="metric hero"><div class="ml">At-risk spend blocked</div><div class="mv">'+d.blocked+'</div><div class="mh">payment denied at policy layer</div></div><div class="metric okm"><div class="ml">'+d.secondL+'</div><div class="mv">'+d.second+'</div><div class="mh">'+d.secondH+'</div></div></div></div></div></div>';
 }
 function viewInventory(){
   const d=D();
   const rows=d.inventory.map(r=>'<tr'+(r[5]?' class="crit"':'')+'><td class="name">'+r[0]+'</td><td class="num">'+r[1]+'</td><td class="num">'+r[2]+'</td><td>'+pill(r[3],r[4])+'</td></tr>').join('');
   return head("Inventory","Real-time stock &amp; asset health · streamed by Nexla",'<span class="pill bad"><span class="dotp"></span>1 below threshold</span>')
     +'<div class="panel"><div class="panel-h">'+IC.inventory+' Monitored items <span class="cnt">'+d.inventory.length+' tracked</span></div><table class="tbl"><thead><tr><th>Item</th><th style="text-align:right">On hand</th><th style="text-align:right">Safety threshold</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-    +'<div class="callout" style="margin-top:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">Threshold breach</span><b>'+d.item+'</b> triggered the Fraud Interceptor — a verified backup order was placed and a fraudulent vendor blocked. <button class="btn ghost" style="margin-left:6px" data-go="interceptor">See the loop</button></div></div>';
+    +'<div class="callout" style="margin-top:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">Threshold breach</span><b>'+d.item+'</b> triggered Continuim — a verified backup order was placed and an unverified vendor blocked. <button class="btn ghost" style="margin-left:6px" data-go="interceptor">See the loop</button></div></div>';
 }
 function viewProcurement(){
   const d=D();
@@ -377,7 +377,7 @@ function viewVendors(){
 function viewReports(){
   const d=D(); const max=Math.max(...d.reports.rows.map(r=>r[1]));
   const bars=d.reports.rows.map(r=>'<div class="bar-row"><span>'+r[0]+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(r[1]/max*100)+'%"></div></div><span class="amt">$'+(r[1]/1000)+'K</span></div>').join('');
-  return head("Reports","Fraud prevented over recent incidents",'')
+  return head("Reports","At-risk spend prevented over recent incidents",'')
     +'<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi okk"><div class="kl">Total fraud blocked (YTD)</div><div class="kv">'+d.reports.total+'</div><div class="kh">across '+d.reports.rows.length+'+ incidents</div></div><div class="kpi"><div class="kl">Avg. verification cost</div><div class="kv">$0.05</div><div class="kh">per vendor, via Zero</div></div><div class="kpi"><div class="kl">Autonomous resolution</div><div class="kv">100%</div><div class="kh">no human in the loop</div></div></div>'
     +'<div class="panel"><div class="panel-h">'+IC.reports+' Blocked payments by incident</div><div class="panel-b"><div class="bars">'+bars+'</div></div></div>';
 }
@@ -388,7 +388,7 @@ function viewSettings(){
     [IC.wallet,"Spend ceiling (Zero)","Hard cap per autonomous order; overrides escalate to a human.",'Ceiling: <code>'+d.ceiling+'</code>'],
     [IC.plug,"Connected tools","The stack this runs on inside your environment.",''],
   ];
-  const tools=[["Nexla","real-time signals"],["Zero","verification &amp; wallet"],["Pomerium","payment policy"],["Fillmore","vendor outreach"],[d.host,"hosting"]];
+  const tools=[["Nexla","real-time signals"],["Zero","verification &amp; wallet"],["Pomerium","payment policy"],["StableEmail","PO delivery"],[d.host,"hosting"]];
   const toolchips=tools.map(t=>'<span class="pill ok" style="text-transform:none;letter-spacing:0;font-weight:600"><span class="dotp"></span>'+t[0]+' · '+t[1]+'</span>').join(' ');
   const list=rows.map(r=>'<div class="setrow"><div class="si">'+r[0]+'</div><div class="sc"><div class="sname">'+r[1]+'</div><div class="sdesc">'+r[2]+'</div>'+(r[3]?'<div style="margin-top:7px;font-size:12px">'+r[3]+'</div>':'')+(r[1].indexOf('Connected')>-1||r[0]===IC.plug?'<div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">'+toolchips+'</div>':'')+'</div><span class="pill ok"><span class="dotp"></span>Active</span></div>').join('');
   return head("Settings","Guardrails &amp; integrations for the autonomous agent",'')
@@ -396,17 +396,17 @@ function viewSettings(){
 }
 function viewInterceptor(){
   const d=D();
-  const html=head("Vendor Fraud Interceptor","Autonomous procurement guardrail · gated by <b>policy</b>, not the agent's judgment",'<button class="btn ghost" id="replayBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Replay</button><span class="status-live"><span class="pulse"></span> Autonomous · Active</span>')
+  const html=head("Continuim","Autonomous procurement guardrail · gated by <b>policy</b>, not the agent's judgment",'<button class="btn ghost" id="replayBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Replay</button><span class="status-live"><span class="pulse"></span> Autonomous · Active</span>')
     +'<div class="alert"><div class="ai">'+IC.warn+'</div><div class="txt"><span class="k">'+(state.ws==='gpu'?'Cluster event detected':'Supply event detected')+'</span>'+d.alert+'</div></div>'
     +'<div class="pipe" id="pipe">'
     +'<div class="step" data-step="detect"><div class="n">01 · DETECT</div><div class="s"><span class="tick"></span>Detect</div><div class="d">Real-time signal from your stack</div></div>'
     +'<div class="step" data-step="source"><div class="n">02 · SOURCE</div><div class="s"><span class="tick"></span>Source</div><div class="d">Find backup vendors</div></div>'
-    +'<div class="step" data-step="verify"><div class="n">03 · VERIFY</div><div class="s"><span class="tick"></span>Verify</div><div class="d">Paid identity + fraud checks</div></div>'
+    +'<div class="step" data-step="verify"><div class="n">03 · VERIFY</div><div class="s"><span class="tick"></span>Verify</div><div class="d">Paid identity + risk checks</div></div>'
     +'<div class="step bad" data-step="guard"><div class="n">04 · GUARD</div><div class="s"><span class="tick"></span>Guard</div><div class="d">Policy blocks unverified pay</div></div>'
     +'<div class="step" data-step="resolve"><div class="n">05 · RESOLVE</div><div class="s"><span class="tick"></span>Resolve</div><div class="d">Self-correct &amp; complete</div></div></div>'
     +'<div class="grid2"><div class="panel"><div class="panel-h">'+IC.vendors+' Backup vendors <span class="cnt">'+d.item+'</span></div><div class="vendors" id="vendors">'+vendorCard(d.vendors[0],false)+vendorCard(d.vendors[1],false)+'</div></div>'
     +'<div class="panel"><div class="panel-h">'+IC.activity+' Agent activity <span class="cnt">live trace</span></div><div class="log" id="log"></div></div></div>'
-    +'<div class="metrics"><div class="metric hero"><div class="ml">Fraud blocked</div><div class="mv" id="mBlocked">$0</div><div class="mh">payment denied at policy layer</div></div>'
+    +'<div class="metrics"><div class="metric hero"><div class="ml">At-risk spend blocked</div><div class="mv" id="mBlocked">$0</div><div class="mh">payment denied at policy layer</div></div>'
     +'<div class="metric okm"><div class="ml">'+d.secondL+'</div><div class="mv" id="mSecond">—</div><div class="mh">'+d.secondH+'</div></div>'
     +'<div class="metric"><div class="ml">Time to resolve</div><div class="mv" id="mTime">—</div><div class="mh">fully autonomous, no human step</div></div></div>';
   return html;
@@ -443,7 +443,7 @@ function playLoop(){
       lg.appendChild(ln); requestAnimationFrame(()=>ln.classList.add('show')); lg.scrollTop=lg.scrollHeight;
       if(['detect','source','verify','guard','resolve'].includes(tag)){stepsBefore(tag);setStep(tag,tag==='guard'?'guard':'active');}
       if(tag==='reveal-ok'){const v=document.querySelector('.vendor[data-verified="true"]');if(v){v.classList.add('reveal-ok');v.querySelector('.vpill').textContent='Verified';v.querySelectorAll('.vsig .v').forEach((n,j)=>n.classList.add(d.vendors[0].sig[j][2]));}}
-      if(tag==='reveal-bad'){const v=document.querySelector('.vendor[data-verified="false"]');if(v){v.classList.add('reveal-bad');v.querySelector('.vpill').textContent='Fraud flagged';v.querySelectorAll('.vsig .v').forEach((n,j)=>n.classList.add(d.vendors[1].sig[j][2]));}}
+      if(tag==='reveal-bad'){const v=document.querySelector('.vendor[data-verified="false"]');if(v){v.classList.add('reveal-bad');v.querySelector('.vpill').textContent='Ineligible';v.querySelectorAll('.vsig .v').forEach((n,j)=>n.classList.add(d.vendors[1].sig[j][2]));}}
       if(tag==='deny'){const v=document.querySelector('.vendor[data-verified="false"]');if(v)v.classList.add('denied');}
       if(tag==='pick'){const v=document.querySelector('.vendor[data-verified="true"]');if(v)v.classList.add('picked');}
       if(tag==='done'){document.querySelectorAll('.step').forEach(s=>{if(s.getAttribute('data-state')==='active')s.setAttribute('data-state','done');});setStep('resolve','done');const b=document.getElementById('mBlocked');if(b)countUp(b,money(d.blocked));const s2=document.getElementById('mSecond');if(s2)s2.textContent=d.second;const t2=document.getElementById('mTime');if(t2)t2.textContent=d.time;}

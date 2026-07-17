@@ -1,5 +1,5 @@
 {
-  "name": "stockshield",
+  "name": "continuim",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -26,7 +26,7 @@
     "start:web": "node --env-file-if-exists=.env.local node_modules/next/dist/bin/next start apps/dashboard --hostname 0.0.0.0 --port 3000",
     "demo": "node --env-file-if-exists=.env.local --import tsx scripts/demo.ts",
     "doctor": "node --env-file-if-exists=.env.local --import tsx scripts/doctor.ts",
-    "doctor:prize": "STOCKSHIELD_REQUIRE_PRIZE=1 node --env-file-if-exists=.env.local --import tsx scripts/doctor.ts"
+    "doctor:prize": "CONTINUIM_REQUIRE_PRIZE=1 node --env-file-if-exists=.env.local --import tsx scripts/doctor.ts"
   },
   "engines": {
     "node": ">=22.10"

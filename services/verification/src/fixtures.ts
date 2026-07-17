@@ -1,8 +1,8 @@
-import type { EvidenceSignal, VendorCandidate } from "@stockshield/contracts";
+import type { EvidenceSignal, VendorCandidate } from "@continuim/contracts";
 
 const observedAt = () => new Date().toISOString();
 const source = (serviceId: string) => ({
-  provider: "StockShield fixture",
+  provider: "Continuim fixture",
   serviceId,
   mode: "fixture" as const,
   costCents: 0,

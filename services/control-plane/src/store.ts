@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import type { DecisionEvent, DemoState, EvidenceMode, IncidentRecord, PurchaseOrder, ScenarioId } from "@stockshield/contracts";
-import { SCENARIOS } from "@stockshield/verification";
+import type { DecisionEvent, DemoState, EvidenceMode, IncidentRecord, PurchaseOrder, ScenarioId } from "@continuim/contracts";
+import { SCENARIOS } from "@continuim/verification";
 
 function defaultScenarioId(): ScenarioId {
   const configured = process.env.SCENARIO;
@@ -14,7 +14,7 @@ export class DemoStore {
   private readonly database: DatabaseSync;
   private runStartedAt: string | null = null;
 
-  constructor(path = process.env.SQLITE_PATH ?? "data/stockshield.db") {
+  constructor(path = process.env.SQLITE_PATH ?? "data/continuim.db") {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.database = new DatabaseSync(path);
     this.database.exec(`

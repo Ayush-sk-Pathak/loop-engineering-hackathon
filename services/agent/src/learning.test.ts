@@ -7,8 +7,8 @@ import type {
   StockoutRiskEvent,
   VendorAttestation,
   VendorCandidate,
-} from "@stockshield/contracts";
-import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@stockshield/verification";
+} from "@continuim/contracts";
+import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@continuim/verification";
 import { runProcurementLoop, type LoopHistory, type LoopResult } from "./index.ts";
 
 const event: StockoutRiskEvent = {

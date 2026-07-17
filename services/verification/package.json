@@ -1,11 +1,11 @@
 {
-  "name": "@stockshield/verification",
+  "name": "@continuim/verification",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": "./src/index.ts",
   "dependencies": {
-    "@stockshield/contracts": "*",
-    "@stockshield/security": "*"
+    "@continuim/contracts": "*",
+    "@continuim/security": "*"
   }
 }

@@ -5,11 +5,11 @@ import type {
   PurchaseOrderRequest,
   StockoutRiskEvent,
   VendorAttestation,
-} from "@stockshield/contracts";
-import { SCHEMA_VERSION } from "@stockshield/contracts";
-import { runProcurementLoop } from "@stockshield/agent";
-import { encodeVendorAttestation } from "@stockshield/security";
-import { createEvidenceCollector, evaluateEvidence } from "@stockshield/verification";
+} from "@continuim/contracts";
+import { SCHEMA_VERSION } from "@continuim/contracts";
+import { runProcurementLoop } from "@continuim/agent";
+import { encodeVendorAttestation } from "@continuim/security";
+import { createEvidenceCollector, evaluateEvidence } from "@continuim/verification";
 import { DemoStore } from "./store.ts";
 
 export async function runDemo(store: DemoStore): Promise<void> {
@@ -98,7 +98,7 @@ async function submitPurchaseOrder(
     "content-type": "application/json",
   };
   if (credential) {
-    headers["x-stockshield-vendor-attestation"] = encodeVendorAttestation(
+    headers["x-continuim-vendor-attestation"] = encodeVendorAttestation(
       credential.attestation,
     );
   }
@@ -121,7 +121,7 @@ async function submitPurchaseOrder(
     reason: body.reason,
     enforcementPoint: process.env.AUTH_MODE === "pomerium" ? "pomerium" : body.enforcementPoint ?? "development",
     requestId: response.headers.get("x-request-id") ??
-      response.headers.get("x-stockshield-request-id") ?? body.requestId ?? randomUUID(),
+      response.headers.get("x-continuim-request-id") ?? body.requestId ?? randomUUID(),
   };
 }
 

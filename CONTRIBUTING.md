@@ -51,7 +51,7 @@ short-lived and deleted after merge. There is no standing `dev` branch.
 - Fixture mode must remain visibly labeled in state and UI.
 - A live paid evidence signal requires a provider, service ID, exact cost, timestamp, and
   receipt ID.
-- Pomerium mode requires both its signed identity assertion and StockShield's signed,
+- Pomerium mode requires both its signed identity assertion and Continuim's signed,
   request-bound vendor attestation.
 - A `403` from Node is local behavior. Only a matching Pomerium authorize log proves the
   sponsor integration.

@@ -1,4 +1,4 @@
-name: stockshield
+name: continuim
 
 services:
   procurement:
@@ -8,7 +8,7 @@ services:
     environment:
       AUTH_MODE: development
       PROCUREMENT_HOST: 0.0.0.0
-      SQLITE_PATH: /app/data/stockshield.db
+      SQLITE_PATH: /app/data/continuim.db
     expose:
       - "4001"
     healthcheck:
@@ -25,11 +25,11 @@ services:
       AUTH_MODE: development
       CONTROL_PLANE_HOST: 0.0.0.0
       PROCUREMENT_URL: http://procurement:4001
-      SQLITE_PATH: /app/data/stockshield.db
+      SQLITE_PATH: /app/data/continuim.db
     ports:
       - "4000:4000"
     volumes:
-      - stockshield-data:/app/data
+      - continuim-data:/app/data
     depends_on:
       procurement:
         condition: service_healthy
@@ -52,4 +52,4 @@ services:
         condition: service_healthy
 
 volumes:
-  stockshield-data:
+  continuim-data:

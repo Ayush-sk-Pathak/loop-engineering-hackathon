@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { PurchaseOrderRequest, VendorAttestation } from "@stockshield/contracts";
-import { encodeVendorAttestation, signVendorAttestation } from "@stockshield/security";
+import type { PurchaseOrderRequest, VendorAttestation } from "@continuim/contracts";
+import { encodeVendorAttestation, signVendorAttestation } from "@continuim/security";
 import { authorizePurchase } from "./authorize.ts";
 
 const secret = "test-secret";
@@ -41,7 +41,7 @@ const request: PurchaseOrderRequest = {
 };
 
 const headers = (value: VendorAttestation = attestation) => ({
-  "x-stockshield-vendor-attestation": encodeVendorAttestation(value),
+  "x-continuim-vendor-attestation": encodeVendorAttestation(value),
 });
 
 test("development authorization requires a valid request-bound attestation", async () => {

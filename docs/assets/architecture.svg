@@ -16,7 +16,7 @@
 
   <rect x="0" y="0" width="1200" height="430" fill="#ffffff"/>
 
-  <text x="600" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#15161f">StockShield — policy-enforced autonomous procurement</text>
+  <text x="600" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#15161f">Continuim — policy-enforced autonomous procurement</text>
   <text x="600" y="70" text-anchor="middle" font-size="14" fill="#5b6470">observe → attempt → deny → buy evidence → replan → authorized PO</text>
 
   <!-- lane arrows -->

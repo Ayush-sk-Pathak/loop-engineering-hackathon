@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   dashboard:
-    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    image: ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA
     command: ["npm", "run", "start:web"]
     env:
       - CONTROL_PLANE_INTERNAL_URL=http://control:4000
@@ -14,7 +14,7 @@ services:
           - global: true
 
   control:
-    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    image: ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA
     command: ["npm", "run", "start:control"]
     env:
       - CONTROL_PLANE_HOST=0.0.0.0
@@ -27,7 +27,7 @@ services:
           - service: dashboard
 
   procurement:
-    image: ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA
+    image: ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA
     command: ["npm", "run", "start:procurement"]
     env:
       - PROCUREMENT_HOST=0.0.0.0

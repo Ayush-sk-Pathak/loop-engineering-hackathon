@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 type Check = { label: string; ok: boolean; detail: string; required: boolean };
 
-const prizeRequired = process.env.STOCKSHIELD_REQUIRE_PRIZE === "1";
+const prizeRequired = process.env.CONTINUIM_REQUIRE_PRIZE === "1";
 const verificationMode = process.env.VERIFICATION_MODE ?? "fixture";
 const authorizationMode = process.env.AUTH_MODE ?? "development";
 const checks: Check[] = [];

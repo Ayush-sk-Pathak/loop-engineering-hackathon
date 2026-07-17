@@ -1,4 +1,4 @@
-# StockShield Architecture
+# Continuim Architecture
 
 > Blueprint of record. This file is protected by the pre-commit hook. Product rationale and
 > demo timing live in `docs/PRD.md`; implementation contracts live in
@@ -6,7 +6,7 @@
 
 ## Thesis
 
-StockShield is a procurement control plane for critical-infrastructure stockout emergencies.
+Continuim is a procurement control plane for critical-infrastructure stockout emergencies.
 An autonomous monitor wakes the agent when the spares pool crosses its threshold. The agent
 may source and evaluate suppliers, but it cannot commit a purchase order until paid evidence
 has produced a vendor-scoped, quote-scoped, amount-limited, expiring capability.
@@ -32,7 +32,7 @@ and binds its subject to the vendor in the URL. SQLite records decisions and rep
    Rejected vendors receive no capability.
 6. **Origin boundary.** `POST /po/:vendorId` verifies `X-Pomerium-Jwt-Assertion`, including
    signature, issuer, audience, expiry, and `sub == vendor:<vendorId>`. In both modes it also
-   verifies StockShield's signed attestation and binds vendor, domain, SKU, payee, account
+   verifies Continuim's signed attestation and binds vendor, domain, SKU, payee, account
    reference, quote, unit price, quantity, amount, evidence, expiry, and nonce. Authorization
    happens before idempotency lookup. The origin is not publicly reachable in prize mode.
 

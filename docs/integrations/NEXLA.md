@@ -13,7 +13,7 @@ integration proof. Prize proof still requires the Nexla event ID below.
 2. Transform the source record into schema v1.1.
 3. Filter for `currentQty <= threshold`.
 4. Send the transformed record to `POST /api/events/stockout` on the control plane.
-5. Add `X-StockShield-Webhook-Secret` when `NEXLA_WEBHOOK_SECRET` is configured.
+5. Add `X-Continuim-Webhook-Secret` when `NEXLA_WEBHOOK_SECRET` is configured.
 
 Canonical destination payload:
 
@@ -36,10 +36,10 @@ Local ingress check:
 ```bash
 curl -i http://127.0.0.1:4000/api/events/stockout \
   -H 'content-type: application/json' \
-  -H "x-stockshield-webhook-secret: $NEXLA_WEBHOOK_SECRET" \
+  -H "x-continuim-webhook-secret: $NEXLA_WEBHOOK_SECRET" \
   --data @config/nexla-stockout.example.json
 ```
 
 The endpoint rejects an old schema, invalid quantities, non-Nexla source, bad secret, and a
 second event while a run is active. For the prize claim, show the Nexla flow/event ID and the
-same ID in the StockShield decision trail.
+same ID in the Continuim decision trail.

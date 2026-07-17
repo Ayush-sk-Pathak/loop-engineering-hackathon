@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { PurchaseOrder } from "@stockshield/contracts";
+import type { PurchaseOrder } from "@continuim/contracts";
 import { DemoStore } from "./store.ts";
 
 const order: PurchaseOrder = {
