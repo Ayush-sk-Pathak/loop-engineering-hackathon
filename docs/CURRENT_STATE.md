@@ -315,3 +315,24 @@ token-request posted — PM to coordinate freeing `4000`, or approve an alternat
 run that verifies the same internal topology (container healthchecks curl `127.0.0.1`
 inside each container, so they do not depend on the host-port bind). B2 completes when
 up-health is green.
+
+### 2026-07-17 — Lane B rebased onto Continuim main + residual @stockshield sweep
+
+**Rebased.** `feat/pomerium-live` rebased onto reconciled `main` (StockShield→Continuim,
+decision 0016). B4 (now `8a57856`) + B2 (now `d2aa9da`) replayed with no conflicts;
+CURRENT_STATE union-merged cleanly. Post-rebase files carry main's Continuim naming + my
+B2 pomerium block + B3 post-201 hook (`server.ts` header `x-continuim-request-id`).
+
+**Swept (lane B files).** The rename sweep had missed files merged in the B3 window.
+Fixed: `services/procurement/src/email.ts` + `email.test.ts` imported now-dead
+`@stockshield/contracts` → `@continuim/contracts`; email subject "StockShield PO" →
+"Continuim PO"; `docs/integrations/AKASH.md` image/repo names `stockshield` → `continuim`
+(matches the Continuim deploy SDL). `grep -i stockshield` over lane B is now clean;
+`npm run check` 29/29 on the current tree (email.test.ts imports `@continuim/contracts`).
+
+**BLOCKER (lane A, flagged to PM).** A CLEAN `npm install` still fails repo-wide with 404
+`@stockshield/contracts@*` from `services/zero-adapter/**` (lane A, single-writer):
+`package.json` (name `@stockshield/zero-adapter` + `@stockshield/contracts` dep) and
+`adapter.ts`/`adapter.test.ts`/`transport.ts` imports. Until A sweeps zero-adapter, a
+clean-install certification is not possible; the current check green runs on an existing
+(dirty) node_modules. Evidence in `logs/errors.jsonl`.

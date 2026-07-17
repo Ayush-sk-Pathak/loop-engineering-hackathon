@@ -21,21 +21,21 @@ One image serves all three roles (dashboard / control plane / procurement) via d
 
 ```bash
 # 1. Local build only — proves the image builds (B4 done criterion). No registry needed.
-docker build -t stockshield:local .
+docker build -t continuim:local .
 
 # 2. Publish an immutable image to GHCR (B8; needs registry auth).
 OWNER=<your-gh-user-or-org>
 SHA=$(git rev-parse --short HEAD)
-docker build -t "ghcr.io/$OWNER/stockshield:$SHA" .
+docker build -t "ghcr.io/$OWNER/continuim:$SHA" .
 echo "$GHCR_PAT" | docker login ghcr.io -u "$OWNER" --password-stdin
-docker push "ghcr.io/$OWNER/stockshield:$SHA"
+docker push "ghcr.io/$OWNER/continuim:$SHA"
 
 # 3. Prefer the pushed digest over the tag for true immutability.
-DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "ghcr.io/$OWNER/stockshield:$SHA")
+DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "ghcr.io/$OWNER/continuim:$SHA")
 
 # 4. Replace both markers in the SDL (all three image: lines at once).
 #    macOS sed needs the '' after -i; on Linux drop it: sed -i "s|...|...|g"
-sed -i '' "s|ghcr.io/REPLACE_OWNER/stockshield:REPLACE_SHA|$DIGEST|g" \
+sed -i '' "s|ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA|$DIGEST|g" \
   deploy/akash/deploy.example.yaml
 ```
 

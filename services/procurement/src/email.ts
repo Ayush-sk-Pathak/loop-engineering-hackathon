@@ -112,7 +112,7 @@ export function purchaseOrderReceiptBody(
 ): { subject: string; text: string } {
   const amount = (order.totalAmountCents / 100).toFixed(2);
   return {
-    subject: `StockShield PO ${order.id} accepted`,
+    subject: `Continuim PO ${order.id} accepted`,
     text:
       `Purchase order ${order.id} was accepted.\n` +
       `Vendor: ${order.vendorId}\n` +
