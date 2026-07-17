@@ -12,6 +12,9 @@ import {
 } from "react";
 import { continuumEngine } from "@/lib/simulation/engine";
 import { getWorkspace } from "@/lib/data/workspaces";
+import { useLiveState } from "@/lib/live/useLiveState";
+import { adaptWorkspace } from "@/lib/live/adapt";
+import type { DemoState } from "@/lib/live/contracts";
 import type {
   IncidentRecord,
   LedgerEntry,
@@ -42,6 +45,10 @@ interface ContinuumStore {
   trigger: (scenarioId?: string) => void;
   reset: () => void;
   setSpeed: (speed: number) => void;
+  /** True when the control-plane /api/state is reachable and driving ops-page data. */
+  live: boolean;
+  /** Raw control-plane payload when live; null in mock mode. Read-only. */
+  liveState: DemoState | null;
 }
 
 const Ctx = createContext<ContinuumStore | null>(null);
@@ -85,7 +92,13 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
     continuumEngine.setWorkspace(nextWorkspaceId);
   }, []);
 
-  const workspace = getWorkspace(workspaceId);
+  const { state: liveState, connected } = useLiveState();
+  const live = connected && liveState !== null;
+
+  const baseWorkspace = getWorkspace(workspaceId);
+  // In live mode the ops pages render real /api/state data through this same
+  // seam; the mock engine still drives the /continuum theater explainer.
+  const workspace = live ? adaptWorkspace(liveState, baseWorkspace) : baseWorkspace;
 
   const value = useMemo(
     () => ({
@@ -98,6 +111,8 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
       trigger,
       reset,
       setSpeed,
+      live,
+      liveState,
     }),
     [
       snapshot,
@@ -109,6 +124,8 @@ export function ContinuumProvider({ children }: { children: ReactNode }) {
       trigger,
       reset,
       setSpeed,
+      live,
+      liveState,
     ],
   );
 

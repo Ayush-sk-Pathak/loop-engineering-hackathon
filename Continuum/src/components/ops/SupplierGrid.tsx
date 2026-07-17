@@ -6,7 +6,7 @@ import { formatCurrency, formatLatency } from "@/lib/format";
 import type { VendorStatus } from "@/lib/types";
 
 export function SupplierGrid() {
-  const { workspace } = useContinuum();
+  const { workspace, live } = useContinuum();
   const [filter, setFilter] = useState<"all" | VendorStatus>("all");
   const suppliers = workspace.suppliers.filter(
     (supplier) => filter === "all" || supplier.status === filter,
@@ -63,10 +63,10 @@ export function SupplierGrid() {
               ))}
             </div>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
-              <div><dt className="text-faint">Region</dt><dd className="mt-0.5 text-muted">{supplier.region}</dd></div>
-              <div><dt className="text-faint">Settlement</dt><dd className="mt-0.5 text-muted">{supplier.settlementRail}</dd></div>
-              <div><dt className="text-faint">Quote</dt><dd className="mt-0.5 font-mono font-semibold text-ink">{formatCurrency(supplier.baseFee)}</dd></div>
-              <div><dt className="text-faint">Response SLA</dt><dd className="mt-0.5 font-mono text-muted">{formatLatency(supplier.slaMs)}</dd></div>
+              <div><dt className="text-faint">{live ? "Domain" : "Region"}</dt><dd className="mt-0.5 text-muted">{supplier.region}</dd></div>
+              <div><dt className="text-faint">{live ? "Payee" : "Settlement"}</dt><dd className="mt-0.5 text-muted">{supplier.settlementRail}</dd></div>
+              <div><dt className="text-faint">{live ? "Unit quote" : "Quote"}</dt><dd className="mt-0.5 font-mono font-semibold text-ink">{formatCurrency(supplier.baseFee)}</dd></div>
+              <div><dt className="text-faint">{live ? "Lead time" : "Response SLA"}</dt><dd className="mt-0.5 font-mono text-muted">{live ? `${supplier.slaMs}d` : formatLatency(supplier.slaMs)}</dd></div>
             </dl>
           </article>
         ))}
