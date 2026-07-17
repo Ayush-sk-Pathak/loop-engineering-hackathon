@@ -591,3 +591,13 @@ route, running the self-hosted proxy (`POMERIUM_ZERO_TOKEN`), and `doctor:prize`
 cannot run from this secretless worktree: `doctor:prize` here shows all `POMERIUM_*` rows
 missing (`.env` absent; keys live in the main checkout). B6 (403/201 capture) stays token-gated
 after A releases.
+### 2026-07-17 — Lane C: demo choreography compressed (40-min emergency)
+
+**C7 (compressed) per directive `bfe48689`.** Collapsed the timed demo from **×2 to ×1**
+(single rehearsal → immediate recording). **Deviation logged:** ROADMAP "run the timed demo
+twice" is intentionally reduced to once under the 40-minute compression. Updated `docs/DEMO.md`
+with a compressed recording plan + honest fallbacks: Nexla live proof is now optional (monitor
+path with `source:monitor` disclosure, PRD §14.3, if no console operator appears — C5 console
+build stays human-blocked); T+15 fixture fallback if the Zero lock hasn't landed. Kept proofs:
+Zero receipts + Pomerium denial. **C6 renders CUT** (the "Illustrative incident rate" label is
+unchanged; no explainer render).
