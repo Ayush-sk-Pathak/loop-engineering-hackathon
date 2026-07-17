@@ -1,7 +1,7 @@
 <meta charset="utf-8">
-<title>StockShield — Client Integration</title>
+<title>Vendor Fraud Interceptor — Client Integration</title>
 <style>
-  :root {
+  :root{
     --ground:#E7EBF1; --app:#F6F8FB; --surface:#FFFFFF; --surface-2:#F1F4F9; --surface-3:#E9EEF5;
     --ink:#0F1520; --muted:#586576; --faint:#8894A5;
     --border:#DCE2EB; --border-strong:#C4CDD9;
@@ -15,500 +15,447 @@
     --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
     --r:10px;
   }
-  @media (prefers-color-scheme:dark){
-    :root{
-      --ground:#070A0F; --app:#0E121A; --surface:#161C26; --surface-2:#1C232F; --surface-3:#232C39;
-      --ink:#E9EEF5; --muted:#93A0B2; --faint:#5F6B7B;
-      --border:#28313F; --border-strong:#3A4553;
-      --brand:#8A85F2; --brand-ink:#B4B0F8; --brand-soft:#1E1F38; --brand-line:#37356A;
-      --ok:#48C983; --ok-soft:#122A1E; --ok-line:#1F4633;
-      --warn:#E0A94A; --warn-soft:#2C2410; --warn-line:#4A3C1A;
-      --bad:#EC6A5E; --bad-soft:#2E1815; --bad-line:#4E2822;
-      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
-      --shadow-lg:0 16px 48px rgba(0,0,0,.5);
-    }
-  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#070A0F; --app:#0E121A; --surface:#161C26; --surface-2:#1C232F; --surface-3:#232C39;
+    --ink:#E9EEF5; --muted:#93A0B2; --faint:#5F6B7B; --border:#28313F; --border-strong:#3A4553;
+    --brand:#8A85F2; --brand-ink:#B4B0F8; --brand-soft:#1E1F38; --brand-line:#37356A;
+    --ok:#48C983; --ok-soft:#122A1E; --ok-line:#1F4633; --warn:#E0A94A; --warn-soft:#2C2410; --warn-line:#4A3C1A;
+    --bad:#EC6A5E; --bad-soft:#2E1815; --bad-line:#4E2822;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35); --shadow-lg:0 16px 48px rgba(0,0,0,.5);
+  }}
   :root[data-theme="light"]{
     --ground:#E7EBF1; --app:#F6F8FB; --surface:#FFFFFF; --surface-2:#F1F4F9; --surface-3:#E9EEF5;
-    --ink:#0F1520; --muted:#586576; --faint:#8894A5;
-    --border:#DCE2EB; --border-strong:#C4CDD9;
+    --ink:#0F1520; --muted:#586576; --faint:#8894A5; --border:#DCE2EB; --border-strong:#C4CDD9;
     --brand:#4B47C9; --brand-ink:#3A37A6; --brand-soft:#ECEBFA; --brand-line:#CFCDF3;
-    --ok:#137A46; --ok-soft:#E1F1E8; --ok-line:#B7DEC8;
-    --warn:#9C6510; --warn-soft:#FAF0DC; --warn-line:#EAD3A0;
+    --ok:#137A46; --ok-soft:#E1F1E8; --ok-line:#B7DEC8; --warn:#9C6510; --warn-soft:#FAF0DC; --warn-line:#EAD3A0;
     --bad:#C0392E; --bad-soft:#FAE5E2; --bad-line:#EEBDB6;
-    --shadow:0 1px 2px rgba(16,21,32,.04), 0 8px 24px rgba(16,21,32,.06);
-    --shadow-lg:0 12px 40px rgba(16,21,32,.14);
+    --shadow:0 1px 2px rgba(16,21,32,.04), 0 8px 24px rgba(16,21,32,.06); --shadow-lg:0 12px 40px rgba(16,21,32,.14);
   }
   :root[data-theme="dark"]{
     --ground:#070A0F; --app:#0E121A; --surface:#161C26; --surface-2:#1C232F; --surface-3:#232C39;
-    --ink:#E9EEF5; --muted:#93A0B2; --faint:#5F6B7B;
-    --border:#28313F; --border-strong:#3A4553;
+    --ink:#E9EEF5; --muted:#93A0B2; --faint:#5F6B7B; --border:#28313F; --border-strong:#3A4553;
     --brand:#8A85F2; --brand-ink:#B4B0F8; --brand-soft:#1E1F38; --brand-line:#37356A;
-    --ok:#48C983; --ok-soft:#122A1E; --ok-line:#1F4633;
-    --warn:#E0A94A; --warn-soft:#2C2410; --warn-line:#4A3C1A;
+    --ok:#48C983; --ok-soft:#122A1E; --ok-line:#1F4633; --warn:#E0A94A; --warn-soft:#2C2410; --warn-line:#4A3C1A;
     --bad:#EC6A5E; --bad-soft:#2E1815; --bad-line:#4E2822;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
-    --shadow-lg:0 16px 48px rgba(0,0,0,.5);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35); --shadow-lg:0 16px 48px rgba(0,0,0,.5);
   }
-
   *{box-sizing:border-box}
-  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-ui);
-    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
-  svg{display:block}
-  .wrap{max-width:1180px;margin:0 auto;padding:22px 20px 40px;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  svg{display:block} button{font-family:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 20px 40px}
   .caption{color:var(--faint);font-size:12px;text-align:center;margin:0 0 14px;letter-spacing:.02em}
   .caption b{color:var(--muted);font-weight:600}
 
-  .app{background:var(--app);border:1px solid var(--border);border-radius:16px;overflow:hidden;
-    box-shadow:var(--shadow-lg);}
-  .topbar{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--surface);
-    border-bottom:1px solid var(--border);}
+  .app{background:var(--app);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg)}
+  .topbar{display:flex;align-items:center;gap:14px;padding:11px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
   .host-logo{display:flex;align-items:center;gap:9px;font-weight:650;letter-spacing:-.01em}
   .host-glyph{width:24px;height:24px;border-radius:7px;background:var(--ink);display:grid;place-items:center;color:var(--surface)}
   .host-sep{width:1px;height:22px;background:var(--border)}
-  .host-client{font-size:12.5px;color:var(--muted)}
-  .host-client b{color:var(--ink);font-weight:600}
+  .ws-label{font-size:11px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
   .topbar-spacer{flex:1}
   .topbar-actions{display:flex;align-items:center;gap:8px;color:var(--faint)}
-  .tb-dot{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);
-    display:grid;place-items:center;color:var(--muted);cursor:default}
-  .tb-avatar{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;display:grid;
-    place-items:center;font-size:12px;font-weight:600}
-
-  .body{display:grid;grid-template-columns:212px 1fr;min-height:640px}
-  .nav{background:var(--surface);border-right:1px solid var(--border);padding:14px 12px;display:flex;
-    flex-direction:column;gap:2px}
-  .nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);
-    padding:10px 10px 6px;font-weight:600}
-  .nav-item{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;color:var(--muted);
-    font-size:13px;font-weight:500;cursor:default;position:relative}
-  .nav-item svg{opacity:.85;flex:none}
-  .nav-item.active{background:var(--brand-soft);color:var(--brand-ink);font-weight:600}
-  .nav-item.active svg{opacity:1}
-  .nav-item.active::before{content:"";position:absolute;left:-12px;top:6px;bottom:6px;width:3px;
-    border-radius:0 3px 3px 0;background:var(--brand)}
-  .nav-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
-    color:var(--brand-ink);background:var(--surface);border:1px solid var(--brand-line);
-    padding:1px 6px;border-radius:20px}
-  .nav-foot{margin-top:auto;padding:12px 10px 4px;border-top:1px solid var(--border);color:var(--faint);font-size:11px;
-    display:flex;align-items:center;gap:8px}
-
-  .module{padding:20px 22px 24px;background:var(--app)}
-  .mod-head{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:16px}
-  .mod-mark{width:42px;height:42px;border-radius:12px;background:var(--brand);display:grid;place-items:center;flex:none;
-    box-shadow:0 4px 14px color-mix(in srgb,var(--brand) 42%,transparent)}
-  .mod-title h1{margin:0;font-size:17px;letter-spacing:-.01em;font-weight:680}
-  .mod-title .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
-  .mod-title .sub b{color:var(--brand-ink);font-weight:600}
-  .mod-head-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .status-live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--ok);
-    background:var(--ok-soft);border:1px solid var(--ok-line);padding:5px 12px;border-radius:20px}
-  .pulse{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}
-    70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  .tb-dot{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;color:var(--muted);cursor:pointer}
+  .tb-avatar{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600}
 
   .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px}
-  .seg button{font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);background:none;border:0;
-    padding:6px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px}
-  .seg button svg{opacity:.75}
-  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
-  .seg button.on svg{opacity:1}
+  .seg button{font-size:12px;font-weight:600;color:var(--muted);background:none;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .seg button svg{opacity:.7} .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)} .seg button.on svg{opacity:1}
+  .seg button:focus-visible,.nav-item:focus-visible,.btn:focus-visible,.tb-dot:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 
-  .btn{font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer;
-    border:1px solid var(--brand);background:var(--brand);color:#fff;display:inline-flex;align-items:center;gap:7px}
+  .body{display:grid;grid-template-columns:214px 1fr;min-height:660px}
+  .nav{background:var(--surface);border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:2px}
+  .nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);padding:10px 10px 6px;font-weight:600}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;position:relative;background:none;border:0;width:100%;text-align:left}
+  .nav-item svg{opacity:.85;flex:none} .nav-item:hover{background:var(--surface-2);color:var(--ink)}
+  .nav-item.active{background:var(--brand-soft);color:var(--brand-ink);font-weight:600} .nav-item.active svg{opacity:1}
+  .nav-item.active::before{content:"";position:absolute;left:-12px;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--brand)}
+  .nav-badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand-ink);background:var(--surface);border:1px solid var(--brand-line);padding:1px 6px;border-radius:20px}
+  .nav-badge.crit{color:var(--bad);border-color:var(--bad-line)}
+  .nav-foot{margin-top:auto;padding:12px 10px 4px;border-top:1px solid var(--border);color:var(--faint);font-size:11px;display:flex;align-items:center;gap:8px}
+
+  .main{padding:20px 22px 26px;background:var(--app);min-width:0}
+  .section-head{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .section-head .st h2{margin:0;font-size:17px;font-weight:680;letter-spacing:-.01em}
+  .section-head .st .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .section-head .sh-right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .status-live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--ok);background:var(--ok-soft);border:1px solid var(--ok-line);padding:5px 12px;border-radius:20px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+  .btn{font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer;border:1px solid var(--brand);background:var(--brand);color:#fff;display:inline-flex;align-items:center;gap:7px}
   .btn.ghost{background:var(--surface);color:var(--brand-ink);border-color:var(--brand-line)}
-  .btn:focus-visible,.seg button:focus-visible,.tb-dot:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 
-  .alert{display:flex;gap:12px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
-    border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
-  .alert .ai{width:28px;height:28px;border-radius:8px;background:var(--warn);color:#fff;display:grid;
-    place-items:center;flex:none}
-  .alert .txt{font-size:12.5px}
-  .alert .txt b{color:var(--ink)}
-  .alert .txt .k{color:var(--warn);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em;
-    display:block;margin-bottom:2px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .kpi .kl{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .kpi .kv{font-family:var(--font-mono);font-weight:750;font-size:22px;margin-top:6px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .kpi .kh{font-size:11px;color:var(--faint);margin-top:3px}
+  .kpi.warnk .kv{color:var(--warn)} .kpi.okk .kv{color:var(--ok)}
 
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .panel-h{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .panel-h svg{opacity:.7} .panel-h .cnt{margin-left:auto;font-weight:600;color:var(--faint);letter-spacing:0;text-transform:none;font-size:11px}
+  .panel-b{padding:6px 14px 12px}
+
+  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--border)}
+  .tbl td{padding:10px 12px;border-bottom:1px solid var(--border)}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}
+  .tbl tr.crit td{background:var(--bad-soft)}
+  .tbl .name{font-weight:600}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:20px;white-space:nowrap;border:1px solid var(--border-strong);color:var(--muted);background:var(--surface-2)}
+  .pill.ok{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-line)}
+  .pill.bad{color:var(--bad);background:var(--bad-soft);border-color:var(--bad-line)}
+  .pill.warn{color:var(--warn);background:var(--warn-soft);border-color:var(--warn-line)}
+  .dotp{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  .feed{display:flex;flex-direction:column}
+  .feed-item{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12.5px;align-items:flex-start}
+  .feed-item:last-child{border-bottom:0}
+  .feed .t{color:var(--faint);font-family:var(--font-mono);font-size:11px;flex:none;width:46px;padding-top:1px}
+  .feed .fdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none}
+  .feed .m b{color:var(--ink)} .feed .m{color:var(--muted)}
+
+  .callout{display:flex;gap:12px;align-items:center;background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:var(--r);padding:12px 14px}
+  .callout .ci{width:30px;height:30px;border-radius:8px;background:var(--warn);color:#fff;display:grid;place-items:center;flex:none}
+  .callout .txt{font-size:12.5px} .callout .txt b{color:var(--ink)} .callout .txt .k{display:block;color:var(--warn);font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.06em;margin-bottom:1px}
+
+  /* interceptor loop */
+  .alert{display:flex;gap:12px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
+  .alert .ai{width:28px;height:28px;border-radius:8px;background:var(--warn);color:#fff;display:grid;place-items:center;flex:none}
+  .alert .txt{font-size:12.5px} .alert .txt b{color:var(--ink)}
+  .alert .txt .k{color:var(--warn);font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em;display:block;margin-bottom:2px}
   .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
-  .step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;
-    position:relative;transition:border-color .3s,background .3s}
+  .step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;position:relative;transition:border-color .3s,background .3s}
   .step .n{font-family:var(--font-mono);font-size:10px;color:var(--faint);letter-spacing:.05em}
   .step .s{font-weight:640;font-size:13px;margin-top:6px;display:flex;align-items:center;gap:8px}
   .step .d{color:var(--muted);font-size:11px;margin-top:4px;line-height:1.35}
-  .step .tick{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-strong);flex:none;
-    display:grid;place-items:center;transition:all .3s;position:relative}
-  .step[data-state="active"]{border-color:var(--brand);background:var(--brand-soft);
-    box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 14%,transparent)}
+  .step .tick{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-strong);flex:none;display:grid;place-items:center;transition:all .3s}
+  .step[data-state="active"]{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 14%,transparent)}
   .step[data-state="active"] .tick{border-color:var(--brand);border-top-color:transparent;animation:spin .7s linear infinite}
   .step[data-state="done"] .tick{background:var(--ok);border-color:var(--ok);animation:none}
-  .step[data-state="done"] .tick::after{content:"";width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;
-    transform:rotate(45deg);margin-top:-2px}
-  .step[data-state="guard"].bad{border-color:var(--bad);background:var(--bad-soft);
-    box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 14%,transparent)}
+  .step[data-state="done"] .tick::after{content:"";width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-2px}
+  .step[data-state="guard"].bad{border-color:var(--bad);background:var(--bad-soft);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 14%,transparent)}
   .step[data-state="guard"].bad .tick{background:var(--bad);border-color:var(--bad);animation:none}
   .step[data-state="guard"].bad .tick::after{content:"";width:9px;height:2px;background:#fff;border-radius:2px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
-  @media (max-width:900px){.grid2{grid-template-columns:1fr}.pipe{grid-template-columns:1fr 1fr}
-    .body{grid-template-columns:1fr}.nav{display:none}}
-
-  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  .panel-h{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);
-    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
-  .panel-h svg{opacity:.7}
-  .panel-h .cnt{margin-left:auto;font-weight:600;color:var(--faint);letter-spacing:0;text-transform:none;font-size:11px}
-
   .vendors{display:flex;flex-direction:column;gap:10px;padding:12px}
   .vendor{border:1px solid var(--border);border-radius:10px;padding:12px 13px;transition:border-color .3s,background .3s;background:var(--surface)}
-  .vendor.reveal-ok{border-color:var(--ok-line);background:var(--ok-soft)}
-  .vendor.reveal-bad{border-color:var(--bad-line);background:var(--bad-soft)}
-  .vh{display:flex;align-items:center;gap:10px}
-  .vh .name{font-weight:650;font-size:13.5px}
-  .vpill{margin-left:auto;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-    padding:3px 9px;border-radius:20px;border:1px solid var(--border-strong);color:var(--faint);background:var(--surface-2);
-    white-space:nowrap;transition:all .3s}
-  .vendor.reveal-ok .vpill{color:var(--ok);background:var(--surface);border-color:var(--ok-line)}
-  .vendor.reveal-bad .vpill{color:var(--bad);background:var(--surface);border-color:var(--bad-line)}
+  .vendor.reveal-ok{border-color:var(--ok-line);background:var(--ok-soft)} .vendor.reveal-bad{border-color:var(--bad-line);background:var(--bad-soft)}
+  .vh{display:flex;align-items:center;gap:10px} .vh .name{font-weight:650;font-size:13.5px}
+  .vpill{margin-left:auto;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:20px;border:1px solid var(--border-strong);color:var(--faint);background:var(--surface-2);white-space:nowrap;transition:all .3s}
+  .vendor.reveal-ok .vpill{color:var(--ok);background:var(--surface);border-color:var(--ok-line)} .vendor.reveal-bad .vpill{color:var(--bad);background:var(--surface);border-color:var(--bad-line)}
   .vnote{color:var(--muted);font-size:11px;margin-top:2px}
   .vsig{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:11px}
   .sig{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px}
-  .sig .l{color:var(--muted)}
-  .sig .v{font-family:var(--font-mono);font-size:11px;color:var(--ink)}
-  .sig .v.flag{color:var(--bad);font-weight:600}
-  .sig .v.good{color:var(--ok);font-weight:600}
+  .sig .l{color:var(--muted)} .sig .v{font-family:var(--font-mono);font-size:11px;color:var(--ink)}
+  .sig .v.flag{color:var(--bad);font-weight:600} .sig .v.good{color:var(--ok);font-weight:600}
   .vprice{display:flex;align-items:baseline;gap:8px;margin-top:11px;padding-top:10px;border-top:1px dashed var(--border)}
   .vprice .p{font-family:var(--font-mono);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
   .vprice .pl{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
-  .tag{margin-left:auto;font-size:10.5px;font-weight:700;opacity:0;transition:opacity .3s;display:inline-flex;align-items:center;gap:5px}
-  .deny-tag{color:var(--bad)} .pick-tag{color:var(--ok)}
+  .tag{margin-left:auto;font-size:10.5px;font-weight:700;opacity:0;transition:opacity .3s} .deny-tag{color:var(--bad)} .pick-tag{color:var(--ok)}
   .vendor.denied .deny-tag{opacity:1} .vendor.picked .pick-tag{opacity:1}
 
-  .log{padding:10px 12px;font-family:var(--font-mono);font-size:11.5px;line-height:1.65;height:322px;
-    overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+  .log{padding:10px 12px;font-family:var(--font-mono);font-size:11.5px;line-height:1.65;height:322px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
   .log::-webkit-scrollbar{width:8px}.log::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
-  .ln{display:flex;gap:9px;opacity:0;transform:translateY(3px);transition:opacity .25s,transform .25s}
-  .ln.show{opacity:1;transform:none}
-  .ln .ts{color:var(--faint);flex:none}
-  .ln .src{font-weight:700;flex:none;width:62px}
-  .ln .msg{color:var(--muted);word-break:break-word}
-  .ln .msg b{color:var(--ink);font-weight:600}
-  .src.nexla{color:#2563EB}.src.agent{color:var(--brand-ink)}.src.zero{color:#0891B2}
-  .src.verify{color:var(--muted)}.src.pomerium{color:var(--bad)}.src.fillmore{color:#7C3AED}
-  .src.akash{color:#C2410C}.src.ok{color:var(--ok)}
-  :root[data-theme="dark"] .src.nexla{color:#6BA0FF}
-  :root[data-theme="dark"] .src.zero{color:#38C6DE}
-  :root[data-theme="dark"] .src.fillmore{color:#B49BFF}
-  :root[data-theme="dark"] .src.akash{color:#F0955A}
-  @media (prefers-color-scheme:dark){
-    :root:not([data-theme="light"]) .src.nexla{color:#6BA0FF}
-    :root:not([data-theme="light"]) .src.zero{color:#38C6DE}
-    :root:not([data-theme="light"]) .src.fillmore{color:#B49BFF}
-    :root:not([data-theme="light"]) .src.akash{color:#F0955A}
-  }
+  .ln{display:flex;gap:9px;opacity:0;transform:translateY(3px);transition:opacity .25s,transform .25s} .ln.show{opacity:1;transform:none}
+  .ln .ts{color:var(--faint);flex:none} .ln .src{font-weight:700;flex:none;width:62px} .ln .msg{color:var(--muted);word-break:break-word} .ln .msg b{color:var(--ink);font-weight:600}
+  .src.nexla{color:#2563EB}.src.agent{color:var(--brand-ink)}.src.zero{color:#0891B2}.src.verify{color:var(--muted)}.src.pomerium{color:var(--bad)}.src.fillmore{color:#7C3AED}.src.akash{color:#C2410C}.src.ok{color:var(--ok)}
+  :root[data-theme="dark"] .src.nexla{color:#6BA0FF}:root[data-theme="dark"] .src.zero{color:#38C6DE}:root[data-theme="dark"] .src.fillmore{color:#B49BFF}:root[data-theme="dark"] .src.akash{color:#F0955A}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .src.nexla{color:#6BA0FF}:root:not([data-theme="light"]) .src.zero{color:#38C6DE}:root:not([data-theme="light"]) .src.fillmore{color:#B49BFF}:root:not([data-theme="light"]) .src.akash{color:#F0955A}}
 
   .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
   .metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 15px}
   .metric.hero{border-color:var(--bad-line);background:var(--bad-soft)}
   .metric .ml{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
   .metric .mv{font-family:var(--font-mono);font-weight:750;font-size:24px;margin-top:6px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-  .metric.hero .mv{color:var(--bad)}
-  .metric.okm .mv{color:var(--ok)}
-  .metric .mh{font-size:11px;color:var(--muted);margin-top:3px}
+  .metric.hero .mv{color:var(--bad)} .metric.okm .mv{color:var(--ok)} .metric .mh{font-size:11px;color:var(--muted);margin-top:3px}
 
-  .stack-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:18px;padding-top:16px;
-    border-top:1px solid var(--border)}
-  .stack-strip .lab{font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
-  .chip{font-size:11px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--border);
-    padding:4px 10px;border-radius:20px}
-  .chip .role{color:var(--faint);font-weight:500}
+  .setrow{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+  .setrow:last-child{border-bottom:0} .setrow .si{width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);display:grid;place-items:center;color:var(--muted);flex:none}
+  .setrow .sc{flex:1;min-width:0} .setrow .sc .sname{font-weight:640;font-size:13px} .setrow .sc .sdesc{color:var(--muted);font-size:12px;margin-top:2px}
+  .setrow code{font-family:var(--font-mono);font-size:11.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;color:var(--brand-ink)}
 
-  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-  .toolbar .grow{flex:1}
+  .bars{display:flex;flex-direction:column;gap:12px;padding:4px 2px}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 84px;gap:12px;align-items:center;font-size:12px}
+  .bar-track{height:10px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;background:var(--bad);border-radius:6px}
+  .bar-row .amt{font-family:var(--font-mono);text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+  @media (max-width:900px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.pipe{grid-template-columns:1fr 1fr}.body{grid-template-columns:1fr}.nav{display:none}.bar-row{grid-template-columns:110px 1fr 74px}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
-<div style="padding:10px 18px;background:#fff1dd;border-bottom:1px solid #e7be82;color:#6f470c;font:600 12px system-ui">
-  Archived concept mockup. Values, scenarios, and sponsor actions on this page are not the
-  implemented demo. Use the Next.js dashboard and README for current behavior.
-</div>
 <div class="wrap">
-  <p class="caption">Product mockup · <b>StockShield</b> shown installed as a module inside a client's operations console</p>
-
+  <p class="caption">Product mockup · <b>Vendor Fraud Interceptor</b> installed inside a client's operations console — click the nav to explore</p>
   <div class="app">
     <div class="topbar">
-      <div class="host-logo">
-        <span class="host-glyph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
-        OpsHub
-      </div>
+      <div class="host-logo"><span class="host-glyph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span> OpsHub</div>
       <div class="host-sep"></div>
-      <div class="host-client" id="hostClient">Workspace: <b>Northwind Textiles</b></div>
+      <span class="ws-label">Workspace</span>
+      <div class="seg" id="wsSwitch" role="tablist" aria-label="Workspace">
+        <button id="wsSock" class="on" role="tab">Northwind Textiles</button>
+        <button id="wsGpu" role="tab">Meridian Financial</button>
+      </div>
       <div class="topbar-spacer"></div>
       <div class="topbar-actions">
         <button class="tb-dot" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 1 0 9 9 6 6 0 0 1-9-9Z"/></svg></button>
         <div class="tb-dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></div>
-        <div class="tb-dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
         <div class="tb-avatar">KP</div>
       </div>
     </div>
-
     <div class="body">
-      <nav class="nav">
-        <div class="nav-label">Operations</div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg> Dashboard</div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7 12 3l9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Inventory</div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg> Procurement</div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z"/></svg> Vendors</div>
-        <div class="nav-label">Installed apps</div>
-        <div class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg> StockShield <span class="nav-badge">Live</span></div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Reports</div>
-        <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.3-2.6h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z"/></svg> Settings</div>
-        <div class="nav-foot"><span class="pulse"></span> Agent connected</div>
-      </nav>
-
-      <section class="module">
-        <div class="mod-head">
-          <div class="mod-mark">
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.5 4 5.6v6c0 5 3.4 8.3 8 9.9 4.6-1.6 8-4.9 8-9.9v-6l-8-3.1Z" fill="#fff" opacity=".16"/>
-              <path d="M12 2.5 4 5.6v6c0 5 3.4 8.3 8 9.9 4.6-1.6 8-4.9 8-9.9v-6l-8-3.1Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M8.5 12.1l2.3 2.3 4.6-4.7" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="mod-title">
-            <h1>StockShield</h1>
-            <div class="sub">Autonomous procurement guardrail · gated by <b>policy</b>, not the agent's judgment</div>
-          </div>
-          <div class="mod-head-right">
-            <span class="status-live"><span class="pulse"></span> Autonomous · Active</span>
-          </div>
-        </div>
-
-        <div class="toolbar">
-          <div class="seg" role="tablist" aria-label="Scenario">
-            <button id="tabSock" class="on" role="tab" aria-selected="true">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h6v6l-4 5v5a2 2 0 0 0 4 0"/><path d="M8 3v6l4 5"/></svg> Sock Manufacturing</button>
-            <button id="tabGpu" role="tab" aria-selected="false">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg> On-Prem GPU Cluster</button>
-          </div>
-          <div class="grow"></div>
-          <button class="btn ghost" id="replayBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Replay</button>
-        </div>
-
-        <div class="alert">
-          <div class="ai"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg></div>
-          <div class="txt"><span class="k" id="alertKind">Supply event detected</span>
-            <span id="alertText"></span></div>
-        </div>
-
-        <div class="pipe" id="pipe">
-          <div class="step" data-step="detect"><div class="n">01 · DETECT</div><div class="s"><span class="tick"></span>Detect</div><div class="d">Real-time signal from your stack</div></div>
-          <div class="step" data-step="source"><div class="n">02 · SOURCE</div><div class="s"><span class="tick"></span>Source</div><div class="d">Find backup vendors</div></div>
-          <div class="step" data-step="verify"><div class="n">03 · VERIFY</div><div class="s"><span class="tick"></span>Verify</div><div class="d">Paid identity + fraud checks</div></div>
-          <div class="step bad" data-step="guard"><div class="n">04 · GUARD</div><div class="s"><span class="tick"></span>Guard</div><div class="d">Policy blocks unverified pay</div></div>
-          <div class="step" data-step="resolve"><div class="n">05 · RESOLVE</div><div class="s"><span class="tick"></span>Resolve</div><div class="d">Self-correct &amp; complete</div></div>
-        </div>
-
-        <div class="grid2">
-          <div class="panel">
-            <div class="panel-h"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z"/></svg> Backup vendors <span class="cnt" id="vendorItem"></span></div>
-            <div class="vendors" id="vendors"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-h"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 7 4-14 3 7h4"/></svg> Agent activity <span class="cnt">live trace</span></div>
-            <div class="log" id="log"></div>
-          </div>
-        </div>
-
-        <div class="metrics">
-          <div class="metric hero"><div class="ml">Fraud blocked</div><div class="mv" id="mBlocked">$0</div><div class="mh">payment denied at policy layer</div></div>
-          <div class="metric okm"><div class="ml" id="mSecondL">Loss avoided</div><div class="mv" id="mSecond">—</div><div class="mh" id="mSecondH">downtime / SLA protected</div></div>
-          <div class="metric"><div class="ml">Time to resolve</div><div class="mv" id="mTime">—</div><div class="mh">fully autonomous, no human step</div></div>
-        </div>
-
-        <div class="stack-strip">
-          <span class="lab">Runs on your stack</span>
-          <span class="chip">Nexla <span class="role">· signals</span></span>
-          <span class="chip">Zero <span class="role">· verification &amp; wallet</span></span>
-          <span class="chip">Pomerium <span class="role">· payment policy</span></span>
-          <span class="chip">Fillmore <span class="role">· vendor outreach</span></span>
-          <span class="chip" id="hostChip">AWS <span class="role">· hosting</span></span>
-        </div>
-      </section>
+      <nav class="nav" id="nav"></nav>
+      <section class="main" id="view"></section>
     </div>
   </div>
-  <p class="caption" style="margin-top:14px">Same engine, any industry — toggle the scenario to watch the identical loop resolve a different crisis.</p>
+  <p class="caption" style="margin-top:14px">Same engine, any industry — switch the workspace (top bar) to flip the entire console between a textile manufacturer and a regulated GPU cluster.</p>
 </div>
 
 <script>
 const RM = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-const $ = s => document.querySelector(s);
+const el = (h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild;};
 
-const scenarios = {
-  sock: {
-    client:"Northwind Textiles", chip:"AWS",
-    alertKind:"Supply event detected",
+/* ---------- icons ---------- */
+const IC = {
+  dashboard:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>',
+  inventory:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7 12 3l9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>',
+  procurement:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>',
+  vendors:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z"/></svg>',
+  shield:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  reports:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  settings:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1L14.9 2h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z"/></svg>',
+  warn:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  activity:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 7 4-14 3 7h4"/></svg>',
+  plug:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0V8ZM12 17v5"/></svg>',
+  lock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  wallet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2M3 10h18"/></svg>'
+};
+
+/* ---------- data ---------- */
+const DATA = {
+  sock:{
+    ws:"Northwind Textiles", industry:"Textile Manufacturing", host:"AWS",
+    kpis:[{l:"Active alerts",v:"1",h:"Navy dye stockout",c:"warnk"},{l:"Fraud blocked (YTD)",v:"$146K",h:"9 attempts stopped",c:"okk"},{l:"Vendors verified",v:"23",h:"2 blacklisted",c:""},{l:"Spend protected",v:"$1.2M",h:"this quarter",c:""}],
+    feed:[["09:41","bad","<b>Pomerium</b> denied payment to PacificDye Co. — vendor unverified"],["09:41","ok","<b>Agent</b> placed PO-4821 with Meridian Colorants ($18,240)"],["09:40","warn","<b>Nexla</b> flagged Navy Dye · Line 04 below safety threshold"],["08:12","ok","White Dye · Line 01 restock delivered"],["Yst","muted","Weekly vendor re-verification completed — 23 passed"]],
+    incident:{k:"Active incident",t:"<b>Navy Dye · Line 04</b> stockout — Fraud Interceptor engaged, fraudulent backup vendor blocked."},
+    inventory:[
+      ["Navy Dye · Line 04","0 kg","120 kg","bad","Critical",1],
+      ["White Dye · Line 01","210 kg","150 kg","warn","Low",0],
+      ["Crimson Dye · Line 02","340 kg","100 kg","ok","Healthy",0],
+      ["Combed Cotton Yarn","12,400 spools","4,000","ok","Healthy",0],
+      ["Elastane","880 kg","300 kg","ok","Healthy",0]],
+    pos:[
+      ["PO-4821","Meridian Colorants","Navy Dye 500 kg","$18,240","ok","Placed · now"],
+      ["PO-4820","PacificDye Co.","Navy Dye 500 kg","$12,400","bad","Blocked · fraud"],
+      ["PO-4795","Northstar Fibers","Cotton Yarn 8k","$9,100","muted","Delivered"],
+      ["PO-4788","Meridian Colorants","Crimson Dye 300 kg","$6,540","muted","Delivered"]],
+    vendors:[
+      {name:"Meridian Colorants", note:"Authorized distributor · 6-yr history", verified:true,
+       sig:[["Domain age","6 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Fraud score","7 / 100","good"]], price:"$18,240", status:"verified"},
+      {name:"PacificDye Co.", note:"Typosquat of ‘Pacific Dyes Inc.’", verified:false,
+       sig:[["Domain age","14 days","flag"],["Bank / entity","Shell (foreign)","flag"],["Provenance","Unverifiable","flag"],["Fraud score","91 / 100","flag"]], price:"$12,400", status:"blacklisted"},
+      {name:"Northstar Fibers", note:"Yarn supplier · 4-yr history", verified:true,
+       sig:[["Domain age","4 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Fraud score","11 / 100","good"]], price:"—", status:"verified"}],
+    reports:{total:"$146,000", rows:[["Navy Dye — PacificDye Co.",18000],["Elastane — QuickWeave Ltd",40000],["Cotton Yarn — FiberDirect",31000],["Crimson Dye — DyeMart",22000],["Zippers — FastenCo",35000]]},
+    ceiling:"$25,000 / order",
+    blocked:"$18,000", secondL:"Downtime avoided", second:"$54,000", secondH:"Line 04 kept running", time:"41 s",
     alert:"<b>Navy Dye · Sock Line 04</b> hit <b>0 kg</b>. Primary supplier logged a shipment delay — Line 04 halts in <b>18 h</b> at ~$3,000/hr.",
     item:"Navy Dye · Line 04",
-    vendors:[
-      {name:"Meridian Colorants", note:"Authorized distributor", verified:true,
-       sig:[["Domain age","6 yr","good"],["Bank / entity","Match","good"],["Provenance","Traceable","good"],["Fraud score","7 / 100","good"]],
-       price:"$18,240"},
-      {name:"PacificDye Co.", note:"Typosquat of ‘Pacific Dyes Inc.’", verified:false,
-       sig:[["Domain age","14 days","flag"],["Bank / entity","Shell (foreign)","flag"],["Provenance","Unverifiable","flag"],["Fraud score","91 / 100","flag"]],
-       price:"$12,400"}
-    ],
-    blocked:"$18,000", secondL:"Downtime avoided", second:"$54,000", secondH:"Line 04 kept running", time:"41 s",
-    trace:[
-      ["nexla","Nexla","inventory event: <b>NAVY_DYE_L04</b> below safety threshold (0 kg)","detect"],
-      ["agent","agent","planning emergency reorder — sourcing verified backup vendors","source"],
-      ["agent","agent","2 candidates: <b>Meridian Colorants</b>, <b>PacificDye Co.</b>",null],
-      ["zero","Zero","purchased verification x2 — <b>$0.04</b> from agent wallet","verify"],
-      ["verify","verify","Meridian &rarr; domain 6yr · bank match · fraud 7 &rarr; <b>VERIFIED</b>","reveal-ok"],
-      ["verify","verify","PacificDye &rarr; domain 14d · shell bank · fraud 91 &rarr; <b>FLAGGED</b>","reveal-bad"],
-      ["agent","agent","lowest price is PacificDye ($12,400) — attempting payment","guard"],
-      ["pomerium","Pomerium","POST /pay vendor=PacificDye &rarr; <b>403 DENIED</b> (vendor.verified=false)","deny"],
-      ["agent","agent","denial observed — blacklisting PacificDye, re-routing",null],
-      ["ok","agent","payment vendor=<b>Meridian</b> ($18,240) &rarr; Pomerium <b>200 OK</b>","resolve"],
-      ["fillmore","Fillmore","purchase order drafted &amp; sent to Meridian Colorants","pick"],
-      ["ok","agent","resolved — Line 04 supply restored, no fraud paid","done"]
-    ]
+    trace:[["nexla","Nexla","inventory event: <b>NAVY_DYE_L04</b> below safety threshold (0 kg)","detect"],["agent","agent","planning emergency reorder — sourcing verified backup vendors","source"],["agent","agent","2 candidates: <b>Meridian Colorants</b>, <b>PacificDye Co.</b>",null],["zero","Zero","purchased verification x2 — <b>$0.04</b> from agent wallet","verify"],["verify","verify","Meridian &rarr; domain 6yr · bank match · fraud 7 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","PacificDye &rarr; domain 14d · shell bank · fraud 91 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","lowest price is PacificDye ($12,400) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=PacificDye &rarr; <b>403 DENIED</b> (vendor.verified=false)","deny"],["agent","agent","denial observed — blacklisting PacificDye, re-routing",null],["ok","agent","payment vendor=<b>Meridian</b> ($18,240) &rarr; Pomerium <b>200 OK</b>","resolve"],["fillmore","Fillmore","purchase order drafted &amp; sent to Meridian Colorants","pick"],["ok","agent","resolved — Line 04 supply restored, no fraud paid","done"]]
   },
   gpu:{
-    client:"Meridian Financial — Risk Infra", chip:"Akash",
-    alertKind:"Cluster event detected",
+    ws:"Meridian Financial — Risk Infra", industry:"Regulated On-Prem Compute", host:"Akash",
+    kpis:[{l:"Active alerts",v:"1",h:"gpu-07 node failure",c:"warnk"},{l:"Fraud blocked (YTD)",v:"$420K",h:"4 attempts stopped",c:"okk"},{l:"Vendors verified",v:"11",h:"1 blacklisted",c:""},{l:"SLA uptime",v:"99.98%",h:"trailing 90 days",c:"okk"}],
+    feed:[["11:03","bad","<b>Pomerium</b> denied payment to TitanServer-Parts — counterfeit risk"],["11:03","ok","<b>Agent</b> placed PO-2207 with AuthorizedGPU Distribution ($95,000)"],["11:02","ok","<b>Akash</b> burst deployment live — SLA held during procurement"],["11:01","warn","<b>Nexla</b> telemetry: node gpu-07 failed, cluster at 100%"],["Yst","muted","Monthly hardware provenance audit passed — 11 vendors"]],
+    incident:{k:"Active incident",t:"<b>Node gpu-07</b> failure at 100% cluster load — burst held on a verified provider, counterfeit hardware broker blocked."},
+    inventory:[
+      ["GPU node gpu-07 · Rack B","0 healthy","1","bad","Failed",1],
+      ["Cluster capacity","100% used","85%","bad","Critical",1],
+      ["GPU nodes gpu-01–06","6 / 6 healthy","6","ok","Healthy",0],
+      ["NVMe storage array","Nominal","—","ok","Healthy",0],
+      ["Cooling loop B","Nominal","—","ok","Healthy",0]],
+    pos:[
+      ["PO-2207","AuthorizedGPU Distribution","H100 node · Rack B","$95,000","ok","Placed · now"],
+      ["PO-2206","TitanServer-Parts","H100 node · Rack B","$61,500","bad","Blocked · counterfeit"],
+      ["PO-2190","AuthorizedGPU Distribution","DIMM kit 512GB","$12,300","muted","Delivered"],
+      ["PO-2184","CloudBurst (Akash)","Burst compute 72h","$3,400","muted","Delivered"]],
+    vendors:[
+      {name:"AuthorizedGPU Distribution", note:"Manufacturer-traceable channel · 9-yr", verified:true,
+       sig:[["Domain age","9 yr","good"],["Bank / entity","Match","good"],["Part provenance","Mfr-traceable","good"],["Fraud score","5 / 100","good"]], price:"$95,000", status:"verified"},
+      {name:"TitanServer-Parts", note:"‘Immediate stock’ broker", verified:false,
+       sig:[["Domain age","21 days","flag"],["Bank / entity","Personal acct","flag"],["Part provenance","Unverifiable","flag"],["Fraud score","88 / 100","flag"]], price:"$61,500", status:"blacklisted"},
+      {name:"CloudBurst (Akash)", note:"Verified burst-capacity provider", verified:true,
+       sig:[["Domain age","5 yr","good"],["Bank / entity","Match","good"],["Attestation","On-chain","good"],["Fraud score","6 / 100","good"]], price:"$3,400", status:"verified"}],
+    reports:{total:"$420,000", rows:[["H100 node — TitanServer-Parts",95000],["DIMM — GreyChip Traders",120000],["GPU — FastRack Supply",84000],["Switchgear — VoltBrokers",71000],["NVMe — DiskDirect",50000]]},
+    ceiling:"$100,000 / order",
+    blocked:"$95,000", secondL:"SLA status", second:"Maintained", secondH:"Burst held on verified provider", time:"38 s",
     alert:"<b>Node gpu-07</b> FAILED · on-prem risk cluster at <b>100% capacity</b>. No elastic scaling — regulatory SLA at risk within the hour.",
     item:"H100 node · rack B",
-    vendors:[
-      {name:"AuthorizedGPU Distribution", note:"Manufacturer-traceable channel", verified:true,
-       sig:[["Domain age","9 yr","good"],["Bank / entity","Match","good"],["Part provenance","Mfr-traceable","good"],["Fraud score","5 / 100","good"]],
-       price:"$95,000"},
-      {name:"TitanServer-Parts", note:"‘Immediate stock’ broker", verified:false,
-       sig:[["Domain age","21 days","flag"],["Bank / entity","Personal acct","flag"],["Part provenance","Unverifiable","flag"],["Fraud score","88 / 100","flag"]],
-       price:"$61,500"}
-    ],
-    blocked:"$95,000", secondL:"SLA status", second:"Maintained", secondH:"Burst held on verified provider", time:"38 s",
-    trace:[
-      ["nexla","Nexla","telemetry: node <b>gpu-07</b> FAILED · cluster 100% · SLA at risk","detect"],
-      ["agent","agent","dual-track: burst overflow + procure verified replacement","source"],
-      ["agent","agent","2 hardware candidates: <b>AuthorizedGPU</b>, <b>TitanServer-Parts</b>",null],
-      ["zero","Zero","purchased verification x2 — <b>$0.06</b> from agent wallet","verify"],
-      ["verify","verify","AuthorizedGPU &rarr; 9yr · mfr-traceable · fraud 5 &rarr; <b>VERIFIED</b>","reveal-ok"],
-      ["verify","verify","TitanServer &rarr; 21d · provenance unverifiable · fraud 88 &rarr; <b>FLAGGED</b>","reveal-bad"],
-      ["agent","agent","TitanServer is cheaper ($61,500) — attempting payment","guard"],
-      ["pomerium","Pomerium","POST /pay vendor=TitanServer &rarr; <b>403 DENIED</b> (counterfeit risk)","deny"],
-      ["akash","Akash","burst deployment live on verified provider — SLA held",null],
-      ["ok","agent","payment vendor=<b>AuthorizedGPU</b> ($95,000) &rarr; Pomerium <b>200 OK</b>","resolve"],
-      ["agent","agent","no counterfeit part admitted to regulated cluster","pick"],
-      ["ok","agent","resolved — genuine hardware inbound, compliance intact","done"]
-    ]
+    trace:[["nexla","Nexla","telemetry: node <b>gpu-07</b> FAILED · cluster 100% · SLA at risk","detect"],["agent","agent","dual-track: burst overflow + procure verified replacement","source"],["agent","agent","2 hardware candidates: <b>AuthorizedGPU</b>, <b>TitanServer-Parts</b>",null],["zero","Zero","purchased verification x2 — <b>$0.06</b> from agent wallet","verify"],["verify","verify","AuthorizedGPU &rarr; 9yr · mfr-traceable · fraud 5 &rarr; <b>VERIFIED</b>","reveal-ok"],["verify","verify","TitanServer &rarr; 21d · provenance unverifiable · fraud 88 &rarr; <b>FLAGGED</b>","reveal-bad"],["agent","agent","TitanServer is cheaper ($61,500) — attempting payment","guard"],["pomerium","Pomerium","POST /pay vendor=TitanServer &rarr; <b>403 DENIED</b> (counterfeit risk)","deny"],["akash","Akash","burst deployment live on verified provider — SLA held",null],["ok","agent","payment vendor=<b>AuthorizedGPU</b> ($95,000) &rarr; Pomerium <b>200 OK</b>","resolve"],["agent","agent","no counterfeit part admitted to regulated cluster","pick"],["ok","agent","resolved — genuine hardware inbound, compliance intact","done"]]
   }
 };
 
-let cur='sock', timers=[];
+const NAV = [
+  {id:"dashboard",label:"Dashboard",icon:IC.dashboard,group:"Operations"},
+  {id:"inventory",label:"Inventory",icon:IC.inventory,group:"Operations"},
+  {id:"procurement",label:"Procurement",icon:IC.procurement,group:"Operations"},
+  {id:"vendors",label:"Vendors",icon:IC.vendors,group:"Operations"},
+  {id:"interceptor",label:"Fraud Interceptor",icon:IC.shield,group:"Installed apps",badge:"Live"},
+  {id:"reports",label:"Reports",icon:IC.reports,group:"Operations2"},
+  {id:"settings",label:"Settings",icon:IC.settings,group:"Operations2"}
+];
+
+let state={ws:"sock",section:"dashboard"}, timers=[];
+const D=()=>DATA[state.ws];
 function clearTimers(){timers.forEach(t=>clearTimeout(t));timers=[];}
 
-function renderStatic(s){
-  $('#hostClient').innerHTML = 'Workspace: <b>'+s.client+'</b>';
-  $('#alertKind').textContent = s.alertKind;
-  $('#alertText').innerHTML = s.alert;
-  $('#vendorItem').textContent = s.item;
-  $('#hostChip').innerHTML = s.chip+' <span class="role">· hosting</span>';
-  const vc = $('#vendors'); vc.innerHTML='';
-  s.vendors.forEach((v,i)=>{
-    const el=document.createElement('div');
-    el.className='vendor'; el.dataset.idx=i; el.dataset.verified=v.verified;
-    el.innerHTML =
-      '<div class="vh"><span class="name">'+v.name+'</span><span class="vpill">Unchecked</span></div>'+
-      '<div class="vnote">'+v.note+'</div>'+
-      '<div class="vsig">'+v.sig.map(x=>'<div class="sig"><span class="l">'+x[0]+'</span><span class="v">'+x[1]+'</span></div>').join('')+'</div>'+
-      '<div class="vprice"><span class="pl">Quote</span><span class="p">'+v.price+'</span>'+
-      '<span class="tag deny-tag">Payment denied</span><span class="tag pick-tag">Order placed</span></div>';
-    vc.appendChild(el);
+/* ---------- nav ---------- */
+function renderNav(){
+  const nav=document.getElementById('nav'); nav.innerHTML='';
+  let lastGroup=null;
+  const groupName={Operations:"Operations","Installed apps":"Installed apps",Operations2:" "};
+  NAV.forEach(n=>{
+    if(n.group!==lastGroup){ const lbl=document.createElement('div'); lbl.className='nav-label'; lbl.textContent=groupName[n.group]; nav.appendChild(lbl); lastGroup=n.group; }
+    const b=document.createElement('button'); b.className='nav-item'+(state.section===n.id?' active':'');
+    const badge = n.badge? '<span class="nav-badge">'+n.badge+'</span>' : (n.id==='inventory'?'<span class="nav-badge crit">1</span>':'');
+    b.innerHTML=n.icon+' <span>'+n.label+'</span>'+badge;
+    b.onclick=()=>{ state.section=n.id; renderNav(); renderView(); };
+    nav.appendChild(b);
   });
-  $('#mBlocked').textContent='$0';
-  $('#mSecondL').textContent=s.secondL;
-  $('#mSecond').textContent='—';
-  $('#mSecondH').textContent=s.secondH;
-  $('#mTime').textContent='—';
-  document.querySelectorAll('.step').forEach(st=>st.removeAttribute('data-state'));
-  $('#log').innerHTML='';
+  const foot=document.createElement('div'); foot.className='nav-foot'; foot.innerHTML='<span class="pulse"></span> Agent connected'; nav.appendChild(foot);
 }
 
-function revealVendor(kind){
-  document.querySelectorAll('.vendor').forEach(el=>{
-    const verified = el.dataset.verified==='true';
-    if(kind==='reveal-ok' && verified){ setSig(el); el.classList.add('reveal-ok'); el.querySelector('.vpill').textContent='Verified'; }
-    if(kind==='reveal-bad' && !verified){ setSig(el); el.classList.add('reveal-bad'); el.querySelector('.vpill').textContent='Fraud flagged'; }
-  });
+/* ---------- helpers ---------- */
+function head(title,sub,right){return '<div class="section-head"><div class="st"><h2>'+title+'</h2><div class="sub">'+sub+'</div></div>'+(right?'<div class="sh-right">'+right+'</div>':'')+'</div>';}
+function pill(cls,txt){return '<span class="pill '+cls+'"><span class="dotp"></span>'+txt+'</span>';}
+function vendorCard(v,revealed){
+  const cls=revealed?(v.verified?'reveal-ok':'reveal-bad'):'';
+  const pillTxt=revealed?(v.verified?'Verified':'Fraud flagged'):'Unchecked';
+  const sig=v.sig.map(x=>'<div class="sig"><span class="l">'+x[0]+'</span><span class="v'+(revealed?' '+x[2]:'')+'">'+x[1]+'</span></div>').join('');
+  return '<div class="vendor '+cls+'" data-verified="'+v.verified+'"><div class="vh"><span class="name">'+v.name+'</span><span class="vpill">'+pillTxt+'</span></div><div class="vnote">'+v.note+'</div><div class="vsig">'+sig+'</div><div class="vprice"><span class="pl">Quote</span><span class="p">'+v.price+'</span><span class="tag deny-tag">Payment denied</span><span class="tag pick-tag">Order placed</span></div></div>';
 }
-function setSig(el){
-  const v = scenarios[cur].vendors[+el.dataset.idx];
-  el.querySelectorAll('.vsig .v').forEach((node,i)=>node.classList.add(v.sig[i][2]));
+
+/* ---------- sections ---------- */
+function viewDashboard(){
+  const d=D();
+  const kpis=d.kpis.map(k=>'<div class="kpi '+k.c+'"><div class="kl">'+k.l+'</div><div class="kv">'+k.v+'</div><div class="kh">'+k.h+'</div></div>').join('');
+  const feed=d.feed.map(f=>'<div class="feed-item"><span class="t">'+f[0]+'</span><span class="fdot" style="background:var(--'+(f[1]==='muted'?'faint':f[1])+')"></span><span class="m">'+f[2]+'</span></div>').join('');
+  return head("Dashboard","Live overview of "+d.ws+" · "+d.industry,'<span class="status-live"><span class="pulse"></span> Interceptor active</span>')
+    +'<div class="kpis">'+kpis+'</div>'
+    +'<div class="callout" style="margin-bottom:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">'+d.incident.k+'</span>'+d.incident.t+' <button class="btn ghost" style="margin-left:6px" data-go="interceptor">Open Fraud Interceptor</button></div></div>'
+    +'<div class="grid2"><div class="panel"><div class="panel-h">'+IC.activity+' Recent activity</div><div class="panel-b"><div class="feed">'+feed+'</div></div></div>'
+    +'<div class="panel"><div class="panel-h">'+IC.wallet+' This incident</div><div class="panel-b"><div class="metrics" style="grid-template-columns:1fr;margin-top:8px;gap:10px"><div class="metric hero"><div class="ml">Fraud blocked</div><div class="mv">'+d.blocked+'</div><div class="mh">payment denied at policy layer</div></div><div class="metric okm"><div class="ml">'+d.secondL+'</div><div class="mv">'+d.second+'</div><div class="mh">'+d.secondH+'</div></div></div></div></div></div>';
 }
-function money(str){ return parseInt(str.replace(/[^0-9]/g,''),10)||0; }
-function countUp(node, target){
-  if(RM){node.textContent='$'+target.toLocaleString();return;}
-  const dur=700, t0=performance.now();
-  function frame(t){
-    const p=Math.min(1,(t-t0)/dur);
-    node.textContent='$'+Math.round(target*(1-Math.pow(1-p,3))).toLocaleString();
-    if(p<1) requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+function viewInventory(){
+  const d=D();
+  const rows=d.inventory.map(r=>'<tr'+(r[5]?' class="crit"':'')+'><td class="name">'+r[0]+'</td><td class="num">'+r[1]+'</td><td class="num">'+r[2]+'</td><td>'+pill(r[3],r[4])+'</td></tr>').join('');
+  return head("Inventory","Real-time stock &amp; asset health · streamed by Nexla",'<span class="pill bad"><span class="dotp"></span>1 below threshold</span>')
+    +'<div class="panel"><div class="panel-h">'+IC.inventory+' Monitored items <span class="cnt">'+d.inventory.length+' tracked</span></div><table class="tbl"><thead><tr><th>Item</th><th style="text-align:right">On hand</th><th style="text-align:right">Safety threshold</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="callout" style="margin-top:16px"><div class="ci">'+IC.warn+'</div><div class="txt"><span class="k">Threshold breach</span><b>'+d.item+'</b> triggered the Fraud Interceptor — a verified backup order was placed and a fraudulent vendor blocked. <button class="btn ghost" style="margin-left:6px" data-go="interceptor">See the loop</button></div></div>';
 }
-function setStep(step,state){ const el=document.querySelector('.step[data-step="'+step+'"]'); if(el) el.setAttribute('data-state',state); }
-function stepsBefore(step){
-  const order=['detect','source','verify','guard','resolve'];
-  order.slice(0,order.indexOf(step)).forEach(s=>{
-    const el=document.querySelector('.step[data-step="'+s+'"]');
-    if(el && el.getAttribute('data-state')!=='guard') el.setAttribute('data-state','done');
-  });
+function viewProcurement(){
+  const d=D();
+  const rows=d.pos.map(p=>'<tr><td class="name">'+p[0]+'</td><td>'+p[1]+'</td><td>'+p[2]+'</td><td class="num">'+p[3]+'</td><td>'+pill(p[4],p[5])+'</td></tr>').join('');
+  return head("Procurement","Purchase orders — every payment gated by Pomerium policy",'')
+    +'<div class="panel"><div class="panel-h">'+IC.procurement+' Purchase orders <span class="cnt">'+d.pos.length+' shown</span></div><table class="tbl"><thead><tr><th>PO</th><th>Vendor</th><th>Item</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<p class="caption" style="text-align:left;margin-top:12px">A <b>Blocked</b> order is one the agent attempted but Pomerium denied because the vendor lacked a verified claim — the core safety guarantee.</p>';
 }
-function play(){
+function viewVendors(){
+  const d=D();
+  const cards=d.vendors.map(v=>{
+    const revealed=true; const badge = v.status==='blacklisted'?pill('bad','Blacklisted'):pill('ok','Verified');
+    return '<div class="vendor '+(v.verified?'reveal-ok':'reveal-bad')+'"><div class="vh"><span class="name">'+v.name+'</span>'+badge+'</div><div class="vnote">'+v.note+'</div><div class="vsig">'+v.sig.map(x=>'<div class="sig"><span class="l">'+x[0]+'</span><span class="v '+x[2]+'">'+x[1]+'</span></div>').join('')+'</div></div>';
+  }).join('');
+  return head("Vendors","Registry with continuous verification · powered by Zero evidence lookups",'')
+    +'<div class="panel"><div class="panel-h">'+IC.vendors+' Vendor registry <span class="cnt">'+d.vendors.length+' shown</span></div><div class="vendors">'+cards+'</div></div>';
+}
+function viewReports(){
+  const d=D(); const max=Math.max(...d.reports.rows.map(r=>r[1]));
+  const bars=d.reports.rows.map(r=>'<div class="bar-row"><span>'+r[0]+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(r[1]/max*100)+'%"></div></div><span class="amt">$'+(r[1]/1000)+'K</span></div>').join('');
+  return head("Reports","Fraud prevented over recent incidents",'')
+    +'<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi okk"><div class="kl">Total fraud blocked (YTD)</div><div class="kv">'+d.reports.total+'</div><div class="kh">across '+d.reports.rows.length+'+ incidents</div></div><div class="kpi"><div class="kl">Avg. verification cost</div><div class="kv">$0.05</div><div class="kh">per vendor, via Zero</div></div><div class="kpi"><div class="kl">Autonomous resolution</div><div class="kv">100%</div><div class="kh">no human in the loop</div></div></div>'
+    +'<div class="panel"><div class="panel-h">'+IC.reports+' Blocked payments by incident</div><div class="panel-b"><div class="bars">'+bars+'</div></div></div>';
+}
+function viewSettings(){
+  const d=D();
+  const rows=[
+    [IC.lock,"Payment policy (Pomerium)","Machine-identity gate on the payment API.",'<code>allow if vendor.verified == true</code> — else <b>403</b>'],
+    [IC.wallet,"Spend ceiling (Zero)","Hard cap per autonomous order; overrides escalate to a human.",'Ceiling: <code>'+d.ceiling+'</code>'],
+    [IC.plug,"Connected tools","The stack this runs on inside your environment.",''],
+  ];
+  const tools=[["Nexla","real-time signals"],["Zero","verification &amp; wallet"],["Pomerium","payment policy"],["Fillmore","vendor outreach"],[d.host,"hosting"]];
+  const toolchips=tools.map(t=>'<span class="pill ok" style="text-transform:none;letter-spacing:0;font-weight:600"><span class="dotp"></span>'+t[0]+' · '+t[1]+'</span>').join(' ');
+  const list=rows.map(r=>'<div class="setrow"><div class="si">'+r[0]+'</div><div class="sc"><div class="sname">'+r[1]+'</div><div class="sdesc">'+r[2]+'</div>'+(r[3]?'<div style="margin-top:7px;font-size:12px">'+r[3]+'</div>':'')+(r[1].indexOf('Connected')>-1||r[0]===IC.plug?'<div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">'+toolchips+'</div>':'')+'</div><span class="pill ok"><span class="dotp"></span>Active</span></div>').join('');
+  return head("Settings","Guardrails &amp; integrations for the autonomous agent",'')
+    +'<div class="panel"><div class="panel-h">'+IC.settings+' Agent guardrails</div><div class="panel-b">'+list+'</div></div>';
+}
+function viewInterceptor(){
+  const d=D();
+  const html=head("Vendor Fraud Interceptor","Autonomous procurement guardrail · gated by <b>policy</b>, not the agent's judgment",'<button class="btn ghost" id="replayBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Replay</button><span class="status-live"><span class="pulse"></span> Autonomous · Active</span>')
+    +'<div class="alert"><div class="ai">'+IC.warn+'</div><div class="txt"><span class="k">'+(state.ws==='gpu'?'Cluster event detected':'Supply event detected')+'</span>'+d.alert+'</div></div>'
+    +'<div class="pipe" id="pipe">'
+    +'<div class="step" data-step="detect"><div class="n">01 · DETECT</div><div class="s"><span class="tick"></span>Detect</div><div class="d">Real-time signal from your stack</div></div>'
+    +'<div class="step" data-step="source"><div class="n">02 · SOURCE</div><div class="s"><span class="tick"></span>Source</div><div class="d">Find backup vendors</div></div>'
+    +'<div class="step" data-step="verify"><div class="n">03 · VERIFY</div><div class="s"><span class="tick"></span>Verify</div><div class="d">Paid identity + fraud checks</div></div>'
+    +'<div class="step bad" data-step="guard"><div class="n">04 · GUARD</div><div class="s"><span class="tick"></span>Guard</div><div class="d">Policy blocks unverified pay</div></div>'
+    +'<div class="step" data-step="resolve"><div class="n">05 · RESOLVE</div><div class="s"><span class="tick"></span>Resolve</div><div class="d">Self-correct &amp; complete</div></div></div>'
+    +'<div class="grid2"><div class="panel"><div class="panel-h">'+IC.vendors+' Backup vendors <span class="cnt">'+d.item+'</span></div><div class="vendors" id="vendors">'+vendorCard(d.vendors[0],false)+vendorCard(d.vendors[1],false)+'</div></div>'
+    +'<div class="panel"><div class="panel-h">'+IC.activity+' Agent activity <span class="cnt">live trace</span></div><div class="log" id="log"></div></div></div>'
+    +'<div class="metrics"><div class="metric hero"><div class="ml">Fraud blocked</div><div class="mv" id="mBlocked">$0</div><div class="mh">payment denied at policy layer</div></div>'
+    +'<div class="metric okm"><div class="ml">'+d.secondL+'</div><div class="mv" id="mSecond">—</div><div class="mh">'+d.secondH+'</div></div>'
+    +'<div class="metric"><div class="ml">Time to resolve</div><div class="mv" id="mTime">—</div><div class="mh">fully autonomous, no human step</div></div></div>';
+  return html;
+}
+
+const VIEWS={dashboard:viewDashboard,inventory:viewInventory,procurement:viewProcurement,vendors:viewVendors,interceptor:viewInterceptor,reports:viewReports,settings:viewSettings};
+
+function renderView(){
   clearTimers();
-  const s=scenarios[cur];
-  renderStatic(s);
-  const log=$('#log');
-  const base=RM?0:520;
-  s.trace.forEach((row,i)=>{
+  const view=document.getElementById('view');
+  view.innerHTML=VIEWS[state.section]();
+  view.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{state.section=b.getAttribute('data-go');renderNav();renderView();});
+  if(state.section==='interceptor'){ const rb=document.getElementById('replayBtn'); if(rb) rb.onclick=playLoop; playLoop(); }
+}
+
+/* ---------- animated loop ---------- */
+function setStep(step,st){const e=document.querySelector('.step[data-step="'+step+'"]');if(e)e.setAttribute('data-state',st);}
+function stepsBefore(step){const o=['detect','source','verify','guard','resolve'];o.slice(0,o.indexOf(step)).forEach(s=>{const e=document.querySelector('.step[data-step="'+s+'"]');if(e&&e.getAttribute('data-state')!=='guard')e.setAttribute('data-state','done');});}
+function money(s){return parseInt(s.replace(/[^0-9]/g,''),10)||0;}
+function countUp(node,target){if(RM){node.textContent='$'+target.toLocaleString();return;}const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/700);node.textContent='$'+Math.round(target*(1-Math.pow(1-p,3))).toLocaleString();if(p<1)requestAnimationFrame(f);})(performance.now());}
+function playLoop(){
+  clearTimers();
+  const d=D(); const log=document.getElementById('log'); if(!log)return; log.innerHTML='';
+  document.querySelectorAll('.step').forEach(s=>s.removeAttribute('data-state'));
+  const vc=document.getElementById('vendors'); if(vc) vc.innerHTML=vendorCard(d.vendors[0],false)+vendorCard(d.vendors[1],false);
+  const mb=document.getElementById('mBlocked'), ms=document.getElementById('mSecond'), mt=document.getElementById('mTime');
+  if(mb)mb.textContent='$0'; if(ms)ms.textContent='—'; if(mt)mt.textContent='—';
+  d.trace.forEach((row,i)=>{
     timers.push(setTimeout(()=>{
+      const lg=document.getElementById('log'); if(!lg)return;
       const [kind,src,msg,tag]=row;
-      const ln=document.createElement('div');
-      ln.className='ln';
-      const ts=new Date().toLocaleTimeString('en-GB');
-      ln.innerHTML='<span class="ts">'+ts+'</span><span class="src '+kind+'">'+src+'</span><span class="msg">'+msg+'</span>';
-      log.appendChild(ln); requestAnimationFrame(()=>ln.classList.add('show'));
-      log.scrollTop=log.scrollHeight;
-      if(['detect','source','verify','guard','resolve'].includes(tag)){ stepsBefore(tag); setStep(tag, tag==='guard'?'guard':'active'); }
-      if(tag==='reveal-ok') revealVendor('reveal-ok');
-      if(tag==='reveal-bad') revealVendor('reveal-bad');
-      if(tag==='deny'){ const bad=document.querySelector('.vendor[data-verified="false"]'); if(bad) bad.classList.add('denied'); }
-      if(tag==='pick'){ const ok=document.querySelector('.vendor[data-verified="true"]'); if(ok) ok.classList.add('picked'); }
-      if(tag==='done'){
-        document.querySelectorAll('.step').forEach(st=>{ if(st.getAttribute('data-state')==='active') st.setAttribute('data-state','done'); });
-        setStep('resolve','done');
-        countUp($('#mBlocked'), money(s.blocked));
-        $('#mSecond').textContent=s.second;
-        $('#mTime').textContent=s.time;
-      }
-    }, RM?0:i*base));
+      const ln=document.createElement('div'); ln.className='ln';
+      ln.innerHTML='<span class="ts">'+new Date().toLocaleTimeString('en-GB')+'</span><span class="src '+kind+'">'+src+'</span><span class="msg">'+msg+'</span>';
+      lg.appendChild(ln); requestAnimationFrame(()=>ln.classList.add('show')); lg.scrollTop=lg.scrollHeight;
+      if(['detect','source','verify','guard','resolve'].includes(tag)){stepsBefore(tag);setStep(tag,tag==='guard'?'guard':'active');}
+      if(tag==='reveal-ok'){const v=document.querySelector('.vendor[data-verified="true"]');if(v){v.classList.add('reveal-ok');v.querySelector('.vpill').textContent='Verified';v.querySelectorAll('.vsig .v').forEach((n,j)=>n.classList.add(d.vendors[0].sig[j][2]));}}
+      if(tag==='reveal-bad'){const v=document.querySelector('.vendor[data-verified="false"]');if(v){v.classList.add('reveal-bad');v.querySelector('.vpill').textContent='Fraud flagged';v.querySelectorAll('.vsig .v').forEach((n,j)=>n.classList.add(d.vendors[1].sig[j][2]));}}
+      if(tag==='deny'){const v=document.querySelector('.vendor[data-verified="false"]');if(v)v.classList.add('denied');}
+      if(tag==='pick'){const v=document.querySelector('.vendor[data-verified="true"]');if(v)v.classList.add('picked');}
+      if(tag==='done'){document.querySelectorAll('.step').forEach(s=>{if(s.getAttribute('data-state')==='active')s.setAttribute('data-state','done');});setStep('resolve','done');const b=document.getElementById('mBlocked');if(b)countUp(b,money(d.blocked));const s2=document.getElementById('mSecond');if(s2)s2.textContent=d.second;const t2=document.getElementById('mTime');if(t2)t2.textContent=d.time;}
+    }, RM?0:i*520));
   });
 }
-function switchTo(which){
-  cur=which;
-  $('#tabSock').classList.toggle('on', which==='sock');
-  $('#tabGpu').classList.toggle('on', which==='gpu');
-  $('#tabSock').setAttribute('aria-selected', which==='sock');
-  $('#tabGpu').setAttribute('aria-selected', which==='gpu');
-  play();
-}
-$('#tabSock').onclick=()=>switchTo('sock');
-$('#tabGpu').onclick=()=>switchTo('gpu');
-$('#replayBtn').onclick=play;
-$('#themeBtn').onclick=()=>{
-  const root=document.documentElement;
-  const now=root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
-  root.setAttribute('data-theme', now==='dark'?'light':'dark');
-};
-play();
+
+/* ---------- workspace switch + theme ---------- */
+function setWs(ws){state.ws=ws;document.getElementById('wsSock').classList.toggle('on',ws==='sock');document.getElementById('wsGpu').classList.toggle('on',ws==='gpu');renderView();}
+document.getElementById('wsSock').onclick=()=>setWs('sock');
+document.getElementById('wsGpu').onclick=()=>setWs('gpu');
+document.getElementById('themeBtn').onclick=()=>{const r=document.documentElement;const now=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');r.setAttribute('data-theme',now==='dark'?'light':'dark');};
+
+renderNav(); renderView();
 </script>
