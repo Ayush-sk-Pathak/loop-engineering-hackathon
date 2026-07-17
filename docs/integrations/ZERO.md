@@ -43,6 +43,35 @@ RDAP $0.001 + Firecrawl $0.0126 ≈ **~$0.03–0.13/vendor** (PDL raises the enr
 excluding A8-gated StablePhone ($0.54). Against the datacenter PO value (20 × $127.50 =
 $25,500) that is well under 0.001% of governed value.
 
+## Invocation model (verified 2026-07-17)
+
+Zero exposes **no direct REST endpoint**; paid services are invoked through the `zero` CLI:
+`zero fetch <capabilityUrl> --capability <token> -d '<inputJson>' --json --max-pay <usdc>`,
+which returns `{ runId, ok, status, latencyMs, payment, body }`. `runId` anchors the
+settlement receipt (`zero review <runId>`), `payment` carries the cost, `body` is the service
+output. Auth is a wallet: `ZERO_PRIVATE_KEY` (or a `zero auth login` session).
+
+`services/zero-adapter` implements this in `CliZeroClient` (real runs) behind an injectable
+`ZeroClient` seam that unit tests fake, so A4 is run-and-record, not write-integration.
+Per-service `capabilityUrl`/`capabilityToken` (from `zero get <serviceId>`) and the
+`payment`->cents parsing are settled in A4.
+
+**Credential (settled 2026-07-17):** the adapter gates live mode on `ZERO_PRIVATE_KEY` — the
+wallet the `zero` CLI consumes (or a `zero auth login` session). `config/example.env` uses
+`ZERO_PRIVATE_KEY` (commit 192724f, supersedes the provisional `ZERO_API_KEY`). Absent ⇒ the
+adapter answers 503, never fabricated evidence.
+
+### A4 settle checklist (mechanical — keep it run-and-record)
+
+For each candidate service (enrichment, RDAP, web, news):
+1. `zero get <serviceId>` → copy its `capabilityUrl` + capability token into
+   `services/zero-adapter` `CANDIDATE_SERVICES` and `config/zero-services.json`.
+2. Make one live `zero fetch … --json` call; capture the `body` shape and confirm the mapper
+   in `src/signals.ts` reads it (esp. the RDAP registration date and enrichment name/domain).
+3. Record `runId` (receipt), price (`payment` → cents), and observed latency in
+   `config/zero-services.json`; set `verifiedAt` only after ≥3 services settle.
+4. `npm run check`, then a live e2e with `VERIFICATION_MODE=live_zero`.
+
 ## Adapter Contract
 
 Set `ZERO_EVIDENCE_ADAPTER_URL` to Owner 2's small HTTP adapter. Continuim sends:

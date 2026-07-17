@@ -390,3 +390,26 @@ sweep `559f73d`**.
 HTTP 200. Canonical `3000/4000` never bound (4000 still the unrelated LiteLLM). The
 canonical `4000:4000` up-health stays a one-time pre-W2 PM step (human pre-authorized
 stopping LiteLLM). Override file is throwaway (scratchpad, uncommitted); stack torn down.
+### 2026-07-17 — A pre-key: LiveZeroTransport.gather implemented (lane A, de-risks A4)
+
+**Built.** Per PM directive `feadffd5`, implemented the real evidence-gathering path in
+`services/zero-adapter` behind an injectable `ZeroClient` seam so A4 collapses to
+run-and-record. `src/signals.ts` — pure mappers (enrichment → company + payee sharing one
+receipt; RDAP → `domain_age_days`, omitted when no registration date; Firecrawl →
+`web_presence`; Serper → `news_presence`; `typosquat_detected` stays local in the policy).
+`src/transport.ts` — `LiveZeroTransport.gather` orchestrates the four A2 candidate services;
+`CliZeroClient` runs the verified `zero` CLI model (`zero fetch … --json` →
+`{runId,ok,payment,body}`), guarded so real calls fire only with `ZERO_PRIVATE_KEY` (still 503
+without) and refuse loudly on unsettled capability coordinates. Fixed a self-referential
+payee-match fallback caught while writing tests. ZERO.md gained the invocation model, the
+`ZERO_PRIVATE_KEY` credential note, and the A4 settle checklist.
+
+**Verified (this commit).** `npm run check` green — `tsc` clean; `npm test` 33/33 (7 new in
+`services/zero-adapter/src/transport.test.ts`, all fake-client, no CLI/wallet/network).
+Re-booted standalone on :4110: health `sessionConfigured:false`, unkeyed `POST /v1/evidence`
+→ HTTP 503 (unchanged). Root `package.json` `test` appended with the new file.
+
+**Open / for A4.** Per-service `capabilityUrl`/`capabilityToken` (from `zero get`) + exact
+`body`/`payment` shapes settled against live responses (ZERO.md A4 checklist). **Rebased**
+onto Continuim main (`@continuim`, decision 0016); gate flipped `ZERO_API_KEY` →
+`ZERO_PRIVATE_KEY` (adopted, `config/example.env` 192724f); 503-when-absent unchanged.
