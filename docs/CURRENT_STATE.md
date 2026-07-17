@@ -150,3 +150,28 @@ per lane-A contract).
 real receipts require A4 live settlement against a funded wallet; A1 delivers only the
 contract + receipt-reuse plumbing, fake-transport verified. `config/example.env` needs a
 `ZERO_API_KEY` line (the Zero session gate) — posted to the board for PM to land.
+
+### 2026-07-17 — A2 + A3: Zero candidate catalog + downtime citation research (lane A)
+
+**A2 — Zero live catalog re-verified** at `zero.xyz/browse` on 2026-07-17 (CLAUDE.md decision
+3). Concrete EvidenceKind → service mapping recorded in `docs/integrations/ZERO.md`
+("Candidate Live Services") as **candidates, not verified**; `config/zero-services.json`
+`verifiedAt` stays `null`. Key findings: `company_identity_match` → Wiza Company Enrichment
+($0.02) or PDL Company Enrich ($0.10); `domain_age_days` → Domain Availability Checker (RDAP,
+$0.001) — the required WHOIS/domain-age candidate, but A4 must confirm it returns the
+registration date, not just availability; `web_presence` → Firecrawl Scrape ($0.0126);
+`news_presence` → Serper Google News ($0.04); `contact_reachable` → StablePhone AI Call
+($0.54, A8-gated). **No bank/payee-verification and no typosquat service exist in the
+catalog** — `payee_identity_match` is derived from the company-enrichment call (shared
+receipt) and `typosquat_detected` is computed locally. All five `REQUIRED_SIGNALS` are
+reachable; estimated required-bundle spend ≈ $0.03–0.13/vendor.
+
+**A3 — Downtime-rate citation** (posted to the board as a `note` for W3/A7). Operator-specific
+figure: **Ponemon Institute, "2016 Cost of Data Center Outages" — average $8,851 per minute**
+(≈885,100 cents/min; max ~$17,244/min), up from $7,908/min (2013) and $5,617/min (2010);
+sponsored by Emerson Network Power/Vertiv. Corroboration: Uptime Institute (approaching
+$9,000/min; 70% of outages >$100k, 25% >$1M) and ITIC (hourly cost >$300k for 88% of
+enterprises, >$1M/hr for 40%). Current placeholder in `services/verification/src/scenarios.ts`
+is `downtimeCostCentsPerMinute: 18_000` ($180/min, datacenter) — A7 replaces it with a cited,
+honestly-scoped value (whole-facility Ponemon average vs a scoped single-stockout fraction is
+a PM/A7 call). Primary source: https://www.ponemon.org/research/ponemon-library/security/2016-cost-of-data-center-outages.html
