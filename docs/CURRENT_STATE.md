@@ -318,3 +318,33 @@ fail-closed).
 (decision 0012). No live model call yet (D4, keys-gated: needs AWS Bedrock creds or
 `ANTHROPIC_API_KEY`). `config/example.env` needs the new keys added by the PM (posted to
 the board). The ROADMAP "Add … planner/explainer" box stays open until this branch merges.
+
+### 2026-07-17 — Lane D reconciled onto Continuim + D4 live-call attempt
+
+**Reconciled (0016 rename).** Rebased D1–D3 onto the renamed `@continuim` main and swept my
+new files (`planner.test.ts`, `claude.ts` incl. the planner prompt's product name,
+`claude.test.ts`) `@stockshield`→`@continuim`. `npm install` clean, `npm run check` green =
+**36 tests** (my 22 + A/B tests now consistent under the merged scope), typecheck clean.
+Sweep commit `79df383`. Merge still HOLDS until core proof green (0012).
+
+**D4 live-call attempt (PM-authorized, worktree-local, canonical untouched).** Ran ONE live
+call through `services/control-plane/src/claude.ts` with `PLANNER_MODE=bedrock` and
+`AWS_BEARER_TOKEN_BEDROCK` copied read-only from the main checkout's `.env.local` into the
+worktree's gitignored `.env.local` (region `us-east-1` default; inference profile
+`us.anthropic.claude-haiku-4-5-20251001-v1:0`).
+
+- **Result: the Bedrock Converse path is wired correctly, but the delivered credential is
+  invalid.** The call reached AWS Bedrock (~321 ms) and returned
+  `AccessDeniedException: "Missing required parameters in the API Key"` (HTTP 403). The SAME
+  403 reproduced via a raw REST call that bypasses the SDK entirely — isolating the failure to
+  the credential, not the integration. The token loads as 2039 chars starting with `bedrock-`,
+  which is not AWS's `ABSK…` Bedrock API-key format. **Needs a valid AWS Bedrock API key (or
+  SigV4 access-key/secret) to complete the live trace.** No fabricated success (0010).
+- **`PLANNER_MODE=off` byte-identical confirmed.** `createPlannerFromEnv()` returns `undefined`
+  when off, so the loop skips the advisory block entirely — zero extra decision events, same
+  stream as the no-planner run; proven by the planner-absent loop/learning tests plus the
+  off-by-default and failure-isolation tests (all green).
+
+**Cleanup.** Temp runner deleted; worktree `.env.local` reverted to baseline; the main
+checkout's `.env.local` was never modified (read-only copy of the token line only). Canonical
+stays `PLANNER_MODE=off`; the explainer goes live on `main` only at the W3 D-merge.
