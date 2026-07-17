@@ -524,3 +524,24 @@ Against an isolated fixture/development stack (ports 4500/4501/4502), the produc
 accepted `gpu-07` / `node_offline`, the monitor started the real loop, and SQLite passed
 `PRAGMA integrity_check` (`ok`) with `demo_state=1`, `decision_events=14`, and `incidents=1`.
 The recovery trace reached a signed PO and scheduled inbound supply. No paid provider call was made.
+
+**E4 — Continuum write-path: ops dashboard drives the live control-plane (run/reset/scenario/consume).**
+The mandate shift (recording moved off-team → finish the app) sanctioned the previously-held write
+buttons (board `7c000d47`). Added **additively in lane E's seam only** — no touch to the external
+datacenter/agent surfaces per deconflict directive `92b24f36`: `Continuum/src/lib/live/actions.ts`
+(POST helpers to `/api/demo/{run,consume,reset,scenario}` through the existing proxy) and
+`Continuum/src/components/ops/LiveControls.tsx` (a control bar rendered on the dashboard). Honesty
+rules held: buttons hit real endpoints only; the bar is disabled and labelled "Controls offline"
+when the control-plane is unreachable; per-action buttons disable while a run is in flight (they
+would 409) and consume disables at on-hand 0; non-2xx responses surface verbatim (no optimistic/fake
+success — the 1 Hz poller reflects real state). Consume label is scenario-aware ("Simulate node
+failure" / "Consume dye stock"). Also completed the datacenter-drop sanity job (`d18c7920`): rebased
+onto main `68f4f24` (Zero service lock + external datacenter console + third `claude.ts` explainer);
+the drop unioned cleanly (their `clientIncident?` field + `/datacenter` nav alongside my `explained`
+phase + Incidents/Learning nav) — no conflicts, no regression, my wired live pages unchanged. Files:
+`Continuum/src/lib/live/actions.ts`, `Continuum/src/components/ops/LiveControls.tsx`,
+`Continuum/src/app/dashboard/page.tsx`. Verified against an isolated 4600/4601 fixture/dev stack via
+Continuum on `:3201`: all four actions through the proxy — consume (on-hand 5→4), scenario→apparel,
+soft+hard reset, run (202 → complete, order `PO-1EC01832`, 14 events); a headless-browser click of
+the dashboard "Simulate node failure" button dropped on-hand 5→4 live with the control bar
+reflecting it. `next build` green (15 routes). Read-only write actions gate cleanly; no fake success.

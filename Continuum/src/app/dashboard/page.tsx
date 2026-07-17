@@ -7,6 +7,7 @@ import {
   KpiGrid,
   PageHeader,
 } from "@/components/ops/Primitives";
+import { LiveControls } from "@/components/ops/LiveControls";
 import { useContinuum } from "@/lib/store";
 import { formatCurrency } from "@/lib/format";
 
@@ -21,6 +22,7 @@ export default function DashboardPage() {
         description={`Live continuity overview for ${workspace.name} · ${workspace.industry}`}
         actions={<span className="status-pill ok">Interceptor active</span>}
       />
+      <LiveControls />
       <KpiGrid />
       <IncidentCallout />
       <div className="grid gap-4 xl:grid-cols-[1.15fr_.85fr]">
