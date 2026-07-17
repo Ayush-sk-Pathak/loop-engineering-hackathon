@@ -601,3 +601,34 @@ path with `source:monitor` disclosure, PRD §14.3, if no console operator appear
 build stays human-blocked); T+15 fixture fallback if the Zero lock hasn't landed. Kept proofs:
 Zero receipts + Pomerium denial. **C6 renders CUT** (the "Illustrative incident rate" label is
 unchanged; no explainer render).
+### 2026-07-17 — Lane B / B5-B6: `.env` staged and flipped to `AUTH_MODE=pomerium`; console route is the last human step
+
+**Staged in runtime `.env` (local only — never committed; pre-commit rejects env files).**
+The pomerium flip is now a done edit, not pending config:
+- `AUTH_MODE=development` → **`pomerium`**.
+- `POMERIUM_ROUTE_URL` / `POMERIUM_AUDIENCE` repointed off the generic `verify.` route to the
+  procurement route host **`po.dynamic-monitor-6165.pomerium.app`**, matching the runbook
+  example (`docs/integrations/POMERIUM.md` step 3, line 70). Both are read only when
+  `AUTH_MODE=pomerium` (`services/control-plane/src/runtime.ts:131`,
+  `services/procurement/src/server.ts:14`), so repointing was dev-safe.
+- Added the missing **`POMERIUM_VENDOR_SUBJECT_ALIASES=vendor-northstar=sfhack`**
+  (read at `server.ts:16`); without it pomerium mode 403s on subject mismatch
+  (`authorize.ts` `pomeriumSubjectsForVendor`, tested `authorize.test.ts:74`).
+
+**Verified (config only).** `npm run doctor:prize` now reports **"prize configuration is
+ready"** — the `Authorization mode` row went `development` (FAIL) → `pomerium` (PASS); it was
+the single remaining failing check.
+
+**NOT live — demo is not yet runnable in pomerium mode.** doctor:prize checks only that vars
+are set + mode, **not** that the route responds. From this sandbox the entire cluster is
+unreachable: `po.` route, generic `verify.` route, AND the `authenticate` JWKS host all return
+`HTTP=000` (6s timeout) — so either the hosted proxy is down or the sandbox has no egress
+(unresolved; verify from a networked machine). Until the route responds, an actual run stalls at
+PO submit (`runtime.ts:152` POSTs to `POMERIUM_ROUTE_URL/po/...`). **One-line revert for a
+runnable rehearsal:** `AUTH_MODE=pomerium` → `development` (fixture path, 39/39 tested).
+
+**Remaining human step (needs the console session — not doable from here):** create the private
+route `po.dynamic-monitor-6165.pomerium.app` → `http://procurement:4001`, Pass Identity Headers
+ON, policy = ALLOW body of `infra/pomerium/vendor-policy.example.yaml`
+(`user.is "sfhack"` AND POST AND `/po/vendor-northstar`). The `POMERIUM_ZERO_TOKEN` is a
+databroker/connect token, not a console-API key, so route CRUD via API is not available.
