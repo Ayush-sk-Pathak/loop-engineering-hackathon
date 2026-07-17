@@ -45,7 +45,7 @@ export function AgentStatus() {
 
 export function OpsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { workspaceId, setWorkspace } = useContinuum();
+  const { workspaceId, setWorkspace, live, liveState } = useContinuum();
 
   return (
     <div className="min-h-screen bg-ground p-0 md:p-5">
@@ -85,6 +85,12 @@ export function OpsShell({ children }: { children: React.ReactNode }) {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <span
+              className={`status-pill ${live ? "ok" : "warn"} normal-case tracking-normal`}
+              title={live ? "Rendering live control-plane /api/state" : "Local simulation — control-plane unreachable"}
+            >
+              {live && liveState ? `LIVE · ${liveState.scenario.id}` : "DEMO · simulated"}
+            </span>
             <AgentStatus />
             <button type="button" aria-label="Search" className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-muted hover:text-ink">
               <Icon name="search" />
@@ -150,8 +156,8 @@ export function OpsShell({ children }: { children: React.ReactNode }) {
               </div>
             ))}
             <div className="mt-auto flex items-center gap-2 border-t border-line px-2.5 pt-4 text-xs text-faint">
-              <span className="live-dot size-2 rounded-full bg-ok" />
-              Continuum connected
+              <span className={`live-dot size-2 rounded-full ${live ? "bg-ok" : "bg-faint"}`} />
+              {live ? "Live · control-plane" : "Simulated · local demo"}
             </div>
           </aside>
           <main className="min-w-0 bg-app p-4 sm:p-6">{children}</main>

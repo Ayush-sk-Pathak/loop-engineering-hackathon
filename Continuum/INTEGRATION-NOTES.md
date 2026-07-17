@@ -232,3 +232,57 @@ several demo-load-bearing elements; swapping it in ~2h before deadline is high d
 and can't honestly show the Live-Zero/Pomerium mode badges. Adopt Continuum
 post-submission; optionally, if PM wants, wire **one** Continuum view to `/api/state`
 via the copied proxy as an explicitly off-critical-path bonus. Decision is PM + human's.
+
+> **Update (E2 implemented, per human's revised directive — integration, not
+> recommend-first):** the read-path wiring below is now built. `apps/dashboard` remains
+> the demo-of-record; Continuum is a live **supplement**.
+
+---
+
+## 9. E2 — read-path wiring (implemented)
+
+Continuum now renders **real `/api/state` run data** on the ops pages, through the existing
+`useContinuum()` seam, with the mock as fallback when the control-plane is unreachable.
+
+**New files (`Continuum/**` only):**
+- `src/app/api/control/[...path]/route.ts` — same-origin proxy, mirrors the `apps/dashboard`
+  pattern. Target `CONTROL_PLANE_INTERNAL_URL ?? http://127.0.0.1:4000` (canonical). Read-path
+  uses `GET`; `POST` is present for parity but no write buttons are wired.
+- `src/lib/live/contracts.ts` — local, read-only mirror of the `DemoState` subset consumed
+  (Continuum is standalone; not linked to `@continuim/contracts`). Keep in sync with
+  `packages/contracts/src/index.ts:204-237`.
+- `src/lib/live/useLiveState.ts` — polls `/api/control/api/state` at 1 Hz, `{state, connected}`.
+- `src/lib/live/adapt.ts` — `adaptWorkspace(state, base)` overlays real run data onto the
+  view-model.
+
+**Edits (`Continuum/**` only):** `src/lib/store.tsx` (serves live-adapted `workspace`,
+exposes `live`/`liveState`); `components/ops/Primitives.tsx` (`KpiGrid` shows real §14
+metrics under correct labels when live); `components/ops/SupplierGrid.tsx` (real vendor
+fields under live-aware labels: Domain / Payee / Unit quote / Lead time);
+`components/layout/OpsShell.tsx` (`LIVE · <scenarioId>` badge — backend scenario id verbatim).
+
+**What is REAL when live** (from structured `DemoState` fields only):
+- Scenario id/label/industry/trigger; inventory SKU, on-hand vs threshold, inbound qty.
+- KPIs: at-risk value prevented, evidence spend, authorization mode, on-hand.
+- Vendors: name, domain, payee, unit quote, lead time, synthetic flag, and policy status
+  (verified / ineligible / proven) derived from `blacklistedVendorIds` / `provenVendorIds` /
+  `order`.
+- Procurement: real denial row (403 + `deniedRequestId`) and the real accepted PO.
+- Activity feed: each `DecisionEvent` rendered as `phase · detail` — **detail strings shown
+  verbatim, never parsed into fake structure** (per PM directive).
+
+**What stays ILLUSTRATIVE (base workspace) when live** — the control-plane does not expose it:
+YTD "risk blocked" aggregate, the "blocked payments by category" breakdown (reports),
+autonomous spend ceiling (settings), and the integration roster. These sit under clearly
+aggregate/config labels; the `LIVE` badge signals the screen is otherwise live. Structured
+evidence signals / attestation fields are **not** fabricated — a control-plane change to
+expose them is out of lane-E scope (PM-noted as a possible post-core-green enhancement).
+
+**Not wired (gated):** all write actions (demo run / reset / scenario / consume buttons) —
+the `/continuum` theater stays the scripted explainer until PM approves write-path wiring.
+
+**Verification (ground truth):** isolated 4600/4601 fixture/development stack; a real
+`POST /api/demo/run` produced a 14-event deny→blacklist→attest→order state
+(`atRiskPoValuePreventedCents = 240000` = $2,400, order `PO-01787B60`, `vendor-lookalike`
+blacklisted). Continuum's proxy on `:3200` returned that state end-to-end; `adaptWorkspace()`
+mapped it correctly; `next build` green.

@@ -33,13 +33,20 @@ export function PageHeader({
 }
 
 export function KpiGrid() {
-  const { workspace } = useContinuum();
-  const items = [
-    { label: "Active alerts", value: workspace.kpis.activeAlerts, detail: workspace.scenario.title, tone: "text-warn" },
-    { label: "Risk blocked · YTD", value: workspace.kpis.blockedYtd, detail: workspace.kpis.blockedDetail, tone: "text-ok" },
-    { label: "Verified vendors", value: workspace.kpis.verifiedVendors, detail: workspace.kpis.verifiedDetail, tone: "text-ink" },
-    { label: workspace.kpis.protectedLabel, value: workspace.kpis.protectedValue, detail: workspace.kpis.protectedDetail, tone: "text-ink" },
-  ];
+  const { workspace, live, liveState } = useContinuum();
+  const items = live && liveState
+    ? [
+        { label: "At-risk value prevented", value: formatCurrency(liveState.metrics.atRiskPoValuePreventedCents), detail: liveState.scenario.trigger, tone: "text-ok" },
+        { label: "Evidence spend", value: formatCurrency(liveState.metrics.verificationSpendCents), detail: `Mode · ${liveState.metrics.verificationMode}`, tone: "text-ink" },
+        { label: "Authorization", value: liveState.metrics.authorizationMode, detail: liveState.metrics.deniedRequestId ? `Denied ${liveState.metrics.deniedRequestId}` : "No denial yet", tone: "text-brand-ink" },
+        { label: "On hand", value: `${liveState.inventory.currentQty}`, detail: `Threshold ${liveState.inventory.threshold} · ${liveState.scenario.id}`, tone: liveState.inventory.currentQty <= liveState.inventory.threshold ? "text-warn" : "text-ink" },
+      ]
+    : [
+        { label: "Active alerts", value: workspace.kpis.activeAlerts, detail: workspace.scenario.title, tone: "text-warn" },
+        { label: "Risk blocked · YTD", value: workspace.kpis.blockedYtd, detail: workspace.kpis.blockedDetail, tone: "text-ok" },
+        { label: "Verified vendors", value: workspace.kpis.verifiedVendors, detail: workspace.kpis.verifiedDetail, tone: "text-ink" },
+        { label: workspace.kpis.protectedLabel, value: workspace.kpis.protectedValue, detail: workspace.kpis.protectedDetail, tone: "text-ink" },
+      ];
   return (
     <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (

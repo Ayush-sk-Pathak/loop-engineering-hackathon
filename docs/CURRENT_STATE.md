@@ -413,3 +413,27 @@ Re-booted standalone on :4110: health `sessionConfigured:false`, unkeyed `POST /
 `body`/`payment` shapes settled against live responses (ZERO.md A4 checklist). **Rebased**
 onto Continuim main (`@continuim`, decision 0016); gate flipped `ZERO_API_KEY` →
 `ZERO_PRIVATE_KEY` (adopted, `config/example.env` 192724f); 503-when-absent unchanged.
+**E1+E2 — Continuum frontend investigated, then wired to live `/api/state` (read-path,
+supplement mode).** E1 (commit `d26a98b`, merged `bd6ed41`): `Continuum/INTEGRATION-NOTES.md`
+maps every Continuum page to its control-plane surface, catalogs mock-vs-real data, and
+confirms `Continuum/` builds standalone (`npm install` + `next build` green, 14 routes).
+E2: wired the ops pages to real run data through the existing `useContinuum()` seam without
+touching the proven `apps/dashboard` demo screen (still the demo-of-record). New in
+`Continuum/**`: a same-origin proxy `src/app/api/control/[...path]/route.ts` (mirrors the
+dashboard proxy; target `CONTROL_PLANE_INTERNAL_URL ?? http://127.0.0.1:4000`), a 1 Hz
+`useLiveState()` poller, a local `DemoState` type mirror (`src/lib/live/contracts.ts`), and
+`adaptWorkspace()` (`src/lib/live/adapt.ts`) overlaying real `/api/state` data onto the
+view-model. `store.tsx` serves live-adapted `workspace` when the control-plane is reachable
+(mock fallback otherwise) and exposes `live`/`liveState`; `KpiGrid`, `SupplierGrid`, and
+`OpsShell` are live-aware (real §14 metrics under correct labels; real vendor fields; a
+`LIVE · <scenarioId>` badge that shows the backend scenario id verbatim). Honesty guardrails
+(per PM directive): only structured `DemoState` fields are rendered — `DecisionEvent.detail`
+strings are shown verbatim, never parsed into fake structure; genuinely-absent chrome (YTD
+aggregates, category breakdown, spend ceiling, integration roster) stays base/illustrative;
+the `/continuum` theater remains the scripted explainer (its controls are gated write-actions).
+Verified against an isolated 4600/4601 fixture/development stack: a real `POST /api/demo/run`
+produced a full deny→blacklist→attest→order state (`atRiskPoValuePreventedCents=240000` =
+$2,400, order `PO-01787B60`, lookalike `vendor-lookalike` blacklisted); Continuum's proxy on
+`:3200` returned that state end-to-end, `adaptWorkspace()` mapped it correctly, and Continuum
+`next build` is green (proxy now a dynamic `ƒ /api/control/[...path]` route). Read-only — no
+write buttons wired (gated pending PM directive).
