@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 node -e '
   const [major, minor] = process.versions.node.split(".").map(Number);
   if (major < 22 || (major === 22 && minor < 10)) {
-    console.error(`setup: Node >=22.10 is required; found ${process.versions.node}`);
+    console.error(`setup: Node >=22.10 is required — install via nvm (nvm install 22 && nvm use 22) or nodejs.org; found ${process.versions.node}`);
     process.exit(1);
   }
 '

@@ -17,6 +17,11 @@ curl -X POST http://127.0.0.1:4000/api/demo/reset \
   -H "content-type: application/json" --data '{"hard": true}'
 ```
 
+**Lock the scenario to Datacenter.** The consume button and copy are scenario-aware
+("Consume dye stock" on apparel). If you toggled apparel while testing, switch the
+dashboard dropdown back to Datacenter (or `POST /api/demo/scenario {"id":"datacenter"}`)
+before recording, then hard-reset.
+
 A plain reset (dashboard Reset button) is **soft** — it keeps the ledger on purpose. Use
 soft reset when you *want* to show the learning beat (`recalled_history` + proven-vendor
 chip) as a second run after the main arc.

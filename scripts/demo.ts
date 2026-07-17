@@ -1,6 +1,10 @@
 const controlPlane = process.env.CONTROL_PLANE_URL ?? "http://127.0.0.1:4000";
 
-const reset = await fetch(`${controlPlane}/api/demo/reset`, { method: "POST" });
+const reset = await fetch(`${controlPlane}/api/demo/reset`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ hard: true }),
+});
 if (!reset.ok) throw new Error(`Unable to reset demo: ${reset.status}`);
 
 for (let failure = 1; failure <= 3; failure += 1) {
