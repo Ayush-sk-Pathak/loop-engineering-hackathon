@@ -100,13 +100,36 @@ This exercises the local ingress contract only; it is **not** Nexla-integration 
 live FlexFlow flow → canonical ingress carrying the Nexla-issued event ID is the prize item
 (ROADMAP: "connect Nexla FlexFlow and prove the event ID end to end").
 
+## Authenticated ingress verified (2026-07-17, C5 console-side)
+
+With `NEXLA_WEBHOOK_SECRET` configured, re-ran the isolated lane-C stack (`:4400`/`:4401`,
+`MONITOR_ENABLED=0`, dev/fixture) to prove the exact handshake the FlexFlow destination uses:
+`X-Continuim-Webhook-Secret` must equal `NEXLA_WEBHOOK_SECRET` (`server.ts:99-100`). A **test
+secret** was used on both sides of the isolated stack — the real `.env` secret is reserved
+for the token-serialized canonical delivery and is never read into a worktree.
+
+| Case | `X-Continuim-Webhook-Secret` | Result |
+|---|---|---|
+| Missing header | *(none)* | `401 {"error":"Invalid Nexla webhook secret"}` |
+| Wrong secret | `wrong-secret-value` | `401 {"error":"Invalid Nexla webhook secret"}` |
+| Correct secret | *(matches `NEXLA_WEBHOOK_SECRET`)* | `202 {"accepted":true,"eventId":"nexla-event-001"}` |
+
+The accepted event drained to `runStatus:"complete"` (14-phase trail) with every event's
+`correlationId == "nexla-event-001"`. This verifies the transform output **and** the
+authenticated destination handshake end to end on the isolated stack. **Still human-/token-
+gated:** the actual Nexla-console flow build (needs console access + `NEXLA_API_KEY`, which
+lives in the main `.env` this lane never touches) and the live delivery to canonical `:4000`
+(token-serialized, sequenced A → B → PM slice → C).
+
 ## Nexla console setup (C5 runbook — execute when Nexla keys land)
 
 The steps below build the FlexFlow above in the Nexla console. This is the **C5 execution
-plan, not a completed configuration** — no Nexla account is provisioned yet, so the exact
-console labels and the generated ingest URL are captured live during setup. C5 is
-token-gated (a serialized live run) and needs a real `NEXLA_WEBHOOK_SECRET` shared between
-the control plane and the Nexla destination header.
+plan, not a completed configuration**. Keys landed 2026-07-17 (C5 GO: `NEXLA_WEBHOOK_SECRET`
++ `NEXLA_API_KEY` in the main `.env`) and the authenticated handshake is verified above, but
+the flow itself is not built yet, so the exact console labels and the generated ingest URL
+are captured live during setup. Live delivery to canonical `:4000` is token-gated (a
+serialized run) and needs the real `NEXLA_WEBHOOK_SECRET` shared between the control plane
+and the Nexla destination header.
 
 Prereqs: a Nexla workspace/login; the control plane reachable at a URL Nexla can POST to
 (`{CONTROL_PLANE_URL}/api/events/stockout` — the canonical stack, tunnelled if it runs
