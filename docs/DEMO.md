@@ -2,33 +2,45 @@
 
 ## Before Recording
 
-```bash
-npm run doctor:prize
-npm run check
-```
+Run this whole checklist before recording **and again before every denial rehearsal** — the
+`403` denial is the prize-critical beat and the first thing to break on a repeat run.
 
-**Hard-reset the incident ledger first.** The Learning Layer remembers completed runs:
-after any prior run, the agent emits `recalled_history` and **skips the unattested-denial
-beat** — the prize-critical 403 moment will not play. Before the recording (and before
-each full rehearsal of the denial beat), clear the ledger:
+1. **Bring the prize stack up green.**
 
-```bash
-curl -X POST http://127.0.0.1:4000/api/demo/reset \
-  -H "content-type: application/json" --data '{"hard": true}'
-```
+   ```bash
+   npm run doctor:prize
+   npm run check
+   ```
 
-**Lock the scenario to Datacenter.** The consume button and copy are scenario-aware
-("Consume dye stock" on apparel). If you toggled apparel while testing, switch the
-dashboard dropdown back to Datacenter (or `POST /api/demo/scenario {"id":"datacenter"}`)
-before recording, then hard-reset.
+2. **Hard-reset the incident ledger — before EVERY denial rehearsal, not just the first run.**
 
-A plain reset (dashboard Reset button) is **soft** — it keeps the ledger on purpose. Use
-soft reset when you *want* to show the learning beat (`recalled_history` + proven-vendor
-chip) as a second run after the main arc.
+   ```bash
+   curl -X POST http://127.0.0.1:4000/api/demo/reset \
+     -H "content-type: application/json" --data '{"hard": true}'
+   ```
 
-Confirm the dashboard says **Live Zero** and **Pomerium**, not Fixture or Development. Keep
-the Pomerium authorize log and the received PO email ready in separate tabs. Record a single
-continuous critical path where possible.
+   This is the #1 rehearsal failure. The Learning Layer remembers completed runs: after any
+   prior run the agent emits `recalled_history` and **skips the unattested-denial beat**, so
+   the `403` moment will not play. Only `{"hard": true}` clears the incident ledger.
+
+3. **Lock the scenario to Datacenter.** If Apparel was toggled while testing, switch the
+   dashboard dropdown back to Datacenter (or `POST /api/demo/scenario {"id":"datacenter"}`),
+   **then hard-reset again (step 2)** — switching scenario clears the decision trail but
+   **not** the incident ledger, so the denial beat stays suppressed until you hard-reset. The
+   consume button and copy are scenario-aware ("Consume dye stock" on Apparel), so a stale
+   scenario shows on camera.
+
+4. **Confirm the mode badges read `Live Zero` and `Pomerium`** in the top bar — not Fixture
+   or Development. If they read otherwise the live path is not wired; disclose the local
+   fallback, do not narrate it as live.
+
+5. **Stage the proof tabs and record clean.** Keep the Pomerium authorize log and the
+   received PO email open in separate tabs. Record a single continuous critical path where
+   possible.
+
+Use a **soft** reset (the dashboard Reset button) only when you deliberately *want* the
+learning beat (`recalled_history` + proven-vendor chip) as a second run after the main arc —
+never before the denial beat.
 
 ## Script
 

@@ -296,3 +296,13 @@ the chip legible for **fixture+development** (chip `nexla-event-001`) and **fixt
 (blue `Pomerium`, computed `#1c5b88` on `#e1f0fa`), no console errors. The `Live Zero` label
 is the pre-existing verification conditional (unchanged), reachable only with the live Zero
 adapter (deferred to W2/C6).
+
+**C4 — DEMO.md rehearsal hardening.** Rewrote the "Before Recording" prose in `docs/DEMO.md`
+into an explicit 5-step pre-rehearsal checklist, run before recording **and before every
+denial rehearsal**: (1) `doctor:prize` + `check` green; (2) hard-reset the incident ledger
+(`{"hard":true}`) before EVERY denial rehearsal — flagged the #1 rehearsal failure, since the
+Learning Layer otherwise suppresses the prize-critical 403 beat; (3) datacenter scenario lock
+with a code-verified caveat (`store.reset` clears the decision trail but not the incident
+ledger, so a scenario switch needs a follow-up hard-reset); (4) confirm `Live Zero` /
+`Pomerium` badges; (5) stage proof tabs + record continuous. Doc only; canonical port 4000
+preserved.
