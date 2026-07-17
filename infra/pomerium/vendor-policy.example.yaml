@@ -1,5 +1,14 @@
-# Copy the policy body into the Pomerium Zero route editor and replace the user ID
-# with the exact service-account subject shown by your Pomerium authorize log.
+# Pomerium route policy for the vendor-scoped PO route (item B1).
+#
+# Paste this ALLOW body into the Zero route editor for the route whose "To" is
+# http://procurement:4001. Everything not matched here is implicitly denied — that
+# implicit deny is what turns the general `procurement-agent` request into the stage 403.
+#
+# The vendor service-account User ID MUST be exactly "vendor:vendor-northstar" (colon
+# included) — see docs/integrations/POMERIUM.md step 2. It is matched by `user.is`
+# below AND the procurement origin requires the assertion `sub` to equal
+# "vendor:" + vendorId (services/procurement/src/authorize.ts). Do not replace it with
+# a console-assigned random id; instead set the service account's User ID to this value.
 allow:
   and:
     - user:
