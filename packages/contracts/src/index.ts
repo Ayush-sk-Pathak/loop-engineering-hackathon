@@ -224,6 +224,11 @@ export interface DemoState {
     watchedSkus: string[];
     lastCheckAt: string | null;
   };
+  clientIncident?: {
+    nodeId: string;
+    faultType: string;
+    detectedAt: string;
+  };
   events: DecisionEvent[];
   vendors: VendorCandidate[];
   blacklistedVendorIds: string[];

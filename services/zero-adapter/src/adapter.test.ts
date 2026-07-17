@@ -114,6 +114,7 @@ test("createZeroTransport gates the live transport on a Zero wallet session", ()
   assert.equal(createZeroTransport({}), null);
   assert.equal(createZeroTransport({ ZERO_PRIVATE_KEY: "   " }), null);
   assert.ok(createZeroTransport({ ZERO_PRIVATE_KEY: "wallet-key" }));
+  assert.ok(createZeroTransport({ ZERO_SESSION_TOKEN: "session-token" }));
 });
 
 test("bearer token is enforced when configured", async () => {

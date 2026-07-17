@@ -393,7 +393,8 @@ Blueprint of record: `docs/architecture.md` (protected file). Runtime topology:
 
 The dashboard uses a same-origin Next.js proxy plus `CONTROL_PLANE_INTERNAL_URL`, so one
 build works locally, in Docker (`compose.yaml`), and on Akash. `npm run dev` runs the
-three processes; `docker compose up --build` runs the same topology with procurement
+four local processes (control plane, procurement, evidence adapter, and Continuum UI);
+`docker compose up --build` runs the same topology with procurement
 exposed only to the container network. State: SQLite at `SQLITE_PATH=data/continuim.db`.
 
 ### 7.2 The five frozen seams (schema v1.1)
@@ -956,7 +957,7 @@ received PO email are open in separate tabs; record one continuous take.
 | Time | Beat | What is shown |
 |---|---|---|
 | 0:00–0:15 | **Hook** | "A datacenter incident has consumed its replacement memory. Continuim watches the spares pool, buys the recovery part, and keeps authorization outside the model." |
-| 0:15–0:40 | **Autonomous trigger** | Click **Simulate node failure** until the final safe spare is consumed, then hands off. Monitor last-check time ticks; `stockout_risk` appears with no run action. Show the Nexla event ID if live; otherwise disclose the local monitor. State that vendors are disclosed synthetic candidates. |
+| 0:15–0:40 | **Autonomous trigger** | On **Client console**, inject a simulated node fault and hand off. The detector posts `/api/demo/client-incident`; the always-on monitor crosses the inventory threshold and starts the loop. Switch to the business **Operations** view. State that vendors are disclosed synthetic candidates. |
 | 0:40–1:00 | **Load-bearing denial** | Agent submits the cheaper lookalike plan with the authenticated general-agent identity. Pomerium `403`: request ID + `allow:false` authorize log; no matching origin request. |
 | 1:00–1:40 | **Paid observation** | Agent replans and buys evidence through Zero: exact service names, prices, wallet delta, receipt IDs. Policy marks the lookalike **ineligible** from combined contradictions — not legal fraud from domain age alone. |
 | 1:40–2:10 | **Capability and recovery** | Second candidate passes. Attestation summary: vendor, payee, quote, amount cap, evidence hash, expiry, nonce. Retry with the vendor-scoped Pomerium identity → `201`. |

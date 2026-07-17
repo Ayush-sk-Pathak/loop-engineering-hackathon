@@ -454,3 +454,18 @@ scratch code and is not the default runtime. **Open reconciliations:** two Bedro
 (this `bedrock.ts` on main vs lane D's held
 `claude.ts`) — reconcile at W3 D-merge; contracts change landed without all-owner ack
 (retroactive ack requested on the board).
+
+### 2026-07-17 — Client console: persisted control-plane recovery trace
+
+**Built.** The `/datacenter` client console now keeps only GPU telemetry synthetic and explicitly
+labeled as such. A detector-confirmed client fault calls `POST /api/demo/client-incident`; its
+timeout-based agent bridge was removed. The console polls same-origin control-plane state and renders
+persisted `DecisionEvent`s as the agent trace, so denial, verification, attestation, ordering, and
+inbound scheduling are shown from SQLite-backed state. The client incident is persisted too, so a
+page refresh retains the originating node and fault while the run is visible in the agent view.
+
+**Verified.** `npm run check` passed (**38/38**) and `npm --prefix Continuum run build` passed.
+Against an isolated fixture/development stack (ports 4500/4501/4502), the production client proxy
+accepted `gpu-07` / `node_offline`, the monitor started the real loop, and SQLite passed
+`PRAGMA integrity_check` (`ok`) with `demo_state=1`, `decision_events=14`, and `incidents=1`.
+The recovery trace reached a signed PO and scheduled inbound supply. No paid provider call was made.

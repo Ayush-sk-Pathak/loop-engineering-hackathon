@@ -51,7 +51,8 @@ Every top-level directory, what lives there, and why it exists.
 | `services/agent/` | `runProcurementLoop` — the deterministic agent loop, written against four injected ports, plus its test. | The agent's behavior (deny → learn → verify → buy) is pure logic with no I/O, so it is unit-testable end to end. |
 | `services/control-plane/` | The orchestrator HTTP server (port 4000), the SQLite `DemoStore`, the inventory monitor, and the runtime that wires the agent loop's ports to real services. | The single writable source of demo state; everything the dashboard shows comes from here. |
 | `services/procurement/` | The protected purchase-order origin (port 4001): authorization (dev-guard or Pomerium assertion + attestation), PO creation, idempotency, nonce replay defense. | The thing being protected. It trusts nothing from the caller except cryptographic proof. |
-| `apps/dashboard/` | Next.js 15 / React 19 operations dashboard (port 3000) with a single catch-all API proxy route to the control plane. | The judge-facing UI: inventory, decision trace, vendor evidence status, metrics. |
+| `Continuum/` | Next.js 15 / React 19 primary business workspace (port 3000), with live operations routes and the client datacenter console at `/datacenter`. | The launch UI: business operations plus client-side fault simulation. |
+| `apps/dashboard/` | Legacy Next.js operations dashboard with a single catch-all API proxy route to the control plane. | Compatibility/judge-facing fallback surface. |
 | `scripts/` | `demo.ts` (scripted node-failure driver), `doctor.ts` (readiness checks, local + prize), `bootstrap.sh` (setup), `githooks/pre-commit`. | Operational entry points and enforcement. |
 | `config/` | `example.env` (the canonical env template), `zero-services.json` (live Zero service lock — currently unverified), `nexla-stockout.example.json` (canonical Nexla payload). | Configuration is versioned, secrets are not (`.env` is git-ignored and hook-blocked). |
 | `infra/pomerium/` | `vendor-policy.example.yaml` — the route policy body for the Pomerium Zero editor. | The vendor-scoped allow policy is code-reviewable even before the live route exists. |
@@ -109,15 +110,15 @@ devDependencies: `typescript`, `tsx`, `concurrently`, `postcss`, `@types/*`.
 | `dev` | `concurrently` runs `dev:control`, `dev:procurement`, `dev:web` (labels control/procurement/web, colors cyan/yellow/green). |
 | `dev:control` | `node --env-file-if-exists=.env --watch --import tsx services/control-plane/src/server.ts` |
 | `dev:procurement` | Same pattern for `services/procurement/src/server.ts`. |
-| `dev:web` | `next dev apps/dashboard --hostname 127.0.0.1 --port 3000` (invoked via `node node_modules/next/dist/bin/next` so `--env-file-if-exists` applies). |
+| `dev:web` | `cd Continuum && npm run dev` — primary business/client UI on port 3000. |
 | `dev:evidence` | Watch-mode start for `services/zero-adapter/src/server.ts` on `ZERO_EVIDENCE_ADAPTER_PORT` (default 4100). |
 | `test` | `node --import tsx --test` with an **explicit file list** (currently 12 files — see §13). New test files must be added to this list to run in CI/pre-commit. |
 | `typecheck` | `tsc --noEmit` over the whole repo (single root `tsconfig.json`: ES2022, NodeNext, `strict`, `allowImportingTsExtensions`, `noEmit`). |
 | `check` | `npm run typecheck && npm test` — also what the pre-commit hook runs. |
-| `build:web` | `next build apps/dashboard`. |
+| `build:web` | `cd Continuum && npm run build`. |
 | `build` | `npm run check && npm run build:web` (also the Docker image build step). |
 | `start:control` / `start:procurement` / `start:evidence` | Non-watch tsx starts of the runtime services (Docker/compose/Akash commands). |
-| `start:web` | `next start apps/dashboard --hostname 0.0.0.0 --port 3000`. |
+| `start:web` | `cd Continuum && npm run start`. |
 | `demo` | `tsx scripts/demo.ts` — scripted three-node-failure demo driver (§14.1). |
 | `doctor` | `tsx scripts/doctor.ts` — local readiness checks. |
 | `doctor:prize` | Same with `CONTINUIM_REQUIRE_PRIZE=1` — fails closed unless live-sponsor config exists (§14.4). |
@@ -554,7 +555,7 @@ Pomerium JWKS. It never trusts `vendorId` from the body alone, never trusts an u
 header, and never skips binding checks in either mode. In prize mode, port 4001 must not
 be published — Pomerium must be the only route (see `docs/integrations/POMERIUM.md`).
 
-### 5.5 `apps/dashboard` — operations UI (port 3000)
+### 5.5 `apps/dashboard` — legacy operations UI
 
 Files: `app/layout.tsx` (metadata + global `styles.css`), `app/page.tsx` (renders the
 single component), `app/styles.css`, `components/operations-dashboard.tsx`,
@@ -596,12 +597,15 @@ Connection failures show a retry banner; the poll keeps running.
 The default local path (fixture evidence, development guard, datacenter scenario),
 exactly as the code executes it:
 
-1. **Boot.** `npm run dev` starts the three processes. The control plane opens/creates
+1. **Boot.** `npm run dev` starts the control plane, procurement origin, evidence adapter,
+   and primary Continuum UI. The control plane opens/creates
    `data/continuim.db`, seeds an idle `DemoState` for the `datacenter` profile
    (5 spares on hand, threshold 2), and starts the 2-second monitor.
-2. **Failure injection.** The operator (or `npm run demo`) POSTs `/api/demo/consume`
-   three times: 5 → 4 → 3 → 2 on-hand. (Alternatively, Nexla POSTs the frozen v1.1 event
-   to `/api/events/stockout`, or `/api/demo/run` fires a `local` event directly.)
+2. **Failure injection.** The client console detects a simulated node fault and POSTs
+   `/api/demo/client-incident`, which drains the synthetic inventory to the threshold.
+   (Alternatively, the operator or `npm run demo` POSTs `/api/demo/consume` three times:
+   5 → 4 → 3 → 2 on-hand. Nexla can POST the frozen v1.1 event to
+   `/api/events/stockout`, or `/api/demo/run` fires a `local` event directly.)
 3. **Monitor tick.** Within ≤ 2 s, `checkInventoryOnce` observes
    `currentQty (2) <= threshold (2)`, `inboundQty 0`, `runStatus idle`, monitor active,
    item critical → emits a `StockoutRiskEvent` (`source: "monitor"`, `requestedQty: 20`,
@@ -1016,12 +1020,15 @@ tests + Next build — **the image cannot build if checks fail**), default CMD
 `start:control`. `.dockerignore` excludes `.git`, `.next`, `node_modules`, `data`,
 `.env*`.
 
-`compose.yaml` (project `continuim`) runs the same image three times:
+`compose.yaml` (project `continuim`) runs the same image for the control plane, procurement
+origin, evidence adapter, and Continuum UI:
 - `procurement` — `start:procurement`, `expose 4001` (internal only, **not** published),
   health-checked via `fetch /health`.
 - `control-plane` — `start:control`, published `4000:4000`,
   `PROCUREMENT_URL=http://procurement:4001`, volume `continuim-data:/app/data` (the
   only persistent volume), depends on procurement healthy.
+- `evidence-adapter` — `start:evidence`, internal port `4100`, health-checked before the
+  control plane starts.
 - `dashboard` — `start:web`, published `3000:3000`,
   `CONTROL_PLANE_INTERNAL_URL=http://control-plane:4000`, depends on control-plane
   healthy.
@@ -1029,7 +1036,7 @@ All read `.env` via `env_file` with `AUTH_MODE=development` pinned.
 
 ### 14.3 Akash template
 
-`deploy/akash/deploy.example.yaml` (SDL v2.0): the same three services from an immutable
+`deploy/akash/deploy.example.yaml` (SDL v2.0): the same application services from an immutable
 `ghcr.io/REPLACE_OWNER/continuim:REPLACE_SHA` image. Only the dashboard is global
 (port 3000 as 80); `control` is exposed only to `dashboard`; `procurement` only to
 `control`. Compute: 0.5 CPU/512 Mi (dashboard), 0.25/256 Mi (control, procurement);

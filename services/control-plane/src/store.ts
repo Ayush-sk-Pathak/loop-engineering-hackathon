@@ -137,6 +137,13 @@ export class DemoStore {
     }));
   }
 
+  setClientIncident(nodeId: string, faultType: string): DemoState {
+    return this.update((state) => ({
+      ...state,
+      clientIncident: { nodeId, faultType, detectedAt: new Date().toISOString() },
+    }));
+  }
+
   setMonitorActive(active: boolean): DemoState {
     return this.update((state) => ({
       ...state,

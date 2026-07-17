@@ -82,6 +82,7 @@ export default function LandingPage() {
           <nav className="ml-auto hidden items-center gap-7 text-[13px] font-medium text-muted md:flex">
             <a href="#how-it-works" className="hover:text-ink">How it works</a>
             <a href="#live-product" className="hover:text-ink">Live product</a>
+            <Link href="/datacenter" className="hover:text-ink">Client console</Link>
             <Link href="/dashboard" className="hover:text-ink">Operations</Link>
           </nav>
           <Link href="/continuum" className="btn-primary ml-5">

@@ -12,6 +12,7 @@ const NAV = [
   { href: "/procurement", label: "Procurement", icon: "procurement", group: "Operations" },
   { href: "/suppliers", label: "Vendors", icon: "vendors", group: "Operations" },
   { href: "/continuum", label: "Continuum", icon: "shield", group: "Installed app" },
+  { href: "/datacenter", label: "Client console", icon: "dashboard", group: "Installed app" },
   { href: "/reports", label: "Reports", icon: "reports", group: "Manage" },
   { href: "/settings", label: "Settings", icon: "settings", group: "Manage" },
 ];
