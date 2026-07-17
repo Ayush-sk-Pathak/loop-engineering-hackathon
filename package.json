@@ -1,0 +1,33 @@
+{
+  "name": "stockshield",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Policy-enforced autonomous procurement for stockout emergencies.",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "bootstrap": "sh scripts/bootstrap.sh && npm install",
+    "dev": "concurrently -n control,procurement,web -c cyan,yellow,green \"npm run dev -w @stockshield/control-plane\" \"npm run dev -w @stockshield/procurement\" \"npm run dev -w @stockshield/dashboard\"",
+    "dev:control": "npm run dev -w @stockshield/control-plane",
+    "dev:procurement": "npm run dev -w @stockshield/procurement",
+    "dev:web": "npm run dev -w @stockshield/dashboard",
+    "test": "tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/agent/src/loop.test.ts services/procurement/src/authorize.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && npm run build -w @stockshield/dashboard",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "concurrently": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

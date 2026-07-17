@@ -1,4 +1,4 @@
-# START HERE — session reading order for Aegis
+# START HERE — session reading order for StockShield
 
 > Every session (human or AI) starts here. Read in this order — each layer grounds
 > the next. The strategy ledger is also injected automatically at session start by

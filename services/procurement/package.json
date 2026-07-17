@@ -1,0 +1,15 @@
+{
+  "name": "@stockshield/procurement",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "@stockshield/contracts": "*",
+    "@stockshield/security": "*",
+    "jose": "^6.0.0"
+  }
+}

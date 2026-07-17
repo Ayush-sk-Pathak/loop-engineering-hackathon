@@ -1,4 +1,4 @@
-# CLAUDE.md — the Aegis Constitution
+# CLAUDE.md — the StockShield Constitution
 
 > Standing instructions for every Claude Code session in this repository.
 >
@@ -6,9 +6,9 @@
 > `docs/PROJECT_STATUS.md` (30-second orientation) → `START-HERE.md`
 > (the full session reading order). The full plan lives in `docs/PRD.md`.
 
-**Project:** Aegis — an autonomous stockout-rescue procurement agent that verifies every supplier with real paid checks before it can spend a cent, so it can't be scammed.
+**Project:** StockShield — a policy-enforced autonomous procurement agent that buys current vendor evidence before receiving a vendor-scoped capability to issue a purchase order.
 
-**Stack:** TypeScript/Node (agent core + procurement API), Next.js/React (storefront + ops dashboard), Anthropic Claude via the Claude Agent SDK (agent reasoning), Zero.xyz (paid verification tools + agent wallet, x402/USDC-on-Base), Pomerium (identity-aware policy gate on the payment/PO API), Nexla FlexFlow (real-time inventory stream → stockout trigger), SQLite (inventory + vendors + attestations), Docker on Akash (hosting).
+**Stack:** TypeScript/Node (agent core + procurement API), Next.js/React (storefront + ops dashboard), Anthropic Claude via the Claude Agent SDK (planning/explanation), Zero.xyz (paid evidence + StableEmail), Pomerium (vendor-scoped machine-identity gate), Nexla FlexFlow (real-time inventory stream -> stockout trigger), SQLite (state + replay protection), Docker on Akash (hosting).
 
 ---
 

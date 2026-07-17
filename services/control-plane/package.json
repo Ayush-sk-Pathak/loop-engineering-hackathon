@@ -1,0 +1,15 @@
+{
+  "name": "@stockshield/control-plane",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "@stockshield/agent": "*",
+    "@stockshield/contracts": "*",
+    "@stockshield/security": "*",
+    "@stockshield/verification": "*"
+  }
+}
