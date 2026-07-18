@@ -632,3 +632,28 @@ route `po.dynamic-monitor-6165.pomerium.app` → `http://procurement:4001`, Pass
 ON, policy = ALLOW body of `infra/pomerium/vendor-policy.example.yaml`
 (`user.is "sfhack"` AND POST AND `/po/vendor-northstar`). The `POMERIUM_ZERO_TOKEN` is a
 databroker/connect token, not a console-API key, so route CRUD via API is not available.
+### 2026-07-17 — Lane B: live Pomerium 502-blocked (origin not co-located); reverted to `development`, demo:verify PASS
+
+**Root cause found (data, not hypothesis).** The `po.` route WAS created in the Zero console
+(From `https://po.dynamic-monitor-6165.pomerium.app`, To `http://procurement:4001`, Pass
+Identity Headers on). DNS resolves the host to the proxy edge `12.94.132.170`, and from a
+networked machine it now returns **Cloudflare 502 Bad Gateway** (2026-07-18 00:04 UTC) — i.e.
+the edge + route are up but Pomerium cannot reach the **origin** `http://procurement:4001`.
+That private hostname only resolves on the proxy's own network; procurement is not running
+there. Closing the 502 needs procurement co-located with the proxy (self-hosted `pomerium`
+container on procurement's docker network, or procurement deployed where the Zero tunnel
+connects) — infra work, NOT a console/policy edit. Note: the route policy as first saved was
+`Allow kshatriyakedar@gmail.com` (the console owner), which would also deny the vendor SA
+`sfhack`; the correct body is `infra/pomerium/vendor-policy.example.yaml`
+(`user.is "sfhack"` AND POST AND `/po/vendor-northstar`).
+
+**Emergency measure taken.** Reverted runtime `.env` `AUTH_MODE=pomerium` → **`development`**
+so the demo is runnable now. The pomerium route URL / audience / `vendor-northstar=sfhack`
+alias stay staged for a one-line reflip once the 502 is resolved.
+
+**Verified runnable (evidence).** `npm run demo:verify` **PASS** — both incidents completed
+concurrently through the Next proxy: Meridian datacenter → PO `PO-0C222EA3` (blacklisted
+`vendor-lookalike`, 20 inbound, 14 events); Northwind apparel → PO `PO-36923B9E` (blacklisted
+`vendor-pacificdye`, 20 inbound, 14 events); cross-client integrity `ok`; `Continuum` build
+passed. Fixture/development mode with disclosure; no paid provider call. Trade-off: this drops
+the live Pomerium 403/201 proof, which is physically unavailable while the proxy origin 502s.
