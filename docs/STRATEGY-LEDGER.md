@@ -9,13 +9,14 @@ supersede to `logs/DECISIONS.jsonl`.**
 
 ## Current front (2026-07-17) — where we are right now
 
-Continuim's autonomous critical-spares slice and schema v1.1 are implemented, and the
-horizontal scenario engine (datacenter + apparel profiles, one loop) is landing. The active
-front is the live Zero evidence adapter plus the Pomerium deny/allow path. Run
-`npm run doctor:prize` before recording. The hero is the autonomous emergency-procurement
-rescue; vendor-risk authorization is its trust subset (decision 13), not a criminal fraud
-verdict. The two-branch demand-audit design is approved but deliberately deferred until the
-core sponsor proof is green.
+Shipped. `origin/main` is green (39/39) and the product is deployed: 3-service topology on
+Akash (dseq `1784324838403`), live at **https://continuum-hq.com**. Zero evidence is settled
+(3 real receipts in `config/zero-services.json`); Pomerium is staged (route + PPL + data-plane
+runbook proven; the live 403/201 is blocked only on co-locating procurement with the proxy —
+runtime reverted to `development`, one-line reflip). Explainer = the external fallback chain
+(decision 0017). Nearest follow-ups: immutable-image deploy (kills clone-at-boot downtime),
+procurement/proxy co-location, post-ship doc/board archive sweep.
+
 
 ## The load-bearing decisions (do not silently reverse)
 

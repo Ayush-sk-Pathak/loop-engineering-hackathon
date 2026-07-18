@@ -36,5 +36,5 @@
 - [ ] Run `npm run doctor:prize`, `npm run build`, and the timed demo twice
 - [ ] Record the continuous three-minute demo
 - [ ] Add live request IDs, receipts, and deployment URLs to the runbooks
-- [ ] Push the green demo-stable revision to `main`
+- [x] Push the green demo-stable revision to `main` (43e6cc7, 2026-07-17)
 - [ ] Complete the public repository and Devpost submission

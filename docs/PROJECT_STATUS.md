@@ -1,6 +1,6 @@
 # Continuim Project Status
 
-**Phase:** autonomous local vertical slice hardened; live sponsor integrations in progress.
+**Phase:** shipped — deployed on Akash, live at https://continuum-hq.com; Zero receipts settled; live Pomerium 403/201 pending origin co-location.
 
 - **Product:** autonomous emergency procurement for any critical supply — the rescue loop
   is the hero; vendor-risk/fraud defense is its built-in trust subset (decision 13).

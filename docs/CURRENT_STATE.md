@@ -657,3 +657,28 @@ concurrently through the Next proxy: Meridian datacenter → PO `PO-0C222EA3` (b
 `vendor-pacificdye`, 20 inbound, 14 events); cross-client integrity `ok`; `Continuum` build
 passed. Fixture/development mode with disclosure; no paid provider call. Trade-off: this drops
 the live Pomerium 403/201 proof, which is physically unavailable while the proxy origin 502s.
+
+### 2026-07-17 — PM: production deployment live at continuum-hq.com (Akash dseq 1784324838403)
+
+**Deployed & verified.** The 3-service topology (control, procurement-private, dashboard)
+runs on Akash via the Console managed wallet (`console-axi`, dseq `1784324838403`,
+provider jjozzietech ingress). Custom domain **https://continuum-hq.com returns HTTP 200**
+(verified 2026-07-18 ~00:20 UTC; title "Continuum — Autonomous Continuity"). `www.` CNAME
+still propagating (HTTP 000 at check time). Escrow topped up +$0.50; unused hello-world
+deployment `1784320637178` verified ("Hello from Akash") then closed.
+
+**Outage + fix (evidence in errors.jsonl).** Post-SDL-update rebuild 502'd: the pod boot
+(clone → root `npm ci` → `npm run build`) never installed `Continuum/`'s own deps (not a
+workspace member) → webpack `Module not found: framer-motion`. Fix `43e6cc7`: root
+`build:web` now runs `cd Continuum && npm ci && npm run build`. Pod bounced (kill PID 1 →
+re-clone), rebuilt clean, site recovered. **Known fragility:** clone-at-boot means every
+SDL change/restart costs minutes of downtime — follow-up: build/publish a real immutable
+image and deploy that (also what ROADMAP line "Publish immutable image" actually requires;
+the current deploy is live coverage but NOT the immutable-image form, so that box stays
+unticked).
+
+**Ship-mode note.** Doc cadence was suspended by human order during the final sprint
+(board pin 3ce4c0cd); this entry is the batch catch-up. Explainer ownership settled: the
+external dev's chain (bedrock.ts → claude.ts → openrouter.ts, `explained` phase) is THE
+explainer; lane D's parallel implementation is archived on `origin/feat/agent-explainer`
+(policy-wins tests contributable later) — DECISIONS `0017`.
