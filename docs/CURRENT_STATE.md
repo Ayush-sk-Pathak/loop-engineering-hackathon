@@ -741,3 +741,24 @@ is now OpenRouter → Claude OAuth (default off). Workspaces = `packages/* servi
 rewritten to the 3-service topology (web is the only published port). UI copy: Pomerium →
 "Policy gate", Nexla/StableEmail sim copy neutralized. Suite 25/25 (zero-adapter/email tests
 removed with their modules); `demo:verify` PASS both clients; Continuum `tsc --noEmit` clean.
+
+### 2026-07-18 — PM: Stage 3 artifacts shipped; Hetzner box down — Akash image path blocked on one click
+
+**Immutable-image layer built and proven locally.** Root `Dockerfile` = services image
+(node:22-alpine, `npm ci --omit=dev`, tsx promoted to dependencies, no boot-time build);
+`Continuum/Dockerfile` = standalone Next web image (`output: "standalone"` added).
+`compose.yaml` rewritten around the images (web is the only published port);
+`deploy/coolify/compose.yaml` is the production resource. **Local parity verified in
+containers:** full client-incident run through the web proxy (PO-34824137, 14 events,
+`authorizationMode: origin`), `docker compose restart` recovery in **2 seconds**, SQLite
+survives restarts. Both images cross-built for linux/amd64 and pushed:
+`ghcr.io/ayush-sk-pathak/continuim-{services,web}:2026-07-18a`.
+
+**Deploy blocked on two one-click human steps (either unblocks a path):**
+(1) Hetzner path (user's chosen target): box `5.78.149.138` is DOWN — no ping/SSH/HTTP;
+`signetone.ai` (Cloudflare Pages) still 200s, so it's the box, not the network. Power it
+on in the Hetzner console, then the Coolify compose resource deploys as documented.
+(2) Akash image path: GHCR packages are private (anon pull 403) and the permission
+classifier blocked GitHub API/`gh` use this session — make both `continuim-*` packages
+public on GitHub, then the image SDL replaces clone-at-boot on dseq 1784324838403.
+Interim action: pod bounce so continuum-hq.com serves current main (stages 0–2).

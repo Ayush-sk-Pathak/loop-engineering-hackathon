@@ -1,35 +1,35 @@
-name: continuim
-
-# Local parity topology. `docker compose up --build` builds both images from
-# source; production (Coolify) runs the same images pinned by tag from GHCR —
-# see deploy/coolify/compose.yaml.
+# Production topology for Coolify (docker-compose resource). Images are
+# prebuilt and pushed to GHCR — no build at deploy time, restarts take seconds.
+# Set in the Coolify resource environment before first deploy:
+#   CONTINUIM_TAG              image tag (git sha) to run
+#   ATTESTATION_SIGNING_SECRET random secret, same value reaches both services
+#   VERIFICATION_MODE          fixture | live
+#   FIRECRAWL_API_KEY          required when VERIFICATION_MODE=live
+#   STOCKOUT_WEBHOOK_SECRET    recommended (public ingress)
 services:
   procurement:
-    image: ghcr.io/ayush-sk-pathak/continuim-services:${CONTINUIM_TAG:-local}
-    build: .
+    image: ghcr.io/ayush-sk-pathak/continuim-services:${CONTINUIM_TAG:-latest}
     command: npm run start:procurement
     environment:
       PROCUREMENT_HOST: 0.0.0.0
-      ATTESTATION_SIGNING_SECRET: ${ATTESTATION_SIGNING_SECRET:-local-attestation-only-change-me}
+      ATTESTATION_SIGNING_SECRET: ${ATTESTATION_SIGNING_SECRET:?set a real secret}
     expose:
       - "4001"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4001/health').then(r=>{if(!r.ok)process.exit(1)})"]
-      interval: 3s
-      timeout: 2s
+      interval: 5s
+      timeout: 3s
       retries: 10
-    networks:
-      main: {}
 
   control-plane:
-    image: ghcr.io/ayush-sk-pathak/continuim-services:${CONTINUIM_TAG:-local}
-    build: .
+    image: ghcr.io/ayush-sk-pathak/continuim-services:${CONTINUIM_TAG:-latest}
     command: npm run start:control
     environment:
       CONTROL_PLANE_HOST: 0.0.0.0
       PROCUREMENT_URL: http://procurement:4001
       SQLITE_PATH: /app/data/continuim.db
-      ATTESTATION_SIGNING_SECRET: ${ATTESTATION_SIGNING_SECRET:-local-attestation-only-change-me}
+      ATTESTATION_SIGNING_SECRET: ${ATTESTATION_SIGNING_SECRET:?set a real secret}
       VERIFICATION_MODE: ${VERIFICATION_MODE:-fixture}
       FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
       LINKUP_API_KEY: ${LINKUP_API_KEY:-}
@@ -41,29 +41,23 @@ services:
     depends_on:
       procurement:
         condition: service_healthy
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>{if(!r.ok)process.exit(1)})"]
-      interval: 3s
-      timeout: 2s
+      interval: 5s
+      timeout: 3s
       retries: 10
-    networks:
-      main: {}
 
   web:
-    image: ghcr.io/ayush-sk-pathak/continuim-web:${CONTINUIM_TAG:-local}
-    build: Continuum
+    image: ghcr.io/ayush-sk-pathak/continuim-web:${CONTINUIM_TAG:-latest}
     environment:
       CONTROL_PLANE_INTERNAL_URL: http://control-plane:4000
     ports:
-      - "3000:3000"
+      - "3000"
     depends_on:
       control-plane:
         condition: service_healthy
-    networks:
-      main: {}
-
-networks:
-  main: {}
+    restart: unless-stopped
 
 volumes:
   continuim-data:
