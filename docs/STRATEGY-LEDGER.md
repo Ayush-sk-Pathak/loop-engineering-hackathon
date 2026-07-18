@@ -9,15 +9,16 @@ supersede to `logs/DECISIONS.jsonl`.**
 
 ## Current front (2026-07-18) — where we are right now
 
-Post-hackathon repair (the demo failed; user lifted the sponsor-tool constraint and
-delegated all calls — decision 0018). The agent works again, end to end: local `.env` back
-to a satisfiable mode, and `VERIFICATION_MODE=live` now gathers REAL evidence in-process
-(rdap.org + Firecrawl + optional Linkup; catalog eligible vendors point at kingston.com /
-archroma.com; fail-closed unchanged). Sponsor surfaces removed: no Pomerium (origin-side
-attestation verification IS the enforcement layer), no zero-adapter, no Akash SDL, no
-Bedrock/Codex/StableEmail; webhook ingress genericized. Suite 25/25; `demo:verify` PASS.
-Next: immutable Docker images deployed on the Hetzner/Coolify box, Cloudflare cutover of
-continuum-hq.com, then close Akash dseq `1784324838403`.
+The agent works end to end, locally and in production. Prod = Akash dseq `1784324838403`
+at **https://continuum-hq.com** — first full on-site run passed 2026-07-18
+(**PO-C92351A9**) after fixing the deploy-day k8s port-injection crash-loop and trimming
+the clone-at-boot commands. `VERIFICATION_MODE=live` gathers real evidence (RDAP +
+Firecrawl; catalog on kingston.com/archroma.com); sponsor surfaces are removed (0018).
+**Hosting decision 0019: prod stays on Akash** — the old Hetzner box was deleted with its
+account; the new box hosts the live careercopilot product and is off-limits. Standing
+directive: no destructive actions; the user's other codebases stay safe. Last open step:
+user flips the two GHCR packages public → one `deployment update` applies the immutable
+image SDL (seconds-restarts, no DNS change). `www.` DNS record still unresolved (000).
 
 ## The load-bearing decisions (do not silently reverse)
 
@@ -158,6 +159,15 @@ continuum-hq.com, then close Akash dseq `1784324838403`.
     fabricate live evidence) explicitly stands. **Rejected, do not re-propose:** dormant
     Pomerium code paths behind env gates; keeping the zero-adapter seam; Supabase for
     SQLite; staying on Akash. DECISIONS `0018`.
+
+18. **Prod stays on Akash; the Hetzner clause of 0017/0018 is superseded (2026-07-18).**
+    The old box (5.78.149.138) was deleted with its Hetzner account in early July; the new
+    account's only server hosts the live careercopilot product — **never co-locate onto it,
+    never touch it** (standing user directive: no destructive actions, other codebases
+    safe). Immutable images ship to Akash via `deploy/akash/deploy.image.yaml` once the
+    GHCR packages are public. **Rejected, do not re-propose:** deploying onto the
+    careercopilot box; a fresh paid Hetzner server; closing the Akash deployment.
+    DECISIONS `0019`.
 
 ## Standing directives & envelope
 

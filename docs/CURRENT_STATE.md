@@ -787,3 +787,14 @@ attested → **PO-C92351A9 accepted through origin** → 20 inbound. Also fixed 
 **Still open (each one human click):** Hetzner box power-on → Coolify path (chosen
 target), or GHCR packages public → `deploy.image.yaml` switch. Akash stays up as the
 serving host until one of those verifies end-to-end.
+
+### 2026-07-18 — PM: hosting decided — prod stays on Akash (decision 0019)
+
+User ground truth: the old Hetzner box was deleted with its account (the "box down"
+diagnosis was a deleted machine); the new account's only server (careercopilot,
+49.13.130.53, Coolify v4, 3.7GB RAM) hosts a live product. Read-only inspection only —
+standing directive from the user this session: **no destructive actions; other codebases
+stay safe.** User chose Stay-on-Akash over co-locating or a fresh server. Remaining:
+GHCR packages public (user click) → image-SDL update; and the `www.` DNS record is
+missing (curl exit 6). Observation for the user, no action taken: the new box binds
+Coolify admin :8000 publicly (old box was tunnel-only).
