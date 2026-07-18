@@ -13,7 +13,7 @@ import { runProcurementLoop } from "./index.ts";
 test("loop blacklists the lookalike, proves denial, and orders from the eligible vendor", async () => {
   const events: DecisionEvent[] = [];
   const event: StockoutRiskEvent = {
-    schemaVersion: "1.1",
+    schemaVersion: "1.2",
     type: "stockout_risk",
     eventId: "stockout-1",
     sku: "DDR5-ECC-64GB",

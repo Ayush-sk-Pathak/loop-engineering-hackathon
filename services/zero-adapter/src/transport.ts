@@ -101,7 +101,7 @@ export const CANDIDATE_SERVICES = {
  * bring-your-own wallet can also be provided with `ZERO_PRIVATE_KEY`, and
  * sandbox runs may pass `ZERO_SESSION_TOKEN`. With no session it returns `null`,
  * and the adapter answers 503 "Zero session not configured": it must never
- * fabricate fixture-shaped `live_zero` evidence (STRATEGY-LEDGER decision 0010).
+ * fabricate fixture-shaped `live` evidence (STRATEGY-LEDGER decision 0010).
  */
 export function createZeroTransport(
   env: Record<string, string | undefined> = process.env,

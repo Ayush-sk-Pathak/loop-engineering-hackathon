@@ -166,7 +166,7 @@ export async function runProcurementLoop(
     await emit("verifying", "Collecting independent vendor evidence", vendor);
     const { verdict, attestation } = await ports.verification.verify(vendor);
     verificationSpendCents += verdict.totalCostCents;
-    if (verdict.evidenceMode === "live_zero") verificationMode = "live_zero";
+    if (verdict.evidenceMode === "live") verificationMode = "live";
 
     if (verdict.status !== "eligible" || !attestation) {
       await emit(

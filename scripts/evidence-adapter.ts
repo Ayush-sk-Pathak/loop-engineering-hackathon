@@ -20,7 +20,7 @@ const source = (
 ) => ({
   provider,
   serviceId,
-  mode: "live_zero" as const,
+  mode: "live" as const,
   costCents,
   observedAt: now(),
   receiptId: costCents > 0 ? receipt(provider, vendor) : undefined,

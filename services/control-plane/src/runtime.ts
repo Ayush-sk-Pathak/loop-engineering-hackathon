@@ -35,9 +35,11 @@ export async function runStockout(
 ): Promise<void> {
   const state = store.start(stockout.currentQty, stockout.sku);
   let acceptedOrder: ProcurementResult["order"];
-  const evidenceCollector = createEvidenceCollector();
 
   try {
+    // Created inside the try: a misconfigured mode (e.g. live without its key)
+    // must mark the run failed, not strand the store at "running".
+    const evidenceCollector = createEvidenceCollector();
     const result = await runProcurementLoop(stockout, state.vendors, {
       verification: {
         async verify(vendor) {

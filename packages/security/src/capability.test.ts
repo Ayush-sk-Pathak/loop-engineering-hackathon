@@ -20,7 +20,7 @@ const unsigned: Omit<VendorAttestation, "signature"> = {
   payeeName: "Vendor A LLC",
   payeeAccountRef: "acct-vendor-a",
   evidenceHash: "hash-a",
-  policyVersion: "vendor-risk-v1",
+  policyVersion: "vendor-risk-v2",
   unitPriceCents: 12_000,
   maxQuantity: 20,
   maxAmountCents: 240_000,

@@ -1,11 +1,11 @@
 // Local, read-only mirror of the subset of @continuim/contracts (DemoState) that
 // the Continuum live view consumes. Continuum is a standalone app (not linked to
 // the root npm workspace), so we duplicate the shape here rather than import it.
-// Source of truth: packages/contracts/src/index.ts:204-237 (schema v1.1).
+// Source of truth: packages/contracts/src/index.ts:204-237 (schema v1.2).
 // Keep in sync if the control-plane payload changes.
 
 export type ScenarioId = "datacenter" | "apparel";
-export type EvidenceMode = "fixture" | "live_zero";
+export type EvidenceMode = "fixture" | "live";
 export type AuthorizationMode = "development" | "pomerium";
 export type RunStatus = "idle" | "running" | "complete" | "failed";
 

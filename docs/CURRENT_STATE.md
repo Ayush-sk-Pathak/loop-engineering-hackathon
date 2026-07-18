@@ -703,3 +703,25 @@ replatform — immutable Docker images on the Hetzner/Coolify box, Cloudflare cu
 continuum-hq.com, then close Akash dseq 1784324838403. Second structural finding: scenario
 vendors all use `.example` domains, so no real-evidence mode could ever return eligible —
 the catalog change in stage 1 is mandatory, Zero or no Zero.
+
+### 2026-07-17 — PM: Stage 1 shipped — real evidence without Zero (`VERIFICATION_MODE=live`)
+
+**Live evidence is now in-process** (`services/verification/src/live.ts` + `match.ts`; the
+HTTP zero-adapter seam is bypassed and slated for Stage-2 removal). Order of operations:
+local hard checks first (payee agreement, homoglyph-typosquat vs peer candidate domains —
+a hard-failed lookalike costs zero external calls), then rdap.org → `domain_age_days`
+(free), Firecrawl scrape → `web_presence` + `company_identity_match`, optional Linkup →
+`news_presence`. Fail-closed unchanged: provider failure omits the signal, missing key
+fails the run honestly (verified: `failed` with "VERIFICATION_MODE=live requires
+FIRECRAWL_API_KEY"). Contracts: `EvidenceMode` is now `fixture | live` (schema 1.2,
+policy `vendor-risk-v2`, hard-fail now beats missing-signal in status precedence);
+mirrored in `Continuum/src/lib/live/contracts.ts`.
+
+**Vendor catalog now points at real domains** so live evidence is genuinely real:
+datacenter eligible = Kingston Technology / kingston.com (RDAP 1993), apparel eligible =
+Archroma / archroma.com (RDAP 2000); lookalikes stay fabricated (kingst0n-supply.com,
+archr0ma-supply.com) and fail on purely local checks. Verified live end-to-end, both
+scenarios concurrently: **PO-A45C30A0** (meridian) and **PO-FBA31A53** (northwind), both
+`verificationMode: live`, 14-phase trail with denial beat. Fixture path unchanged
+(`demo:verify` PASS); suite now 47/47. Two incidents caught and fixed on the way
+(errors.jsonl: `live-provider-transient-no-retry`, `collector-throw-strands-run`).

@@ -9,18 +9,22 @@ const source = (serviceId: string) => ({
   observedAt: observedAt(),
 });
 
+// The eligible candidate points at a real, established public company domain so
+// live-mode evidence (RDAP age, site scrape) is genuinely real; the quote itself
+// remains synthetic and disclosed. The lookalike stays fabricated and fails on
+// purely local checks (payee mismatch, domain lookalike substitution).
 export const DEMO_VENDORS: VendorCandidate[] = [
   {
     id: "vendor-lookalike",
-    legalName: "Northstar Distributi0n LLC",
-    tradingName: "Northstar Distribution",
-    domain: "northstar-distribution.example",
+    legalName: "Kingston Technolgy Distribution LLC",
+    tradingName: "Kingston Distribution",
+    domain: "kingst0n-supply.com",
     phone: "+1-555-010-0999",
     synthetic: true,
     quote: {
       id: "quote-lookalike-1",
       sku: "DDR5-ECC-64GB",
-      payeeName: "Northstar Holdings International",
+      payeeName: "Vertex Trade Holdings Ltd",
       payeeAccountRef: "demo-payee-lookalike",
       unitPriceCents: 120_00,
       currency: "USD",
@@ -30,15 +34,15 @@ export const DEMO_VENDORS: VendorCandidate[] = [
   },
   {
     id: "vendor-northstar",
-    legalName: "Northstar Supply Cooperative",
-    tradingName: "Northstar Supply",
-    domain: "northstar-supply.example",
+    legalName: "Kingston Technology Company, Inc.",
+    tradingName: "Kingston Technology",
+    domain: "kingston.com",
     phone: "+1-555-010-0140",
     synthetic: true,
     quote: {
       id: "quote-northstar-1",
       sku: "DDR5-ECC-64GB",
-      payeeName: "Northstar Supply Cooperative",
+      payeeName: "Kingston Technology Company, Inc.",
       payeeAccountRef: "demo-payee-northstar",
       unitPriceCents: 127_50,
       currency: "USD",

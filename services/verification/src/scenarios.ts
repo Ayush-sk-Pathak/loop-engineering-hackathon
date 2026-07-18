@@ -49,9 +49,9 @@ export const SCENARIOS: Record<ScenarioId, ScenarioProfile> = {
     vendors: [
       {
         id: "vendor-pacificdye",
-        legalName: "Pacific Dye C0. Inc",
-        tradingName: "Pacific Dyes",
-        domain: "pacificdye-co.example",
+        legalName: "Archr0ma Trade Supply Inc",
+        tradingName: "Archroma Supply",
+        domain: "archr0ma-supply.com",
         phone: "+1-555-010-0877",
         synthetic: true,
         quote: {
@@ -67,15 +67,15 @@ export const SCENARIOS: Record<ScenarioId, ScenarioProfile> = {
       },
       {
         id: "vendor-meridian",
-        legalName: "Meridian Colorants Ltd",
-        tradingName: "Meridian Colorants",
-        domain: "meridian-colorants.example",
+        legalName: "Archroma Management GmbH",
+        tradingName: "Archroma",
+        domain: "archroma.com",
         phone: "+1-555-010-0362",
         synthetic: true,
         quote: {
           id: "quote-meridian-1",
           sku: "NAVY-DYE-20L",
-          payeeName: "Meridian Colorants Ltd",
+          payeeName: "Archroma Management GmbH",
           payeeAccountRef: "demo-payee-meridian",
           unitPriceCents: 965_00,
           currency: "USD",

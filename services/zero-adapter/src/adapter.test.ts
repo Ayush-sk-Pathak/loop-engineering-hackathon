@@ -67,7 +67,7 @@ test("buildEvidenceResponse reuses one receipt across signals from the same call
   assert.equal(payee.source.receiptId, "rcpt-enrich-1"); // same paid call → reused receipt
   assert.equal(company.source.costCents, 10);
   for (const signal of response.signals) {
-    assert.equal(signal.source.mode, "live_zero");
+    assert.equal(signal.source.mode, "live");
   }
 });
 
@@ -89,7 +89,7 @@ test("buildEvidenceResponse allows a free call with no receipt", () => {
   assert.equal(response.signals[0].source.costCents, 0);
 });
 
-test("POST /v1/evidence returns normalized live_zero evidence with a transport", async () => {
+test("POST /v1/evidence returns normalized live evidence with a transport", async () => {
   const reply = await handleEvidenceRequest(
     { method: "POST", path: "/v1/evidence", body: { vendor } },
     { transport: fakeTransport([enrichmentCall, rdapCall]) },

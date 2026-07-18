@@ -17,7 +17,7 @@
     "dev:procurement": "node --env-file-if-exists=.env --watch --import tsx services/procurement/src/server.ts",
     "dev:web": "cd Continuum && npm run dev",
     "dev:evidence": "node --env-file-if-exists=.env --watch --import tsx services/zero-adapter/src/server.ts",
-    "test": "node --import tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/verification/src/scenarios.test.ts services/agent/src/loop.test.ts services/agent/src/learning.test.ts services/procurement/src/authorize.test.ts services/procurement/src/index.test.ts services/control-plane/src/monitor.test.ts services/control-plane/src/store.test.ts services/zero-adapter/src/adapter.test.ts services/procurement/src/email.test.ts services/zero-adapter/src/transport.test.ts",
+    "test": "node --import tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/verification/src/scenarios.test.ts services/agent/src/loop.test.ts services/agent/src/learning.test.ts services/procurement/src/authorize.test.ts services/procurement/src/index.test.ts services/control-plane/src/monitor.test.ts services/control-plane/src/store.test.ts services/zero-adapter/src/adapter.test.ts services/procurement/src/email.test.ts services/zero-adapter/src/transport.test.ts services/verification/src/live.test.ts",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
     "build:web": "cd Continuum && npm ci && npm run build",

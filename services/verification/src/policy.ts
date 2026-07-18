@@ -81,12 +81,22 @@ export function evaluateEvidence(
   riskScore = Math.min(riskScore, 100);
   const hardFailure = payeeMatch === false || typosquat === true;
   const compoundFailure = domainAge !== undefined && domainAge < 30 && webPresence === false;
-  const status = missing.length
-    ? "insufficient_evidence"
-    : hardFailure || compoundFailure || riskScore >= 60
-      ? "ineligible"
-      : "eligible";
-  if (missing.length) reasons.unshift(`Missing required evidence: ${missing.join(", ")}`);
+  // A hard failure is decisive even when other signals are absent — a payee
+  // mismatch or lookalike domain must never soften into insufficient_evidence.
+  const status = hardFailure
+    ? "ineligible"
+    : missing.length
+      ? "insufficient_evidence"
+      : compoundFailure || riskScore >= 60
+        ? "ineligible"
+        : "eligible";
+  if (missing.length) {
+    const missingReason = `Missing required evidence: ${missing.join(", ")}`;
+    // A hard-failed vendor short-circuits collection, so absent signals are a
+    // consequence, not the verdict — lead with the decisive reason instead.
+    if (hardFailure) reasons.push(missingReason);
+    else reasons.unshift(missingReason);
+  }
   if (!reasons.length) reasons.push("Required identity and contact signals are consistent");
 
   const evidenceHash = createHash("sha256")
@@ -101,7 +111,7 @@ export function evaluateEvidence(
   const expiresAt = new Date(now.getTime() + 15 * 60_000).toISOString();
   const evidenceMode = signals.some((signal) => signal.source.mode === "fixture")
     ? "fixture"
-    : "live_zero";
+    : "live";
   const verdict: VerificationVerdict = {
     id: randomUUID(),
     vendorId: vendor.id,

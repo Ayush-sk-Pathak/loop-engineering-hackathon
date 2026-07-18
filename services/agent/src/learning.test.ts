@@ -12,7 +12,7 @@ import { DEMO_VENDORS, evaluateEvidence, fixtureEvidence } from "@continuim/veri
 import { runProcurementLoop, type LoopHistory, type LoopResult } from "./index.ts";
 
 const event: StockoutRiskEvent = {
-  schemaVersion: "1.1",
+  schemaVersion: "1.2",
   type: "stockout_risk",
   eventId: "stockout-learning-1",
   sku: "DDR5-ECC-64GB",

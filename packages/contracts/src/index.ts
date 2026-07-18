@@ -1,9 +1,9 @@
-export const SCHEMA_VERSION = "1.1" as const;
-export const VERIFICATION_POLICY_VERSION = "vendor-risk-v1" as const;
+export const SCHEMA_VERSION = "1.2" as const;
+export const VERIFICATION_POLICY_VERSION = "vendor-risk-v2" as const;
 
 export type Currency = "USD";
 export type ScenarioId = "datacenter" | "apparel";
-export type EvidenceMode = "fixture" | "live_zero";
+export type EvidenceMode = "fixture" | "live";
 export type VerificationStatus =
   | "eligible"
   | "ineligible"

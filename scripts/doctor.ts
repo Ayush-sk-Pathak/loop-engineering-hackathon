@@ -17,7 +17,7 @@ add("Local environment", existsSync(".env"), ".env");
 add("Package lock", existsSync("package-lock.json"), "package-lock.json");
 add(
   "Verification mode",
-  !prizeRequired || verificationMode === "live_zero",
+  !prizeRequired || verificationMode === "live",
   verificationMode,
   prizeRequired,
 );

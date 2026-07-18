@@ -113,7 +113,7 @@ test("gather runs the candidate services and reuses one receipt for company+paye
   const payee = signals.find((s) => s.kind === "payee_identity_match")!;
   assert.equal(company.source.receiptId, `run-${CANDIDATE_SERVICES.enrichment.serviceId}`);
   assert.equal(payee.source.receiptId, company.source.receiptId); // one paid call → shared receipt
-  for (const signal of signals) assert.equal(signal.source.mode, "live_zero");
+  for (const signal of signals) assert.equal(signal.source.mode, "live");
 });
 
 test("gather throws (never fabricates) when the domain service returns no registration date", async () => {

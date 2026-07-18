@@ -30,7 +30,7 @@ export function buildEvidenceResponse(
     const source: EvidenceSource = {
       provider: call.provider,
       serviceId: call.serviceId,
-      mode: "live_zero",
+      mode: "live",
       costCents: call.costCents,
       observedAt: call.observedAt,
       ...(call.receiptId ? { receiptId: call.receiptId } : {}),
@@ -102,7 +102,7 @@ export async function handleEvidenceRequest(
     return { status: 401, body: { error: "Unauthorized" } };
   }
 
-  // No live Zero session ⇒ refuse, never fabricate live_zero data (decision 0010).
+  // No live Zero session ⇒ refuse, never fabricate live data (decision 0010).
   if (deps.transport === null) {
     return { status: 503, body: { error: "Zero session not configured" } };
   }
