@@ -1,0 +1,79 @@
+---
+# Immutable-image SDL — replaces the clone-at-boot deployment on dseq
+# 1784324838403. Prerequisite: the two GHCR packages must be PUBLIC
+# (Akash providers pull anonymously). Update with:
+#   console-axi update 1784324838403 --sdl deploy/akash/deploy.image.yaml
+# (or a fresh `console-axi deploy` + Cloudflare CNAME repoint if update
+# is rejected by the provider).
+version: "2.0"
+
+services:
+  dashboard:
+    image: ghcr.io/ayush-sk-pathak/continuim-web:2026-07-18a
+    env:
+      - CONTROL_PLANE_INTERNAL_URL=http://control:4000
+    expose:
+      - port: 3000
+        as: 80
+        accept:
+          - continuum-hq.com
+          - www.continuum-hq.com
+        to:
+          - global: true
+
+  control:
+    image: ghcr.io/ayush-sk-pathak/continuim-services:2026-07-18a
+    command: ["npm", "run", "start:control"]
+    env:
+      - CONTROL_PLANE_HOST=0.0.0.0
+      - CONTROL_PLANE_PORT=4000
+      - PROCUREMENT_URL=http://procurement:4001
+      - VERIFICATION_MODE=fixture
+      - SQLITE_PATH=/app/data/continuim.db
+    expose:
+      - port: 4000
+        to:
+          - service: dashboard
+
+  procurement:
+    image: ghcr.io/ayush-sk-pathak/continuim-services:2026-07-18a
+    command: ["npm", "run", "start:procurement"]
+    env:
+      - PROCUREMENT_HOST=0.0.0.0
+      - PROCUREMENT_PORT=4001
+    expose:
+      - port: 4001
+        to:
+          - service: control
+
+profiles:
+  compute:
+    dashboard:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    control:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    procurement:
+      resources:
+        cpu: { units: 0.25 }
+        memory: { size: 512Mi }
+        storage: { size: 1Gi }
+  placement:
+    akash:
+      pricing:
+        dashboard: { denom: uact, amount: 10000 }
+        control: { denom: uact, amount: 10000 }
+        procurement: { denom: uact, amount: 10000 }
+
+deployment:
+  dashboard:
+    akash: { profile: dashboard, count: 1 }
+  control:
+    akash: { profile: control, count: 1 }
+  procurement:
+    akash: { profile: procurement, count: 1 }

@@ -1,0 +1,93 @@
+---
+# Clone-at-boot SDL currently live on dseq 1784324838403 — with boot commands
+# trimmed so each service installs only what it runs (the original script ran
+# the full `npm run build` — tsc + tests + Next build — in EVERY pod, which
+# OOM-crash-looped procurement at 256Mi). Superseded by deploy.image.yaml once
+# the GHCR packages are public.
+version: "2.0"
+
+services:
+  dashboard:
+    image: node:22-bookworm
+    command:
+      - "sh"
+      - "-lc"
+    args:
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        npm run build:web
+        CONTROL_PLANE_INTERNAL_URL=http://control:4000 npm run start:web
+    expose:
+      - port: 3000
+        as: 80
+        accept:
+          - continuum-hq.com
+          - www.continuum-hq.com
+        to:
+          - global: true
+
+  control:
+    image: node:22-bookworm
+    command:
+      - "sh"
+      - "-lc"
+    args:
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        CONTROL_PLANE_HOST=0.0.0.0 CONTROL_PLANE_PORT=4000 PROCUREMENT_URL=http://procurement:4001 VERIFICATION_MODE=fixture npm run start:control
+    expose:
+      - port: 4000
+        to:
+          - service: dashboard
+
+  procurement:
+    image: node:22-bookworm
+    command:
+      - "sh"
+      - "-lc"
+    args:
+      - |
+        git clone --depth 1 https://github.com/Ayush-sk-Pathak/loop-engineering-hackathon.git /app
+        cd /app
+        npm ci
+        PROCUREMENT_HOST=0.0.0.0 PROCUREMENT_PORT=4001 npm run start:procurement
+    expose:
+      - port: 4001
+        to:
+          - service: control
+
+profiles:
+  compute:
+    dashboard:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    control:
+      resources:
+        cpu: { units: 0.5 }
+        memory: { size: 1Gi }
+        storage: { size: 2Gi }
+    procurement:
+      resources:
+        cpu: { units: 0.25 }
+        memory: { size: 512Mi }
+        storage: { size: 1Gi }
+  placement:
+    akash:
+      pricing:
+        dashboard: { denom: uact, amount: 10000 }
+        control: { denom: uact, amount: 10000 }
+        procurement: { denom: uact, amount: 10000 }
+
+deployment:
+  dashboard:
+    akash: { profile: dashboard, count: 1 }
+  control:
+    akash: { profile: control, count: 1 }
+  procurement:
+    akash: { profile: procurement, count: 1 }

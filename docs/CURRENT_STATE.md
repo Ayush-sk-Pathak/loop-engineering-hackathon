@@ -762,3 +762,28 @@ on in the Hetzner console, then the Coolify compose resource deploys as document
 classifier blocked GitHub API/`gh` use this session — make both `continuim-*` packages
 public on GitHub, then the image SDL replaces clone-at-boot on dseq 1784324838403.
 Interim action: pod bounce so continuum-hq.com serves current main (stages 0–2).
+
+### 2026-07-18 — PM: production works end-to-end for the FIRST time (PO-C92351A9)
+
+**Two production-killing defects found and fixed via live SDL update** (no image switch
+needed yet; `console-axi deployment update` on dseq 1784324838403):
+(1) **k8s-service-link-port-injection** — the provider's cluster injects
+`PROCUREMENT_PORT=tcp://<ip>:4001` into the procurement pod (service-link env), the
+server parsed NaN and crash-looped **since deploy day**: prod had never completed a PO;
+every on-site run died at `authorization_attempted` with "fetch failed". Fixed by
+pinning `PROCUREMENT_PORT=4001` / `CONTROL_PLANE_PORT=4000` in the SDL.
+(2) The reconstructed SDL initially dropped the dashboard `accept:` hosts → provider
+nginx 404'd continuum-hq.com (direct ingress 200) — restored.
+Boot commands are now trimmed per service (backend pods: clone → npm ci → start, ~2 min;
+no more tsc+tests+Next-build in every pod — that combo OOM-looped procurement at 512Mi).
+Real resource profile recovered from cgroups + 422 iteration and recorded in
+`docs/DEPLOY.md` with both SDLs (`deploy.clone.yaml` live, `deploy.image.yaml` staged).
+
+**Verified on https://continuum-hq.com:** health `authorizationMode: origin`; hard reset →
+client incident → full 14-phase loop → denial `fccaaeb3…` → lookalike blacklisted →
+attested → **PO-C92351A9 accepted through origin** → 20 inbound. Also fixed en route:
+`kill 1` bounce was a documented no-op (errors.jsonl `akash-kill1-noop`).
+
+**Still open (each one human click):** Hetzner box power-on → Coolify path (chosen
+target), or GHCR packages public → `deploy.image.yaml` switch. Akash stays up as the
+serving host until one of those verifies end-to-end.
