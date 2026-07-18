@@ -682,3 +682,24 @@ unticked).
 external dev's chain (bedrock.ts → claude.ts → openrouter.ts, `explained` phase) is THE
 explainer; lane D's parallel implementation is archived on `origin/feat/agent-explainer`
 (policy-wins tests contributable later) — DECISIONS `0017`.
+
+### 2026-07-17 — PM: post-hackathon repair — demo failure root-caused; local loop green; de-sponsor plan approved
+
+**The demo failed and is now root-caused** (evidence: `errors.jsonl` `stale-live-mode-env`;
+lesson: "The Green Verifier, Wrong Config"). Local `.env` was left at
+`VERIFICATION_MODE=live_zero` with no Zero session on the machine → every run died
+fail-closed at `verifying` (503, decision 0010 behaving as designed). `demo:verify`
+masked it by pinning its own fixture env. Fix: `.env` → `VERIFICATION_MODE=fixture`,
+`BEDROCK_EXPLAINER_ENABLED=0`. Verified: `demo:verify` PASS (PO-068592C5, PO-38977058)
+and a live monitor-triggered run through `npm run dev` completed
+denial→blacklist→attested→**PO-7189F0A0**, 20 inbound.
+
+**Direction change (user-approved plan, this session):** hackathon over; sponsor-tool
+constraint lifted. Approved 4-stage repair: (0) local unbreak — done above; (1) real
+evidence mode `live` — in-process RDAP + Firecrawl collectors, vendor catalog re-pointed
+at real domains; (2) de-sponsor — remove Zero/Pomerium/Akash/Bedrock/StableEmail surfaces
+(supersede record required first; origin-side capability enforcement stays); (3)
+replatform — immutable Docker images on the Hetzner/Coolify box, Cloudflare cutover of
+continuum-hq.com, then close Akash dseq 1784324838403. Second structural finding: scenario
+vendors all use `.example` domains, so no real-evidence mode could ever return eligible —
+the catalog change in stage 1 is mandatory, Zero or no Zero.

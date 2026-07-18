@@ -71,3 +71,19 @@ symlinks resolve names that a clean install 404s on.
 working-tree grep or an already-warm tree. During a merge, every sweep edit must be
 `git add`-ed before `git commit`; verify the index, not the working tree. A repo-wide
 rename should land as one commit covering every workspace member plus the lockfile.
+
+## The Green Verifier, Wrong Config (2026-07-17)
+
+The live demo failed while every check was green. `.env` had been left at
+`VERIFICATION_MODE=live_zero` (no Zero session exists on the machine), so every real run
+died fail-closed at `verifying` — but `demo:verify` kept passing because it launches its
+services with its own pinned env (`VERIFICATION_MODE=fixture`), and `doctor:prize` only
+checks that vars are *set*, not that the services they point at *respond*. Same family as
+the Half-Renamed Repo: the verifier exercised a different state than the one that ships.
+Evidence: `errors.jsonl` `stale-live-mode-env`.
+
+*Prevention:* before any run that matters (demo, recording, deploy), execute one
+end-to-end run **under the exact runtime config** — the real `.env`, the real entrypoint —
+not just the self-contained verifier. A verifier that pins its own env proves the code
+path, never the configuration. After any live/prize event, sweep `.env` back to a mode the
+machine can actually satisfy.
