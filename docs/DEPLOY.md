@@ -23,25 +23,15 @@ docker push ghcr.io/ayush-sk-pathak/continuim-web:<tag>
 `continuim-data` volume; restart recovery is seconds (verified 2026-07-18: full incident
 run in containers, PO accepted, state survives `docker compose restart`).
 
-## Production option A — Hetzner + Coolify (chosen target)
+## Production option A — any Coolify/compose host (fallback, not current target)
 
-Prereq: the box `5.78.149.138` must be up (down as of 2026-07-18 — power on via the
-Hetzner console; verify with `ssh root@5.78.149.138`).
+`deploy/coolify/compose.yaml` remains a portable production resource for any Docker
+host. The originally-chosen Hetzner box (5.78.149.138) was **deleted with its account**
+in early July 2026; the new account's only server hosts the live careercopilot product
+and is **off-limits** (decision 0019, safety directive). Use this option only on a
+future dedicated host.
 
-1. Tunnel: `ssh -L 8000:localhost:8000 root@5.78.149.138`, Coolify at `localhost:8000`.
-2. Create a **Docker Compose** resource from `deploy/coolify/compose.yaml`
-   (instant-deploy OFF).
-3. Before first deploy set: FQDN `continuum-hq.com` → `web:3000`, and env
-   `CONTINUIM_TAG`, `ATTESTATION_SIGNING_SECRET` (random), `VERIFICATION_MODE`
-   (`fixture` until spend-comfortable, then `live` + `FIRECRAWL_API_KEY`),
-   `STOCKOUT_WEBHOOK_SECRET`.
-4. Deploy; smoke-test the generated `*.5.78.149.138.sslip.io` URL
-   (`/api/control/health`, then a client-incident run).
-5. Cloudflare: point `continuum-hq.com` A → `5.78.149.138` (proxied, SSL Flexible).
-6. Only after the domain verifies end-to-end: close Akash dseq `1784324838403`
-   (escrow refunds to the Console wallet).
-
-## Production option B — Akash with images
+## Production option B — Akash with images (CHOSEN — decision 0019)
 
 Prereq: make both `continuim-*` GHCR packages **public** (GitHub → profile → Packages →
 package → settings → Change visibility); providers pull anonymously — verified 403
