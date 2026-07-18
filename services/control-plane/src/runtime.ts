@@ -126,23 +126,14 @@ export async function runStockout(
 }
 
 function resolveCredential(attestation: VendorAttestation): ProcurementCredential {
-  if (process.env.AUTH_MODE === "pomerium") {
-    const key = `POMERIUM_VENDOR_TOKEN_${attestation.vendorId.toUpperCase().replaceAll("-", "_")}`;
-    const token = process.env[key];
-    if (!token) throw new Error(`Missing vendor-scoped credential ${key}`);
-    return { kind: "pomerium", serviceAccountToken: token, attestation };
-  }
-  return { kind: "development", attestation };
+  return { attestation };
 }
 
 async function submitPurchaseOrder(
   request: PurchaseOrderRequest,
   credential?: ProcurementCredential,
 ): Promise<ProcurementResult> {
-  const baseUrl = process.env.AUTH_MODE === "pomerium"
-    ? process.env.POMERIUM_ROUTE_URL
-    : process.env.PROCUREMENT_URL ?? "http://127.0.0.1:4001";
-  if (!baseUrl) throw new Error("Missing procurement route URL");
+  const baseUrl = process.env.PROCUREMENT_URL ?? "http://127.0.0.1:4001";
 
   const headers: Record<string, string> = {
     accept: "application/json",
@@ -152,13 +143,6 @@ async function submitPurchaseOrder(
     headers["x-continuim-vendor-attestation"] = encodeVendorAttestation(
       credential.attestation,
     );
-  }
-  if (credential?.kind === "pomerium") {
-    headers.authorization = `Bearer Pomerium-${credential.serviceAccountToken}`;
-  } else if (!credential && process.env.AUTH_MODE === "pomerium") {
-    const agentToken = process.env.POMERIUM_AGENT_TOKEN;
-    if (!agentToken) throw new Error("Missing POMERIUM_AGENT_TOKEN for the denied policy attempt");
-    headers.authorization = `Bearer Pomerium-${agentToken}`;
   }
   const response = await fetch(`${baseUrl}/po/${encodeURIComponent(request.vendorId)}`, {
     method: "POST",
@@ -170,7 +154,7 @@ async function submitPurchaseOrder(
     status: response.status,
     order: body.order,
     reason: body.reason,
-    enforcementPoint: process.env.AUTH_MODE === "pomerium" ? "pomerium" : body.enforcementPoint ?? "development",
+    enforcementPoint: "origin",
     requestId: response.headers.get("x-request-id") ??
       response.headers.get("x-continuim-request-id") ?? body.requestId ?? randomUUID(),
   };

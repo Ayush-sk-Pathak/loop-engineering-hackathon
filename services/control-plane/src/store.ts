@@ -91,7 +91,7 @@ export class DemoStore {
         verificationSpendCents: 0,
         inboundQuantity: 0,
         verificationMode: "fixture",
-        authorizationMode: process.env.AUTH_MODE === "pomerium" ? "pomerium" : "development",
+        authorizationMode: "origin",
       },
       learning: this.learningSummary(scenario.id),
       updatedAt: new Date().toISOString(),

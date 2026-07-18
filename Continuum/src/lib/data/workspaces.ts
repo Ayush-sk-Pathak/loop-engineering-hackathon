@@ -28,9 +28,9 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
       protectedDetail: "Line 04 kept in production",
     },
     assets: [
-      { id: "navy-dye", name: "Navy Dye · Line 04", current: "0 kg", threshold: "120 kg", status: "critical", source: "Nexla inventory" },
-      { id: "white-dye", name: "White Dye · Line 01", current: "210 kg", threshold: "150 kg", status: "low", source: "Nexla inventory" },
-      { id: "crimson-dye", name: "Crimson Dye · Line 02", current: "340 kg", threshold: "100 kg", status: "healthy", source: "Nexla inventory" },
+      { id: "navy-dye", name: "Navy Dye · Line 04", current: "0 kg", threshold: "120 kg", status: "critical", source: "Inventory feed" },
+      { id: "white-dye", name: "White Dye · Line 01", current: "210 kg", threshold: "150 kg", status: "low", source: "Inventory feed" },
+      { id: "crimson-dye", name: "Crimson Dye · Line 02", current: "340 kg", threshold: "100 kg", status: "healthy", source: "Inventory feed" },
       { id: "cotton-yarn", name: "Combed Cotton Yarn", current: "12,400 spools", threshold: "4,000", status: "healthy", source: "WMS" },
       { id: "elastane", name: "Elastane", current: "880 kg", threshold: "300 kg", status: "healthy", source: "WMS" },
     ],
@@ -96,9 +96,9 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
       { id: "PO-4795", vendorName: "Northstar Fibers", item: "Cotton Yarn · 8,000", amount: 910_000, status: "delivered", reason: "Delivered", createdAt: "Yesterday" },
     ],
     activity: [
-      { time: "09:41", source: "Pomerium", message: "Denied payment to PacificDye Co. — vendor unverified", tone: "bad" },
+      { time: "09:41", source: "Policy gate", message: "Denied payment to Archr0ma Trade Supply — vendor unverified", tone: "bad" },
       { time: "09:41", source: "Continuum", message: "Placed PO-4821 with Meridian Colorants", tone: "ok" },
-      { time: "09:40", source: "Nexla", message: "Navy Dye · Line 04 fell below safety threshold", tone: "warn" },
+      { time: "09:40", source: "Telemetry", message: "Navy Dye · Line 04 fell below safety threshold", tone: "warn" },
       { time: "08:12", source: "WMS", message: "White Dye · Line 01 restock delivered", tone: "neutral" },
     ],
     kpis: {
@@ -120,10 +120,10 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
     ],
     spendCeiling: 2_500_000,
     integrations: [
-      { name: "Nexla", purpose: "Inventory and telemetry signals", status: "healthy" },
+      { name: "Telemetry feed", purpose: "Inventory and telemetry signals", status: "healthy" },
       { name: "Zero", purpose: "Identity evidence and agent wallet", status: "connected" },
-      { name: "Pomerium", purpose: "Payment authorization policy", status: "healthy" },
-      { name: "StableEmail", purpose: "Purchase-order delivery", status: "connected" },
+      { name: "Policy gate", purpose: "Payment authorization policy", status: "healthy" },
+      { name: "Email receipts", purpose: "Purchase-order delivery", status: "connected" },
     ],
   },
   meridian: {
@@ -153,7 +153,7 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
       protectedDetail: "Burst capacity held during replacement",
     },
     assets: [
-      { id: "gpu-07", name: "GPU node gpu-07 · Rack B", current: "0 healthy", threshold: "1", status: "failed", source: "Nexla telemetry" },
+      { id: "gpu-07", name: "GPU node gpu-07 · Rack B", current: "0 healthy", threshold: "1", status: "failed", source: "Node telemetry" },
       { id: "cluster", name: "Risk cluster capacity", current: "100% used", threshold: "85%", status: "critical", source: "Prometheus" },
       { id: "gpu-pool", name: "GPU nodes gpu-01–06", current: "6 / 6 healthy", threshold: "6", status: "healthy", source: "Prometheus" },
       { id: "nvme", name: "NVMe storage array", current: "Nominal", threshold: "Nominal", status: "healthy", source: "Datadog" },
@@ -221,10 +221,10 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
       { id: "PO-2184", vendorName: "CloudBurst Capacity", item: "Burst compute · 72h", amount: 340_000, status: "delivered", reason: "Capacity active", createdAt: "Yesterday" },
     ],
     activity: [
-      { time: "11:03", source: "Pomerium", message: "Denied TitanServer-Parts payment — provenance failed", tone: "bad" },
+      { time: "11:03", source: "Policy gate", message: "Denied TitanServer-Parts payment — provenance failed", tone: "bad" },
       { time: "11:03", source: "Continuum", message: "Placed PO-2207 with AuthorizedGPU Distribution", tone: "ok" },
       { time: "11:02", source: "CloudBurst", message: "Verified burst deployment is live", tone: "info" },
-      { time: "11:01", source: "Nexla", message: "gpu-07 failed; cluster utilization reached 100%", tone: "warn" },
+      { time: "11:01", source: "Telemetry", message: "gpu-07 failed; cluster utilization reached 100%", tone: "warn" },
     ],
     kpis: {
       activeAlerts: "1",
@@ -245,9 +245,9 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
     ],
     spendCeiling: 10_000_000,
     integrations: [
-      { name: "Nexla", purpose: "Infrastructure telemetry", status: "healthy" },
+      { name: "Telemetry feed", purpose: "Infrastructure telemetry", status: "healthy" },
       { name: "Zero", purpose: "Identity evidence and agent wallet", status: "connected" },
-      { name: "Pomerium", purpose: "Payment authorization policy", status: "healthy" },
+      { name: "Policy gate", purpose: "Payment authorization policy", status: "healthy" },
       { name: "CloudBurst", purpose: "Attested emergency capacity", status: "connected" },
     ],
   },

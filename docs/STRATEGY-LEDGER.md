@@ -7,16 +7,17 @@ or silently contradict. It is injected into every session by the SessionStart ho
 (`.claude/settings.json`). **Do not reverse any of these without logging an explicit
 supersede to `logs/DECISIONS.jsonl`.**
 
-## Current front (2026-07-17) — where we are right now
+## Current front (2026-07-18) — where we are right now
 
-Shipped. `origin/main` is green (39/39) and the product is deployed: 3-service topology on
-Akash (dseq `1784324838403`), live at **https://continuum-hq.com**. Zero evidence is settled
-(3 real receipts in `config/zero-services.json`); Pomerium is staged (route + PPL + data-plane
-runbook proven; the live 403/201 is blocked only on co-locating procurement with the proxy —
-runtime reverted to `development`, one-line reflip). Explainer = the external fallback chain
-(decision 0017). Nearest follow-ups: immutable-image deploy (kills clone-at-boot downtime),
-procurement/proxy co-location, post-ship doc/board archive sweep.
-
+Post-hackathon repair (the demo failed; user lifted the sponsor-tool constraint and
+delegated all calls — decision 0018). The agent works again, end to end: local `.env` back
+to a satisfiable mode, and `VERIFICATION_MODE=live` now gathers REAL evidence in-process
+(rdap.org + Firecrawl + optional Linkup; catalog eligible vendors point at kingston.com /
+archroma.com; fail-closed unchanged). Sponsor surfaces removed: no Pomerium (origin-side
+attestation verification IS the enforcement layer), no zero-adapter, no Akash SDL, no
+Bedrock/Codex/StableEmail; webhook ingress genericized. Suite 25/25; `demo:verify` PASS.
+Next: immutable Docker images deployed on the Hetzner/Coolify box, Cloudflare cutover of
+continuum-hq.com, then close Akash dseq `1784324838403`.
 
 ## The load-bearing decisions (do not silently reverse)
 
@@ -145,6 +146,18 @@ procurement/proxy co-location, post-ship doc/board archive sweep.
     horizontal engine, security thesis) stands unchanged. **Rejected, do not re-propose:**
     reverting to StockShield or ProcureLoop; a docs-only partial rename that leaves code
     and docs disagreeing. DECISIONS `0016`.
+
+17. **Post-hackathon de-sponsoring (2026-07-18).** The hackathon ended with a failed demo;
+    by explicit user direction the sponsor-tool constraint is lifted and the stack serves
+    the working product only. Zero -> in-process live evidence collector (rdap.org +
+    Firecrawl + optional Linkup, `VERIFICATION_MODE=live`); Pomerium removed (origin-side
+    signed-attestation verification is the enforcement layer and already issues the 403);
+    Akash -> immutable images on the user's Hetzner/Coolify box; explainer chain =
+    OpenRouter -> Claude OAuth, default off; StableEmail removed; webhook ingress kept,
+    genericized (`source: "webhook"`, `STOCKOUT_WEBHOOK_SECRET`). Decision 0010 (never
+    fabricate live evidence) explicitly stands. **Rejected, do not re-propose:** dormant
+    Pomerium code paths behind env gates; keeping the zero-adapter seam; Supabase for
+    SQLite; staying on Akash. DECISIONS `0018`.
 
 ## Standing directives & envelope
 

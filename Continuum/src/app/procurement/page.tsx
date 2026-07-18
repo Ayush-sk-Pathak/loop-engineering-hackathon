@@ -15,7 +15,7 @@ export default function ProcurementPage() {
       />
       <div className="mb-4 rounded-xl border border-brand-line bg-brand-soft p-3.5 text-[12.5px] text-muted">
         <strong className="font-semibold text-brand-ink">Safety guarantee:</strong>{" "}
-        blocked rows are payments Continuum attempted but Pomerium denied because the
+        blocked rows are payments Continuum attempted but the policy gate denied because the
         counterparty lacked a current verified claim.
       </div>
       <PurchaseTable />

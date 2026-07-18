@@ -14,8 +14,6 @@
     "plugins": [{ "name": "next" }]
   },
   "include": [
-    "apps/**/*.ts",
-    "apps/**/*.tsx",
     "packages/**/*.ts",
     "services/**/*.ts",
     "scripts/**/*.ts"

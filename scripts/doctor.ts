@@ -1,10 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 type Check = { label: string; ok: boolean; detail: string; required: boolean };
 
-const prizeRequired = process.env.CONTINUIM_REQUIRE_PRIZE === "1";
 const verificationMode = process.env.VERIFICATION_MODE ?? "fixture";
-const authorizationMode = process.env.AUTH_MODE ?? "development";
 const checks: Check[] = [];
 
 const add = (label: string, ok: boolean, detail: string, required = true) => {
@@ -15,57 +13,20 @@ add("Node", Number(process.versions.node.split(".")[0]) >= 22, process.versions.
 add("Dependencies", existsSync("node_modules"), "node_modules");
 add("Local environment", existsSync(".env"), ".env");
 add("Package lock", existsSync("package-lock.json"), "package-lock.json");
+add("Verification mode", ["fixture", "live"].includes(verificationMode), verificationMode);
 add(
-  "Verification mode",
-  !prizeRequired || verificationMode === "live",
-  verificationMode,
-  prizeRequired,
-);
-add(
-  "Authorization mode",
-  !prizeRequired || authorizationMode === "pomerium",
-  authorizationMode,
-  prizeRequired,
+  "Live evidence key",
+  verificationMode !== "live" || Boolean(process.env.FIRECRAWL_API_KEY),
+  verificationMode === "live"
+    ? (process.env.FIRECRAWL_API_KEY ? "FIRECRAWL_API_KEY set" : "FIRECRAWL_API_KEY missing")
+    : "not required in fixture mode",
+  verificationMode === "live",
 );
 add(
   "Autonomous monitor",
   process.env.MONITOR_ENABLED !== "0",
   process.env.MONITOR_ENABLED === "0" ? "disabled" : "enabled",
   true,
-);
-
-let serviceLock: { verifiedAt?: string | null; services?: unknown[] } = {};
-try {
-  serviceLock = JSON.parse(readFileSync("config/zero-services.json", "utf8"));
-} catch {}
-add(
-  "Zero service lock",
-  !prizeRequired || (!!serviceLock.verifiedAt && (serviceLock.services?.length ?? 0) >= 3),
-  serviceLock.verifiedAt ? `verified ${serviceLock.verifiedAt}` : "not live-verified",
-  prizeRequired,
-);
-
-const prizeVariables = [
-  "AWS_BEARER_TOKEN_BEDROCK",
-  "BEDROCK_MODEL_ID",
-  "BEDROCK_REGION",
-  "ZERO_EVIDENCE_ADAPTER_URL",
-  "POMERIUM_ROUTE_URL",
-  "POMERIUM_JWKS_URL",
-  "POMERIUM_ISSUER",
-  "POMERIUM_AUDIENCE",
-  "POMERIUM_AGENT_TOKEN",
-  "POMERIUM_VENDOR_TOKEN_VENDOR_NORTHSTAR",
-];
-for (const variable of prizeVariables) {
-  add(variable, !prizeRequired || Boolean(process.env[variable]), process.env[variable] ? "set" : "missing", prizeRequired);
-}
-
-add(
-  "Bedrock explainer",
-  !prizeRequired || process.env.BEDROCK_EXPLAINER_ENABLED === "1",
-  process.env.BEDROCK_EXPLAINER_ENABLED === "1" ? "enabled" : "disabled",
-  prizeRequired,
 );
 
 for (const check of checks) {
@@ -78,5 +39,5 @@ if (failures.length) {
   console.error(`\ndoctor: ${failures.length} required check(s) failed`);
   process.exitCode = 1;
 } else {
-  console.log(`\ndoctor: ${prizeRequired ? "prize" : "local"} configuration is ready`);
+  console.log("\ndoctor: configuration is ready");
 }

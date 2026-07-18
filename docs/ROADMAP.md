@@ -43,5 +43,5 @@
 
 - [x] Stage 0: unbreak local — `.env` back to a satisfiable mode; loop verified end to end (a0f2b91, 2026-07-17)
 - [x] Stage 1: real evidence without Zero — in-process `VERIFICATION_MODE=live` (RDAP + Firecrawl + optional Linkup), catalog on real domains, hard-fail precedence (2026-07-17)
-- [ ] Stage 2: de-sponsor — remove Zero/Pomerium/Akash/Bedrock/StableEmail surfaces (supersede record first)
+- [x] Stage 2: de-sponsor — Zero/Pomerium/Akash/Bedrock/Codex/StableEmail surfaces removed, webhook genericized, apps/dashboard dropped (2026-07-18)
 - [ ] Stage 3: immutable images on Hetzner/Coolify; Cloudflare cutover of continuum-hq.com; close Akash dseq 1784324838403

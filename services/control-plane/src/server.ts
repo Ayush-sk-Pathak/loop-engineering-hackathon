@@ -51,7 +51,7 @@ createServer(async (request, response) => {
     response.writeHead(200).end(JSON.stringify({
       ok: true,
       verificationMode: process.env.VERIFICATION_MODE ?? "fixture",
-      authorizationMode: process.env.AUTH_MODE ?? "development",
+      authorizationMode: "origin",
       clients: Object.fromEntries(Object.entries(stores).map(([clientId, store]) => [clientId, {
         scenario: store.read()?.scenario.id,
         monitorEnabled: store.read()?.monitor.active ?? false,
@@ -183,15 +183,15 @@ createServer(async (request, response) => {
     return;
   }
   if (request.method === "POST" && url.pathname === "/api/events/stockout") {
-    const expectedSecret = process.env.NEXLA_WEBHOOK_SECRET;
+    const expectedSecret = process.env.STOCKOUT_WEBHOOK_SECRET;
     if (expectedSecret && request.headers["x-continuim-webhook-secret"] !== expectedSecret) {
-      response.writeHead(401).end(JSON.stringify({ error: "Invalid Nexla webhook secret" }));
+      response.writeHead(401).end(JSON.stringify({ error: "Invalid stockout webhook secret" }));
       return;
     }
     try {
       const event = await readJson(request);
-      if (!isStockoutRiskEvent(event) || event.source !== "nexla") {
-        response.writeHead(400).end(JSON.stringify({ error: "Invalid Nexla stockout event" }));
+      if (!isStockoutRiskEvent(event) || event.source !== "webhook") {
+        response.writeHead(400).end(JSON.stringify({ error: "Invalid stockout event" }));
         return;
       }
       const scenario = Object.values(SCENARIOS).find(
@@ -210,7 +210,7 @@ createServer(async (request, response) => {
       if (store.read()?.scenario.id !== scenario.id) store.reset(scenario.id);
       response.writeHead(202).end(JSON.stringify({ accepted: true, eventId: event.eventId }));
       void runStockout(store, event).catch((error) => {
-        console.error("control-plane: Nexla-triggered run failed", error);
+        console.error("control-plane: webhook-triggered run failed", error);
       });
     } catch (error) {
       response.writeHead(400).end(JSON.stringify({
@@ -253,6 +253,6 @@ function isStockoutRiskEvent(value: unknown): value is StockoutRiskEvent {
     Number(event.currentQty) <= Number(event.threshold) &&
     Number.isSafeInteger(event.requestedQty) && Number(event.requestedQty) > 0 &&
     typeof event.occurredAt === "string" && !Number.isNaN(Date.parse(event.occurredAt)) &&
-    (event.source === "nexla" || event.source === "local" || event.source === "monitor")
+    (event.source === "webhook" || event.source === "local" || event.source === "monitor")
   );
 }

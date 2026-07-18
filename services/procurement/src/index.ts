@@ -70,7 +70,7 @@ export async function createPurchaseOrder(
     return {
       status: 403,
       reason: error instanceof Error ? error.message : "Authorization denied",
-      enforcementPoint: config.mode,
+      enforcementPoint: "origin",
       requestId,
     };
   }

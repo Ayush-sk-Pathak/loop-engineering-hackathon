@@ -30,7 +30,7 @@ function state(overrides: Partial<DemoState> = {}): DemoState {
       verificationSpendCents: 0,
       inboundQuantity: 0,
       verificationMode: "fixture",
-      authorizationMode: "development",
+      authorizationMode: "origin",
     },
     learning: { incidentCount: 0, lastResolutionMs: null, provenVendorIds: [] },
     updatedAt: new Date().toISOString(),
@@ -53,7 +53,7 @@ function store(initial: DemoState): InventoryMonitorStore {
   };
 }
 
-test("monitor fires a Nexla-compatible event at the critical threshold", async () => {
+test("monitor fires a webhook-compatible event at the critical threshold", async () => {
   const events: StockoutRiskEvent[] = [];
   const triggered = await checkInventoryOnce(store(state()), async (event) => {
     events.push(event);

@@ -725,3 +725,19 @@ scenarios concurrently: **PO-A45C30A0** (meridian) and **PO-FBA31A53** (northwin
 `verificationMode: live`, 14-phase trail with denial beat. Fixture path unchanged
 (`demo:verify` PASS); suite now 47/47. Two incidents caught and fixed on the way
 (errors.jsonl: `live-provider-transient-no-retry`, `collector-throw-strands-run`).
+
+### 2026-07-18 — PM: Stage 2 shipped — de-sponsored (decision 0018)
+
+**Removed wholesale** (supersede record `0018` appended first): `services/zero-adapter/`,
+`scripts/evidence-adapter.ts` (the decision-0010-violating scratch adapter), `infra/pomerium/`,
+`deploy/akash/`, `config/zero-services.json`, `zero-hello/`, `apps/dashboard/` (dead second
+Next app), `bedrock.ts`, `codex.ts`, StableEmail (`email.ts` + test + post-201 hook), and the
+`jose` dependency. Pomerium code paths stripped from procurement + control-plane;
+`enforcementPoint`/`authorizationMode` collapsed to `"origin"` (the origin's signed-attestation
+verification is and was the real enforcement — it still 403s every unattested plan). Webhook
+ingress kept but genericized: `source: "webhook"`, `STOCKOUT_WEBHOOK_SECRET`. Explainer chain
+is now OpenRouter → Claude OAuth (default off). Workspaces = `packages/* services/*`;
+`doctor:prize` gone (doctor now checks live-mode key instead); example.env purged; compose
+rewritten to the 3-service topology (web is the only published port). UI copy: Pomerium →
+"Policy gate", Nexla/StableEmail sim copy neutralized. Suite 25/25 (zero-adapter/email tests
+removed with their modules); `demo:verify` PASS both clients; Continuum `tsc --noEmit` clean.

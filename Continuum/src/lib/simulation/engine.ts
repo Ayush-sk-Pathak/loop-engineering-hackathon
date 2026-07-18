@@ -219,7 +219,7 @@ export class ContinuumEngine {
     this.path = warm ? "warm" : "cold";
 
     this.log(
-      "Nexla",
+      "Telemetry",
       `Incident detected: ${scenario.title} @ ${scenario.site}`,
       "warn",
     );
@@ -248,7 +248,7 @@ export class ContinuumEngine {
       detail: `Continuity threshold: ${scenario.threshold} ${scenario.unit}`,
       meta: scenario.site,
     });
-    this.log("Nexla", `${scenario.metricLabel} breached its continuity threshold.`, "warn");
+    this.log("Telemetry", `${scenario.metricLabel} breached its continuity threshold.`, "warn");
     this.emit();
     await this.wait(900, token);
     this.markPriorDone("source");
@@ -323,7 +323,7 @@ export class ContinuumEngine {
     this.setStage("guard", "active", {
       headline: `Authorizing ${rejected.name}`,
       detail: `$${(rejected.baseFee / 100).toLocaleString("en-US")} · lowest quote`,
-      meta: "POST /pay · Pomerium policy",
+      meta: "POST /pay · Continuum policy gate",
     });
     this.log("Continuum", `${rejected.name} has the lowest quote; requesting payment authorization.`, "warn");
     this.emit();
@@ -334,7 +334,7 @@ export class ContinuumEngine {
       detail: "Policy requires vendor.verified = true",
       meta: `${rejected.name} blacklisted · rerouting`,
     });
-    this.log("Pomerium", `403 DENIED — ${rejected.name} failed vendor.verified policy.`, "bad");
+    this.log("Policy gate", `403 DENIED — ${rejected.name} failed vendor.verified policy.`, "bad");
     this.log("Continuum", `Denial observed; rerouting to ${verified.name}.`, "info");
     this.emit();
     await this.wait(650, token);
@@ -348,9 +348,9 @@ export class ContinuumEngine {
     this.setStage("guard", "active", {
       headline: `Authorizing ${vendor.name}`,
       detail: "Known resolution · current verified claim",
-      meta: "Pomerium policy",
+      meta: "Continuum policy gate",
     });
-    this.log("Pomerium", `Evaluating vendor.verified claim for ${vendor.name}.`, "info");
+    this.log("Policy gate", `Evaluating vendor.verified claim for ${vendor.name}.`, "info");
     this.emit();
     await this.wait(400, token);
     this.setStage("guard", "done", {
@@ -358,7 +358,7 @@ export class ContinuumEngine {
       detail: "vendor.verified = true · spend within ceiling",
       meta: `Confidence ${warm.confidence}%`,
     });
-    this.log("Pomerium", "200 OK — verified vendor and spend policy satisfied.", "ok");
+    this.log("Policy gate", "200 OK — verified vendor and spend policy satisfied.", "ok");
     this.emit();
   }
 
@@ -380,7 +380,7 @@ export class ContinuumEngine {
       detail: scenario.protectedValue,
       meta: scenario.protectedDetail,
     });
-    this.log("StableEmail", `${po} delivered and acknowledged by ${vendor.name}.`, "ok");
+    this.log("Email", `${po} delivered and acknowledged by ${vendor.name}.`, "ok");
     this.emit();
   }
 

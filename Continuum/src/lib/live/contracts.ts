@@ -6,7 +6,7 @@
 
 export type ScenarioId = "datacenter" | "apparel";
 export type EvidenceMode = "fixture" | "live";
-export type AuthorizationMode = "development" | "pomerium";
+export type AuthorizationMode = "origin";
 export type RunStatus = "idle" | "running" | "complete" | "failed";
 
 export type DecisionPhase =
@@ -78,7 +78,7 @@ export interface DemoMetrics {
   verificationMode: EvidenceMode;
   authorizationMode: AuthorizationMode;
   deniedRequestId?: string;
-  deniedEnforcementPoint?: "development" | "pomerium" | "origin";
+  deniedEnforcementPoint?: "origin";
 }
 
 export interface DemoState {

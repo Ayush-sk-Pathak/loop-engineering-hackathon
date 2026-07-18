@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@continuim/contracts": "*",
-    "@continuim/security": "*",
-    "jose": "^6.0.0"
+    "@continuim/security": "*"
   }
 }

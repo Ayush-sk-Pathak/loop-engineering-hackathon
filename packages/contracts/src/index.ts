@@ -39,7 +39,7 @@ export interface StockoutRiskEvent {
   threshold: number;
   requestedQty: number;
   occurredAt: string;
-  source: "nexla" | "local" | "monitor";
+  source: "webhook" | "local" | "monitor";
 }
 
 export type EvidenceKind =
@@ -161,19 +161,15 @@ export interface DecisionEvent {
   metadata?: Record<string, string | number | boolean | null>;
 }
 
-export type ProcurementCredential =
-  | { kind: "development"; attestation: VendorAttestation }
-  | {
-      kind: "pomerium";
-      serviceAccountToken: string;
-      attestation: VendorAttestation;
-    };
+export interface ProcurementCredential {
+  attestation: VendorAttestation;
+}
 
 export interface ProcurementResult {
   status: number;
   order?: PurchaseOrder;
   reason?: string;
-  enforcementPoint: "development" | "pomerium" | "origin";
+  enforcementPoint: "origin";
   requestId: string;
 }
 
@@ -197,7 +193,7 @@ export interface DemoMetrics {
   verificationSpendCents: number;
   inboundQuantity: number;
   verificationMode: EvidenceMode;
-  authorizationMode: "development" | "pomerium";
+  authorizationMode: "origin";
   deniedRequestId?: string;
   deniedEnforcementPoint?: ProcurementResult["enforcementPoint"];
 }

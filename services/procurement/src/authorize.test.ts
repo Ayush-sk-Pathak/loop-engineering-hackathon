@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { PurchaseOrderRequest, VendorAttestation } from "@continuim/contracts";
 import { encodeVendorAttestation, signVendorAttestation } from "@continuim/security";
-import { authorizePurchase, pomeriumSubjectsForVendor } from "./authorize.ts";
+import { authorizePurchase } from "./authorize.ts";
 
 const secret = "test-secret";
 const attestation = signVendorAttestation({
@@ -44,39 +44,20 @@ const headers = (value: VendorAttestation = attestation) => ({
   "x-continuim-vendor-attestation": encodeVendorAttestation(value),
 });
 
-test("development authorization requires a valid request-bound attestation", async () => {
+test("origin authorization requires a valid request-bound attestation", async () => {
   await assert.rejects(
-    authorizePurchase({}, request, { mode: "development", attestationSecret: secret }),
+    authorizePurchase({}, request, { attestationSecret: secret }),
     /Missing signed vendor attestation/,
   );
   await assert.rejects(
-    authorizePurchase(headers(), { ...request, vendorId: "vendor-b" }, {
-      mode: "development",
-      attestationSecret: secret,
-    }),
+    authorizePurchase(headers(), { ...request, vendorId: "vendor-b" }, { attestationSecret: secret }),
     /Vendor binding mismatch/,
   );
   await assert.rejects(
-    authorizePurchase(headers(), { ...request, unitPriceCents: 13_000 }, {
-      mode: "development",
-      attestationSecret: secret,
-    }),
+    authorizePurchase(headers(), { ...request, unitPriceCents: 13_000 }, { attestationSecret: secret }),
     /Unit price binding mismatch/,
   );
   await assert.doesNotReject(
-    authorizePurchase(headers(), request, {
-      mode: "development",
-      attestationSecret: secret,
-    }),
-  );
-});
-
-test("pomerium subject aliases preserve vendor path binding", () => {
-  assert.deepEqual(
-    pomeriumSubjectsForVendor("vendor-northstar", {
-      pomeriumSubjectPrefix: "vendor:",
-      pomeriumVendorSubjectAliases: "vendor-northstar=sfhack,vendor-other=vendor:other",
-    }),
-    ["vendor:vendor-northstar", "sfhack"],
+    authorizePurchase(headers(), request, { attestationSecret: secret }),
   );
 });

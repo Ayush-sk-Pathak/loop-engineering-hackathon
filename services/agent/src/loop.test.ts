@@ -31,13 +31,13 @@ test("loop blacklists the lookalike, proves denial, and orders from the eligible
     },
     credentials: {
       async forAttestation(_attestation: VendorAttestation): Promise<ProcurementCredential> {
-        return { kind: "development", attestation: _attestation };
+        return { attestation: _attestation };
       },
     },
     procurement: {
       async submit(request, credential) {
         if (!credential) {
-          return { status: 403, reason: "missing capability", enforcementPoint: "development", requestId: "deny-1" };
+          return { status: 403, reason: "missing capability", enforcementPoint: "origin", requestId: "deny-1" };
         }
         const order: PurchaseOrder = {
           id: "po-1",
@@ -50,7 +50,7 @@ test("loop blacklists the lookalike, proves denial, and orders from the eligible
           inboundStatus: "scheduled",
           createdAt: new Date().toISOString(),
         };
-        return { status: 201, order, enforcementPoint: "development", requestId: "allow-1" };
+        return { status: 201, order, enforcementPoint: "origin", requestId: "allow-1" };
       },
     },
     decisions: { async emit(decision) { events.push(decision); } },

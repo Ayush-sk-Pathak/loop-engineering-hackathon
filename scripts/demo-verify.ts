@@ -154,7 +154,6 @@ async function main() {
     PROCUREMENT_HOST: host,
     PROCUREMENT_PORT: String(procurementPort),
     ATTESTATION_SIGNING_SECRET: signingSecret,
-    EMAIL_MODE: "off",
   });
   await waitFor(`http://${host}:${procurementPort}/health`, "procurement");
 
@@ -169,7 +168,6 @@ async function main() {
     MONITOR_INTERVAL_MS: "100",
     DEMO_STEP_DELAY_MS: "20",
     SQLITE_PATH: databasePath,
-    BEDROCK_EXPLAINER_ENABLED: "0",
     CODEX_EXPLAINER_ENABLED: "0",
     CLAUDE_EXPLAINER_ENABLED: "0",
   });
