@@ -20,7 +20,7 @@
     "test": "node --import tsx --test packages/security/src/capability.test.ts services/verification/src/policy.test.ts services/verification/src/scenarios.test.ts services/agent/src/loop.test.ts services/agent/src/learning.test.ts services/procurement/src/authorize.test.ts services/procurement/src/index.test.ts services/control-plane/src/monitor.test.ts services/control-plane/src/store.test.ts services/zero-adapter/src/adapter.test.ts services/procurement/src/email.test.ts services/zero-adapter/src/transport.test.ts",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
-    "build:web": "cd Continuum && npm run build",
+    "build:web": "cd Continuum && npm ci && npm run build",
     "build": "npm run check && npm run build:web",
     "start:control": "node --env-file-if-exists=.env --import tsx services/control-plane/src/server.ts",
     "start:procurement": "node --env-file-if-exists=.env --import tsx services/procurement/src/server.ts",
